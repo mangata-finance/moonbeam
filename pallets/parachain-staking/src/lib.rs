@@ -45,15 +45,15 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(any(test, feature = "runtime-benchmarks"))]
-mod benchmarks;
+// #[cfg(any(test, feature = "runtime-benchmarks"))]
+// mod benchmarks;
 mod inflation;
 pub mod migrations;
-#[cfg(test)]
-mod mock;
+// #[cfg(test)]
+// mod mock;
 mod set;
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod tests;
 pub mod weights;
 
 use frame_support::pallet;
@@ -66,15 +66,16 @@ pub use pallet::*;
 pub mod pallet {
 	use crate::{set::OrderedSet, InflationInfo, Range, WeightInfo};
 	use frame_support::pallet_prelude::*;
-	use frame_support::traits::{Currency, Get, Imbalance, ReservableCurrency};
+	use frame_support::traits::{Currency, Get, Imbalance, ReservableCurrency, EstimateNextSessionRotation};
 	use frame_system::pallet_prelude::*;
 	use parity_scale_codec::{Decode, Encode};
 	use scale_info::TypeInfo;
 	use sp_runtime::{
 		traits::{AtLeast32BitUnsigned, Saturating, Zero},
-		Perbill, Percent, RuntimeDebug,
+		Perbill, Permill, Percent, RuntimeDebug,
 	};
 	use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
+	use sp_staking::SessionIndex;
 
 	/// Pallet for parachain staking
 	#[pallet::pallet]
@@ -1480,31 +1481,7 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(n: T::BlockNumber) -> Weight {
-			let mut round = <Round<T>>::get();
-			if round.should_update(n) {
-				// mutate round
-				round.update(n);
-				// pay all stakers for T::RewardPaymentDelay rounds ago
-				Self::pay_stakers(round.current);
-				// select top collator candidates for next round
-				let (collator_count, delegation_count, total_staked) =
-					Self::select_top_candidates(round.current);
-				// start next round
-				<Round<T>>::put(round);
-				// snapshot total stake
-				<Staked<T>>::insert(round.current, <Total<T>>::get());
-				Self::deposit_event(Event::NewRound(
-					round.first,
-					round.current,
-					collator_count,
-					total_staked,
-				));
-				T::WeightInfo::active_on_initialize(collator_count, delegation_count)
-			} else {
-				T::WeightInfo::passive_on_initialize()
-			}
-		}
+		
 	}
 
 	#[pallet::storage]
@@ -2482,24 +2459,81 @@ pub mod pallet {
 
 	/// Add reward points to block authors:
 	/// * 20 points to the block producer for producing a block in the chain
-	impl<T: Config> nimbus_primitives::EventHandler<T::AccountId> for Pallet<T> {
+	impl<T: Config> pallet_authorship::EventHandler<T::AccountId, T::BlockNumber> for Pallet<T> {
 		fn note_author(author: T::AccountId) {
 			let now = <Round<T>>::get().current;
 			let score_plus_20 = <AwardedPts<T>>::get(now, &author) + 20;
 			<AwardedPts<T>>::insert(now, author, score_plus_20);
 			<Points<T>>::mutate(now, |x| *x += 20);
 		}
-	}
 
-	impl<T: Config> nimbus_primitives::CanAuthor<T::AccountId> for Pallet<T> {
-		fn can_author(account: &T::AccountId, _slot: &u32) -> bool {
-			Self::is_selected_candidate(account)
+		fn note_uncle(_: T::AccountId, _: T::BlockNumber) {
+			// ignore
 		}
 	}
 
-	impl<T: Config> Get<Vec<T::AccountId>> for Pallet<T> {
-		fn get() -> Vec<T::AccountId> {
-			Self::selected_candidates()
+	impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
+		fn new_session(index: SessionIndex) -> Option<Vec<T::AccountId>> {
+			Some(Self::selected_candidates())
+		}
+		fn start_session(_: SessionIndex) {
+			let n = <frame_system::Pallet<T>>::block_number();
+			let mut round = <Round<T>>::get();
+			// mutate round
+			round.update(n);
+			// pay all stakers for T::RewardPaymentDelay rounds ago
+			Self::pay_stakers(round.current);
+			// select top collator candidates for next round
+			let (collator_count, delegation_count, total_staked) =
+				Self::select_top_candidates(round.current);
+			// start next round
+			<Round<T>>::put(round);
+			// snapshot total stake
+			<Staked<T>>::insert(round.current, <Total<T>>::get());
+			Self::deposit_event(Event::NewRound(
+				round.first,
+				round.current,
+				collator_count,
+				total_staked,
+			));
+		}
+		fn end_session(_: SessionIndex) {
+			// we don't care.
 		}
 	}
+
+	impl<T: Config> pallet_session::ShouldEndSession<T::BlockNumber> for Pallet<T> {
+		fn should_end_session(now: T::BlockNumber) -> bool {
+			let round = <Round<T>>::get();
+			round.should_update(now)
+		}
+	}
+
+	impl<T: Config> EstimateNextSessionRotation<T::BlockNumber> for Pallet<T> {
+		fn average_session_length() -> T::BlockNumber {
+			<Round<T>>::get().length.into()
+		}
+
+		fn estimate_current_session_progress(now: T::BlockNumber) -> (Option<Permill>, Weight) {
+			let round = <Round<T>>::get();
+			let passed_blocks = now.saturating_sub(round.first);
+
+			(
+				Some(Permill::from_rational(passed_blocks, round.length.into())),
+				// One read for the round info, blocknumber is read free
+				T::DbWeight::get().reads(1),
+			)
+		}
+
+		fn estimate_next_session_rotation(_now: T::BlockNumber) -> (Option<T::BlockNumber>, Weight) {
+			let round = <Round<T>>::get();
+
+			(
+				Some(round.first + round.length.into()),
+				// One read for the round info, blocknumber is read free
+				T::DbWeight::get().reads(1),
+			)
+		}
+	}
+
 }
