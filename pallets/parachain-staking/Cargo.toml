@@ -26,6 +26,8 @@ sp-std = { git = "https://github.com/mangata-finance/substrate", branch = "manga
 sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v4", default-features = false }
 substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
 
+mangata-primitives = { git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4", default-features = false }
+
 [dev-dependencies]
 similar-asserts = "1.1.0"
 
