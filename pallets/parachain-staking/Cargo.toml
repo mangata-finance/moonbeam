@@ -26,7 +26,10 @@ sp-std = { git = "https://github.com/mangata-finance/substrate", branch = "manga
 sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v4", default-features = false }
 substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
 
+pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4" }
 mangata-primitives = { git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4", default-features = false }
+orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
+
 
 [dev-dependencies]
 similar-asserts = "1.1.0"
@@ -49,6 +52,8 @@ std = [
 	"sp-staking/std",
 	"pallet-authorship/std",
 	"pallet-session/std",
+	"pallet-xyk/std",
+	"orml-tokens/std",
 ]
 runtime-benchmarks = ["frame-benchmarking"]
 try-runtime = ["frame-support/try-runtime"]
