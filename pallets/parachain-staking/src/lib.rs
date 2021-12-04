@@ -135,37 +135,37 @@ pub mod pallet {
 	// Bond needs to change
 
 	#[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-	pub struct Bond<AccountId, Balance, TokenId> {
+	pub struct Bond<AccountId> {
 		pub owner: AccountId,
 		pub amount: Balance,
 		pub liquidity_token: TokenId
 	}
 
-	impl<A, B: Default, C: Default> Bond<A, B, C> {
+	impl<A> Bond<A> {
 		fn from_owner(owner: A) -> Self {
 			Bond {
 				owner,
-				amount: B::default(),
-				liquidity_token: C::default(),
+				amount: Balance::default(),
+				liquidity_token: TokenId::default(),
 			}
 		}
 	}
 
-	impl<AccountId: Ord, Balance, TokenId> Eq for Bond<AccountId, Balance, TokenId> {}
+	impl<AccountId: Ord> Eq for Bond<AccountId> {}
 
-	impl<AccountId: Ord, Balance, TokenId> Ord for Bond<AccountId, Balance, TokenId> {
+	impl<AccountId: Ord> Ord for Bond<AccountId> {
 		fn cmp(&self, other: &Self) -> Ordering {
 			self.owner.cmp(&other.owner)
 		}
 	}
 
-	impl<AccountId: Ord, Balance, TokenId> PartialOrd for Bond<AccountId, Balance, TokenId> {
+	impl<AccountId: Ord> PartialOrd for Bond<AccountId> {
 		fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
 			Some(self.cmp(other))
 		}
 	}
 
-	impl<AccountId: Ord, Balance, TokenId> PartialEq for Bond<AccountId, Balance, TokenId> {
+	impl<AccountId: Ord> PartialEq for Bond<AccountId> {
 		fn eq(&self, other: &Self) -> bool {
 			self.owner == other.owner
 		}
@@ -193,9 +193,9 @@ pub mod pallet {
 
 	#[derive(Default, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Snapshot of collator state at the start of the round for which they are selected
-	pub struct CollatorSnapshot<AccountId, Balance, TokenId> {
+	pub struct CollatorSnapshot<AccountId> {
 		pub bond: Balance,
-		pub delegations: Vec<Bond<AccountId, Balance, TokenId>>,
+		pub delegations: Vec<Bond<AccountId>>,
 		pub total: Balance,
 		pub liquidity_token: TokenId,
 	}
@@ -209,7 +209,7 @@ pub mod pallet {
 
 	#[derive(PartialEq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Request scheduled to change the collator candidate self-bond
-	pub struct CandidateBondRequest<Balance> {
+	pub struct CandidateBondRequest {
 		pub amount: Balance,
 		pub change: CandidateBondChange,
 		pub when_executable: RoundIndex,
@@ -223,7 +223,7 @@ pub mod pallet {
 
 	#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Collator candidate state with self bond + delegations
-	pub struct CollatorCandidate<AccountId, Balance, TokenId> {
+	pub struct CollatorCandidate<AccountId> {
 		/// The account of this collator
 		pub id: AccountId,
 		/// This collator's self stake.
@@ -233,15 +233,15 @@ pub mod pallet {
 		/// Set of all delegator AccountIds (to prevent >1 delegation per AccountId)
 		pub delegators: OrderedSet<AccountId>,
 		/// Top T::MaxDelegatorsPerCollator::get() delegations, ordered greatest to least
-		pub top_delegations: Vec<Bond<AccountId, Balance, TokenId>>,
+		pub top_delegations: Vec<Bond<AccountId>>,
 		/// Bottom delegations (unbounded), ordered least to greatest
-		pub bottom_delegations: Vec<Bond<AccountId, Balance, TokenId>>,
+		pub bottom_delegations: Vec<Bond<AccountId>>,
 		/// Sum of top delegations + self.bond
 		pub total_counted: Balance,
 		/// Sum of all delegations + self.bond = (total_counted + uncounted)
 		pub total_backing: Balance,
 		/// Maximum 1 pending request to adjust candidate self bond at any given time
-		pub request: Option<CandidateBondRequest<Balance>>,
+		pub request: Option<CandidateBondRequest>,
 		/// Current status of the collator
 		pub state: CollatorStatus,
 	}
@@ -249,34 +249,16 @@ pub mod pallet {
 	/// Convey relevant information describing if a delegator was added to the top or bottom
 	/// Delegations added to the top yield a new total
 	#[derive(Clone, Copy, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
-	pub enum DelegatorAdded<B> {
-		AddedToTop { new_total: B },
+	pub enum DelegatorAdded {
+		AddedToTop { new_total: Balance },
 		AddedToBottom,
 	}
 
 	impl<
 			A: Ord + Clone + sp_std::fmt::Debug,
-			B: AtLeast32BitUnsigned
-				+ Ord
-				+ Copy
-				+ sp_std::ops::AddAssign
-				+ sp_std::ops::SubAssign
-				+ sp_std::fmt::Debug
-				+ Zero
-				+ One
-				+ From<Balance>
-				+ Into<Balance>,
-			C: AtLeast32BitUnsigned
-				+ Ord
-				+ Copy
-				+ Zero
-				+ One
-				+ sp_std::fmt::Debug
-				+ From<TokenId>
-				+ Into<TokenId>,
-		> CollatorCandidate<A, B, C>
+		> CollatorCandidate<A>
 	{
-		pub fn new(id: A, bond: B, liquidity_token: C) -> Self {
+		pub fn new(id: A, bond: Balance, liquidity_token: TokenId) -> Self {
 			CollatorCandidate {
 				id,
 				bond,
@@ -311,11 +293,10 @@ pub mod pallet {
 		/// Returns the round at which the collator can execute the pending request
 		pub fn schedule_bond_more<T: Config>(
 			&mut self,
-			more: B,
+			more: Balance,
 		) -> Result<RoundIndex, DispatchError>
 		where
 			T::AccountId: From<A>,
-			Balance: From<B>,
 		{
 			// ensure no pending request
 			ensure!(
@@ -324,7 +305,7 @@ pub mod pallet {
 			);
 			let candidate_id: T::AccountId = self.id.clone().into();
 			ensure!(
-				<T::Currency as MultiTokenReservableCurrency<T::AccountId>>::can_reserve(TokenId::from(self.liquidity_token.into()).into(), &candidate_id, Balance::from(more).into()),
+				<T::Currency as MultiTokenReservableCurrency<T::AccountId>>::can_reserve(self.liquidity_token.into(), &candidate_id, more.into()),
 				Error::<T>::InsufficientBalance
 			);
 			let when_executable = <Round<T>>::get().current + T::CandidateBondDelay::get();
@@ -339,10 +320,8 @@ pub mod pallet {
 		/// Returns the round at which the collator can execute the pending request
 		pub fn schedule_bond_less<T: Config>(
 			&mut self,
-			less: B,
+			less: Balance,
 		) -> Result<RoundIndex, DispatchError>
-		where
-			Balance: Into<B>,
 		{
 			// ensure no pending request
 			ensure!(
@@ -352,7 +331,7 @@ pub mod pallet {
 			// ensure bond above min after decrease
 			ensure!(self.bond > less, Error::<T>::CandidateBondBelowMin);
 			ensure!(
-				self.bond - less >= T::MinCandidateStk::get().into(),
+				self.bond - less >= T::MinCandidateStk::get(),
 				Error::<T>::CandidateBondBelowMin
 			);
 			let when_executable = <Round<T>>::get().current + T::CandidateBondDelay::get();
@@ -367,7 +346,6 @@ pub mod pallet {
 		/// Returns the event to be emitted
 		pub fn execute_pending_request<T: Config>(&mut self) -> Result<Event<T>, DispatchError>
 		where
-			Balance: From<B>,
 			T::AccountId: From<A>,
 		{
 			let request = self
@@ -380,23 +358,23 @@ pub mod pallet {
 			let caller: T::AccountId = self.id.clone().into();
 			let event = match request.change {
 				CandidateBondChange::Increase => {
-					T::Currency::reserve(TokenId::from(self.liquidity_token.into()).into(), &caller, Balance::from(request.amount).into())?;
-					let new_total = <Total<T>>::get(self.liquidity_token.into()).saturating_add(request.amount.into());
-					<Total<T>>::insert(self.liquidity_token.into(), new_total);
+					T::Currency::reserve(self.liquidity_token.into(), &caller, request.amount.into())?;
+					let new_total = <Total<T>>::get(self.liquidity_token).saturating_add(request.amount);
+					<Total<T>>::insert(self.liquidity_token, new_total);
 					self.bond += request.amount;
 					
 					self.total_counted += request.amount;
 					self.total_backing += request.amount;
 					Event::CandidateBondedMore(
 						self.id.clone().into(),
-						request.amount.into(),
-						self.bond.into(),
+						request.amount,
+						self.bond,
 					)
 				}
 				CandidateBondChange::Decrease => {
-					T::Currency::unreserve(TokenId::from(self.liquidity_token.into()).into(), &caller, Balance::from(request.amount).into());
-					let new_total_staked = <Total<T>>::get(self.liquidity_token.into()).saturating_sub(request.amount.into());
-					<Total<T>>::insert(self.liquidity_token.into(), new_total_staked);
+					T::Currency::unreserve(self.liquidity_token.into(), &caller, request.amount.into());
+					let new_total_staked = <Total<T>>::get(self.liquidity_token).saturating_sub(request.amount);
+					<Total<T>>::insert(self.liquidity_token, new_total_staked);
 					// Arithmetic assumptions are self.bond > less && self.bond - less > CollatorMinBond
 					// (assumptions enforced by `schedule_bond_less`; if storage corrupts, must re-verify)
 					self.bond -= request.amount;
@@ -414,14 +392,13 @@ pub mod pallet {
 			self.request = None;
 			// update candidate pool value because it must change if self bond changes
 			if self.is_active() {
-				Pallet::<T>::update_active(self.id.clone().into(), self.total_counted.into(), self.liquidity_token.into());
+				Pallet::<T>::update_active(self.id.clone().into(), self.total_counted, self.liquidity_token);
 			}
 			Ok(event)
 		}
 		/// Cancel pending request to change the collator self bond
 		pub fn cancel_pending_request<T: Config>(&mut self) -> Result<Event<T>, DispatchError>
 		where
-			CandidateBondRequest<Balance>: From<CandidateBondRequest<B>>,
 			T::AccountId: From<A>,
 		{
 			let request = self
@@ -433,7 +410,7 @@ pub mod pallet {
 		}
 		/// Infallible sorted insertion
 		/// caller must verify !self.delegators.contains(delegation.owner) before call
-		pub fn add_top_delegation(&mut self, delegation: Bond<A, B, C>) {
+		pub fn add_top_delegation(&mut self, delegation: Bond<A>) {
 			match self
 				.top_delegations
 				.binary_search_by(|x| delegation.amount.cmp(&x.amount))
@@ -444,7 +421,7 @@ pub mod pallet {
 		}
 		/// Infallible sorted insertion
 		/// caller must verify !self.delegators.contains(delegation.owner) before call
-		pub fn add_bottom_delegation(&mut self, delegation: Bond<A, B, C>) {
+		pub fn add_bottom_delegation(&mut self, delegation: Bond<A>) {
 			match self
 				.bottom_delegations
 				.binary_search_by(|x| x.amount.cmp(&delegation.amount))
@@ -468,8 +445,8 @@ pub mod pallet {
 		pub fn add_delegation<T: Config>(
 			&mut self,
 			acc: A,
-			amount: B,
-		) -> Result<DelegatorAdded<B>, DispatchError> {
+			amount: Balance,
+		) -> Result<DelegatorAdded, DispatchError> {
 			ensure!(
 				self.delegators.insert(acc.clone()),
 				Error::<T>::DelegatorExists
@@ -509,12 +486,12 @@ pub mod pallet {
 		pub fn rm_delegator<T: Config>(
 			&mut self,
 			delegator: A,
-		) -> Result<(bool, B), DispatchError> {
+		) -> Result<(bool, Balance), DispatchError> {
 			ensure!(
 				self.delegators.remove(&delegator),
 				Error::<T>::DelegatorDNEInDelegatorSet
 			);
-			let mut delegation_amt: Option<B> = None;
+			let mut delegation_amt: Option<Balance> = None;
 			self.top_delegations = self
 				.top_delegations
 				.clone()
@@ -562,7 +539,7 @@ pub mod pallet {
 		}
 		/// Return true if in_top after call
 		/// Caller must verify before call that account is a delegator
-		fn increase_delegation(&mut self, delegator: A, more: B) -> bool {
+		fn increase_delegation(&mut self, delegator: A, more: Balance) -> bool {
 			let mut in_top = false;
 			for x in &mut self.top_delegations {
 				if x.owner == delegator {
@@ -608,9 +585,9 @@ pub mod pallet {
 			}
 		}
 		/// Return true if in_top after call
-		pub fn decrease_delegation(&mut self, delegator: A, less: B) -> bool {
+		pub fn decrease_delegation(&mut self, delegator: A, less: Balance) -> bool {
 			let mut in_top = false;
-			let mut new_lowest_top: Option<Bond<A, B, C>> = None;
+			let mut new_lowest_top: Option<Bond<A>> = None;
 			for x in &mut self.top_delegations {
 				if x.owner == delegator {
 					x.amount -= less;
@@ -675,8 +652,8 @@ pub mod pallet {
 		}
 	}
 
-	impl<A: Clone, B: Copy, C: Copy> From<CollatorCandidate<A, B, C>> for CollatorSnapshot<A, B, C> {
-		fn from(other: CollatorCandidate<A, B, C>) -> CollatorSnapshot<A, B, C> {
+	impl<A: Clone> From<CollatorCandidate<A>> for CollatorSnapshot<A> {
+		fn from(other: CollatorCandidate<A>) -> CollatorSnapshot<A> {
 			CollatorSnapshot {
 				bond: other.bond,
 				delegations: other.top_delegations,
@@ -696,43 +673,24 @@ pub mod pallet {
 
 	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Delegator state
-	pub struct Delegator<AccountId, Balance, TokenId> {
+	pub struct Delegator<AccountId> {
 		/// Delegator account
 		pub id: AccountId,
 		/// All current delegations
-		pub delegations: OrderedSet<Bond<AccountId, Balance, TokenId>>,
+		pub delegations: OrderedSet<Bond<AccountId>>,
 		/// Total balance locked for this delegator
 		pub total: BTreeMap<TokenId, Balance>,
 		/// Requests to change delegations, relevant iff active
-		pub requests: PendingDelegationRequests<AccountId, Balance>,
+		pub requests: PendingDelegationRequests<AccountId>,
 		/// Status for this delegator
 		pub status: DelegatorStatus,
 	}
 
 	impl<
-			AccountId: Ord + Clone + Default,
-			Balance: Copy
-				+ sp_std::ops::AddAssign
-				+ sp_std::ops::Add<Output = Balance>
-				+ sp_std::ops::SubAssign
-				+ sp_std::ops::Sub<Output = Balance>
-				+ Ord
-				+ Zero
-				+ One
-				+ Default
-				+ From<Balance>
-				+ Into<Balance>,
-			TokenId: AtLeast32BitUnsigned
-				+ Ord
-				+ Copy
-				+ Zero
-				+ One
-				+ sp_std::fmt::Debug
-				+ From<TokenId>
-				+ Into<TokenId>,
-		> Delegator<AccountId, Balance, TokenId>
+			A: Ord + Clone + Default,
+		> Delegator<A>
 	{
-		pub fn new(id: AccountId, collator: AccountId, amount: Balance, liquidity_token: TokenId) -> Self {
+		pub fn new(id: A, collator: A, amount: Balance, liquidity_token: TokenId) -> Self {
 			Delegator {
 				id,
 				delegations: OrderedSet::from(vec![Bond {
@@ -740,14 +698,14 @@ pub mod pallet {
 					amount,
 					liquidity_token: liquidity_token
 				}]),
-				total: { let new_total = BTreeMap::<TokenId, Balance>::new();
+				total: { let mut new_total = BTreeMap::<TokenId, Balance>::new();
 					new_total.insert(liquidity_token, amount);
 					new_total},
 				requests: PendingDelegationRequests::new(),
 				status: DelegatorStatus::Active,
 			}
 		}
-		pub fn requests(&self) -> BTreeMap<AccountId, DelegationRequest<AccountId, Balance>> {
+		pub fn requests(&self) -> BTreeMap<A, DelegationRequest<A>> {
 			self.requests.requests.clone()
 		}
 		pub fn is_active(&self) -> bool {
@@ -788,7 +746,7 @@ pub mod pallet {
 		pub fn cancel_leave(&mut self) {
 			self.status = DelegatorStatus::Active
 		}
-		pub fn add_delegation(&mut self, bond: Bond<AccountId, Balance, TokenId>) -> bool {
+		pub fn add_delegation(&mut self, bond: Bond<A>) -> bool {
 			let amt = bond.amount;
 			let liquidity_token = bond.liquidity_token;
 			if self.delegations.insert(bond) {
@@ -800,7 +758,7 @@ pub mod pallet {
 		}
 		// Return Some(remaining balance), must be more than MinDelegatorStk
 		// Return None if delegation not found
-		pub fn rm_delegation(&mut self, collator: AccountId) -> Option<BTreeMap<TokenId, Balance>> {
+		pub fn rm_delegation(&mut self, collator: A) -> Option<BTreeMap<TokenId, Balance>> {
 			let mut amt: Option<Balance> = None;
 			let mut liquidity_token_option: Option<TokenId> = None;
 			let delegations = self
@@ -819,8 +777,8 @@ pub mod pallet {
 				.collect();
 			if let ( Some(liquidity_token), Some(balance)) = (liquidity_token_option, amt) {
 				self.delegations = OrderedSet::from(delegations);
-				*self.total.entry(liquidity_token).or_insert(Zero::zero()) -= balance;
-				Some(self.total)
+				*self.total.entry(liquidity_token).or_insert(balance) -= balance;
+				Some(self.total.clone())
 			} else {
 				None
 			}
@@ -828,12 +786,11 @@ pub mod pallet {
 		/// Schedule increase delegation
 		pub fn schedule_increase_delegation<T: Config>(
 			&mut self,
-			collator: AccountId,
+			collator: A,
 			more: Balance,
 		) -> Result<RoundIndex, DispatchError>
 		where
-			Balance: From<Balance>,
-			T::AccountId: From<AccountId>,
+			T::AccountId: From<A>,
 		{
 			let Bond { liquidity_token: liquidity_token, .. } = self
 				.delegations
@@ -843,17 +800,17 @@ pub mod pallet {
 				.ok_or(Error::<T>::DelegationDNE)?;
 			let delegator_id: T::AccountId = self.id.clone().into();
 			ensure!(
-				T::Currency::can_reserve(liquidity_token, &delegator_id, more.into()),
+				T::Currency::can_reserve((*liquidity_token).into(), &delegator_id, more.into()),
 				Error::<T>::InsufficientBalance
 			);
 			let when = <Round<T>>::get().current + T::DelegationBondDelay::get();
-			self.requests.bond_more::<T>(collator, more, when, liquidity_token)?;
+			self.requests.bond_more::<T>(collator, more, when, *liquidity_token)?;
 			Ok(when)
 		}
 		/// Schedule decrease delegation
 		pub fn schedule_decrease_delegation<T: Config>(
 			&mut self,
-			collator: AccountId,
+			collator: A,
 			less: Balance,
 		) -> Result<RoundIndex, DispatchError>
 		where
@@ -873,21 +830,21 @@ pub mod pallet {
 				Error::<T>::DelegationBelowMin
 			);
 			// Net Total is total after pending orders are executed
-			let net_total = self.total.values().cloned().collect() - self.requests.less_total.values().cloned().collect();
+			let net_total: Balance = self.total.values().cloned().sum::<Balance>() - self.requests.less_total.values().cloned().sum::<Balance>();
 			// Net Total is always >= MinDelegatorStk
-			let max_subtracted_amount = net_total - T::MinDelegatorStk::get().into();
+			let max_subtracted_amount: Balance = net_total - T::MinDelegatorStk::get();
 			ensure!(
 				less <= max_subtracted_amount,
 				Error::<T>::DelegatorBondBelowMin
 			);
 			let when = <Round<T>>::get().current + T::DelegationBondDelay::get();
-			self.requests.bond_less::<T>(collator, less, when, liquidity_token)?;
+			self.requests.bond_less::<T>(collator, less, when, *liquidity_token)?;
 			Ok(when)
 		}
 		/// Schedule revocation for the given collator
 		pub fn schedule_revoke<T: Config>(
 			&mut self,
-			collator: AccountId,
+			collator: A,
 		) -> Result<(RoundIndex, RoundIndex), DispatchError>
 		where
 			Balance: Into<Balance>,
@@ -902,15 +859,15 @@ pub mod pallet {
 			let now = <Round<T>>::get().current;
 			let when = now + T::RevokeDelegationDelay::get();
 			// add revocation to pending requests
-			self.requests.revoke::<T>(collator, *amount, when, liquidity_token)?;
+			self.requests.revoke::<T>(collator, *amount, when, *liquidity_token)?;
 			Ok((now, when))
 		}
 		/// Execute pending delegation change request
-		pub fn execute_pending_request<T: Config>(&mut self, candidate: AccountId) -> DispatchResult
+		pub fn execute_pending_request<T: Config>(&mut self, candidate: A) -> DispatchResult
 		where
 			Balance: From<Balance> + Into<Balance>,
-			T::AccountId: From<AccountId>,
-			Delegator<T::AccountId, Balance, TokenId>: From<Delegator<AccountId, Balance, TokenId>>,
+			T::AccountId: From<A>,
+			Delegator<T::AccountId>: From<Delegator<A>>,
 		{
 			let now = <Round<T>>::get().current;
 			let DelegationRequest {
@@ -943,7 +900,7 @@ pub mod pallet {
 						true
 					} else {
 						ensure!(
-							self.total.values().cloned().collect() >= amount + T::MinDelegatorStk::get().into(),
+							self.total.values().cloned().sum::<Balance>() >= amount + T::MinDelegatorStk::get(),
 							Error::<T>::DelegatorBondBelowMin
 						);
 						false
@@ -951,7 +908,7 @@ pub mod pallet {
 					for x in &mut self.delegations.0 {
 						if x.owner == candidate {
 							// remove from pending requests
-							*self.requests.less_total.entry(x.liquidity_token).or_insert(Zero::zero()) -= amount;
+							*self.requests.less_total.entry(x.liquidity_token).or_insert(amount) -= amount;
 						}
 					}
 					self.requests.revocations_count -= 1u32;
@@ -971,23 +928,23 @@ pub mod pallet {
 						<DelegatorState<T>>::remove(&delegator_id);
 						Pallet::<T>::deposit_event(Event::DelegatorLeft(delegator_id, balance_amt));
 					} else {
-						let nom_st: Delegator<T::AccountId, Balance> = self.clone().into();
+						let nom_st: Delegator<T::AccountId> = self.clone().into();
 						<DelegatorState<T>>::insert(&delegator_id, nom_st);
 					}
 					Ok(())
 				}
 				DelegationChange::Increase => {
-					// remove from pending requests
-					self.requests.more_total -= amount;
 					// increase delegation
 					for x in &mut self.delegations.0 {
 						if x.owner == candidate {
-							x.amount += amount;
-							self.total += amount;
+							x.amount += amount;		
+							// remove from pending requests
+							*self.requests.more_total.entry(x.liquidity_token).or_insert(amount) -= amount;
+							*self.total.entry(x.liquidity_token).or_insert(Zero::zero()) += amount;
 							// update collator state delegation
 							let mut collator_state = <CandidateState<T>>::get(&candidate_id)
 								.ok_or(Error::<T>::CandidateDNE)?;
-							T::Currency::reserve(x.liquidity_token, &self.id.clone().into(), balance_amt)?;
+							T::Currency::reserve(x.liquidity_token.into(), &self.id.clone().into(), balance_amt.into())?;
 							let before = collator_state.total_counted;
 							let in_top = collator_state
 								.increase_delegation(self.id.clone().into(), balance_amt);
@@ -995,10 +952,10 @@ pub mod pallet {
 							if collator_state.is_active() && (before != after) {
 								Pallet::<T>::update_active(candidate_id.clone(), after, collator_state.liquidity_token);
 							}
-							<CandidateState<T>>::insert(&candidate_id, collator_state);
 							let new_total_staked = <Total<T>>::get(collator_state.liquidity_token).saturating_add(balance_amt);
 							<Total<T>>::insert(collator_state.liquidity_token, new_total_staked);
-							let nom_st: Delegator<T::AccountId, Balance> = self.clone().into();
+							<CandidateState<T>>::insert(&candidate_id, collator_state);
+							let nom_st: Delegator<T::AccountId> = self.clone().into();
 							<DelegatorState<T>>::insert(&delegator_id, nom_st);
 							Pallet::<T>::deposit_event(Event::DelegationIncreased(
 								delegator_id,
@@ -1012,15 +969,15 @@ pub mod pallet {
 					Err(Error::<T>::DelegationDNE.into())
 				}
 				DelegationChange::Decrease => {
-					// remove from pending requests
-					self.requests.less_total -= amount;
 					// decrease delegation
 					for x in &mut self.delegations.0 {
 						if x.owner == candidate {
 							if x.amount > amount {
-								x.amount -= amount;
-								self.total -= amount;
-								let new_total: Balance = self.total.into();
+								x.amount -= amount;			
+								// remove from pending requests
+								*self.requests.less_total.entry(x.liquidity_token).or_insert(amount) -= amount;
+								*self.total.entry(x.liquidity_token).or_insert(amount) -= amount;
+								let new_total: Balance = self.total.values().cloned().sum();
 								ensure!(
 									new_total >= T::MinDelegation::get(),
 									Error::<T>::DelegationBelowMin
@@ -1031,7 +988,7 @@ pub mod pallet {
 								);
 								let mut collator = <CandidateState<T>>::get(&candidate_id)
 									.ok_or(Error::<T>::CandidateDNE)?;
-								T::Currency::unreserve(x.liquidity_token, &delegator_id, balance_amt);
+								T::Currency::unreserve(x.liquidity_token.into(), &delegator_id, balance_amt.into());
 								let before = collator.total_counted;
 								// need to go into decrease_delegation
 								let in_top =
@@ -1040,11 +997,11 @@ pub mod pallet {
 								if collator.is_active() && (before != after) {
 									Pallet::<T>::update_active(candidate_id.clone(), after, collator.liquidity_token);
 								}
-								<CandidateState<T>>::insert(&candidate_id, collator);
 								let new_total_staked =
 									<Total<T>>::get(collator.liquidity_token).saturating_sub(balance_amt);
 								<Total<T>>::insert(collator.liquidity_token, new_total_staked);
-								let nom_st: Delegator<T::AccountId, Balance> =
+								<CandidateState<T>>::insert(&candidate_id, collator);
+								let nom_st: Delegator<T::AccountId> =
 									self.clone().into();
 								<DelegatorState<T>>::insert(&delegator_id, nom_st);
 								Pallet::<T>::deposit_event(Event::DelegationDecreased(
@@ -1067,8 +1024,8 @@ pub mod pallet {
 		/// Cancel pending delegation change request
 		pub fn cancel_pending_request<T: Config>(
 			&mut self,
-			candidate: AccountId,
-		) -> Result<DelegationRequest<AccountId, Balance>, DispatchError> {
+			candidate: A,
+		) -> Result<DelegationRequest<A>, DispatchError> {
 			let order = self
 				.requests
 				.requests
@@ -1083,13 +1040,13 @@ pub mod pallet {
 			match order.action {
 				DelegationChange::Revoke => {
 					self.requests.revocations_count -= 1u32;
-					*self.requests.less_total.entry(liquidity_token).or_insert(Zero::zero()) -= order.amount;
+					*self.requests.less_total.entry(*liquidity_token).or_insert(order.amount) -= order.amount;
 				}
 				DelegationChange::Decrease => {
-					*self.requests.less_total.entry(liquidity_token).or_insert(Zero::zero()) -= order.amount;
+					*self.requests.less_total.entry(*liquidity_token).or_insert(order.amount) -= order.amount;
 				}
 				DelegationChange::Increase => {
-					*self.requests.more_total.entry(liquidity_token).or_insert(Zero::zero()) -= order.amount;
+					*self.requests.more_total.entry(*liquidity_token).or_insert(order.amount) -= order.amount;
 				}
 			}
 			Ok(order)
@@ -1107,7 +1064,7 @@ pub mod pallet {
 	}
 
 	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
-	pub struct DelegationRequest<AccountId, Balance> {
+	pub struct DelegationRequest<AccountId> {
 		pub collator: AccountId,
 		pub amount: Balance,
 		pub when_executable: RoundIndex,
@@ -1116,49 +1073,41 @@ pub mod pallet {
 
 	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Pending requests to mutate delegations for each delegator
-	pub struct PendingDelegationRequests<AccountId, Balance> {
+	pub struct PendingDelegationRequests<AccountId> {
 		/// Number of pending revocations (necessary for determining whether revoke is exit)
 		pub revocations_count: u32,
 		/// Map from collator -> Request (enforces at most 1 pending request per delegation)
-		pub requests: BTreeMap<AccountId, DelegationRequest<AccountId, Balance>>,
+		pub requests: BTreeMap<AccountId, DelegationRequest<AccountId>>,
 		/// Sum of pending revocation amounts + bond less amounts
 		pub less_total: BTreeMap<TokenId, Balance>,
 		/// Sum of pending bond more amounts
 		pub more_total: BTreeMap<TokenId, Balance>,
 	}
 
-	impl<A: Ord, B: Zero> Default for PendingDelegationRequests<A, B> {
-		fn default() -> PendingDelegationRequests<A, B> {
+	impl<A: Ord> Default for PendingDelegationRequests<A> {
+		fn default() -> PendingDelegationRequests<A> {
 			PendingDelegationRequests {
 				revocations_count: 0u32,
 				requests: BTreeMap::new(),
-				less_total: B::zero(),
-				more_total: B::zero(),
+				less_total: BTreeMap::<TokenId, Balance>::new(),
+				more_total: BTreeMap::<TokenId, Balance>::new(),
 			}
 		}
 	}
 
 	impl<
 			A: Ord + Clone,
-			B: Zero
-				+ Ord
-				+ Copy
-				+ Clone
-				+ sp_std::ops::AddAssign
-				+ sp_std::ops::Add<Output = B>
-				+ sp_std::ops::SubAssign
-				+ sp_std::ops::Sub<Output = B>,
-		> PendingDelegationRequests<A, B>
+		> PendingDelegationRequests<A>
 	{
 		/// New default (empty) pending requests
-		pub fn new() -> PendingDelegationRequests<A, B> {
+		pub fn new() -> PendingDelegationRequests<A> {
 			PendingDelegationRequests::default()
 		}
 		/// Add bond more order to pending requests
 		pub fn bond_more<T: Config>(
 			&mut self,
 			collator: A,
-			amount: B,
+			amount: Balance,
 			when_executable: RoundIndex,
 			liquidity_token: TokenId,
 		) -> DispatchResult {
@@ -1184,7 +1133,7 @@ pub mod pallet {
 		pub fn bond_less<T: Config>(
 			&mut self,
 			collator: A,
-			amount: B,
+			amount: Balance,
 			when_executable: RoundIndex,
 			liquidity_token: TokenId,
 		) -> DispatchResult {
@@ -1210,7 +1159,7 @@ pub mod pallet {
 		pub fn revoke<T: Config>(
 			&mut self,
 			collator: A,
-			amount: B,
+			amount: Balance,
 			when_executable: RoundIndex,
 			liquidity_token: TokenId,
 		) -> DispatchResult {
@@ -1248,7 +1197,9 @@ pub mod pallet {
 				+ sp_std::ops::Add<Output = B>
 				+ sp_std::ops::Sub<Output = B>
 				+ From<u32>
-				+ PartialOrd,
+				+ PartialOrd
+				+ One
+				+ Zero,
 		> RoundInfo<B>
 	{
 		pub fn new(current: RoundIndex, first: B, length: u32) -> RoundInfo<B> {
@@ -1260,7 +1211,7 @@ pub mod pallet {
 		}
 		/// Check if the round should be updated
 		pub fn should_update(&self, now: B) -> bool {
-			now.saturating_add(One::one())  >= self.length.into().saturating_add(self.first)
+			now + One::one()  >= self.first + self.length.into()
 		}
 		/// New round
 		pub fn update(&mut self, now: B) {
@@ -1273,11 +1224,13 @@ pub mod pallet {
 				+ sp_std::ops::Add<Output = B>
 				+ sp_std::ops::Sub<Output = B>
 				+ From<u32>
-				+ PartialOrd,
+				+ PartialOrd
+				+ One
+				+ Zero,
 		> Default for RoundInfo<B>
 	{
 		fn default() -> RoundInfo<B> {
-			RoundInfo::new(0u32, 0u32.into(), 20u32)
+			RoundInfo::new(0u32, Zero::zero(), 20u32)
 		}
 	}
 
@@ -1299,7 +1252,7 @@ pub mod pallet {
 	}
 
 	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-	pub struct StakingLiquidityTokenInfo<TokenId, Balance> {
+	pub struct StakingLiquidityTokenInfo {
 		pub liquidity_token_id: TokenId,
 		pub pool_mng_to_liquidity_token_ratio: Option<(Balance, Balance)>,
 	}
@@ -1416,6 +1369,9 @@ pub mod pallet {
 		PendingDelegationRequestDNE,
 		PendingDelegationRequestAlreadyExists,
 		PendingDelegationRequestNotDueYet,
+		StakingLiquidityTokenNotListed,
+		TooLowCurrentStakingLiquidityTokensCount,
+		StakingLiquidityTokenAlreadyListed,
 	}
 
 	#[pallet::event]
@@ -1444,7 +1400,7 @@ pub mod pallet {
 		/// Candidate
 		CancelledCandidateExit(T::AccountId),
 		/// Candidate, Cancelled Request
-		CancelledCandidateBondChange(T::AccountId, CandidateBondRequest<Balance>),
+		CancelledCandidateBondChange(T::AccountId, CandidateBondRequest),
 		/// Ex-Candidate, Amount Unlocked, New Total Amt Locked
 		CandidateLeft(T::AccountId, Balance, Balance),
 		/// Delegator, Candidate, Amount to be increased, Round at which can be executed
@@ -1466,13 +1422,13 @@ pub mod pallet {
 		/// Delegator
 		DelegatorExitCancelled(T::AccountId),
 		/// Delegator, Cancelled Request
-		CancelledDelegationRequest(T::AccountId, DelegationRequest<T::AccountId, Balance>),
+		CancelledDelegationRequest(T::AccountId, DelegationRequest<T::AccountId>),
 		/// Delegator, Amount Locked, Candidate, Delegator Position with New Total Counted if in Top
 		Delegation(
 			T::AccountId,
 			Balance,
 			T::AccountId,
-			DelegatorAdded<Balance>,
+			DelegatorAdded,
 		),
 		/// Delegator, Candidate, Amount Unstaked, New Total Amt Staked for Candidate
 		DelegatorLeftCandidate(T::AccountId, T::AccountId, Balance, Balance),
@@ -1539,7 +1495,7 @@ pub mod pallet {
 		_,
 		Twox64Concat,
 		T::AccountId,
-		Delegator<T::AccountId, Balance, TokenId>,
+		Delegator<T::AccountId>,
 		OptionQuery,
 	>;
 
@@ -1550,7 +1506,7 @@ pub mod pallet {
 		_,
 		Twox64Concat,
 		T::AccountId,
-		CollatorCandidate<T::AccountId, Balance, TokenId>,
+		CollatorCandidate<T::AccountId>,
 		OptionQuery,
 	>;
 
@@ -1568,7 +1524,7 @@ pub mod pallet {
 	#[pallet::getter(fn candidate_pool)]
 	/// The pool of collator candidates, each with their total backing stake
 	type CandidatePool<T: Config> =
-		StorageValue<_, OrderedSet<Bond<T::AccountId, Balance, TokenId>>, ValueQuery>;
+		StorageValue<_, OrderedSet<Bond<T::AccountId>>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn at_stake)]
@@ -1579,7 +1535,7 @@ pub mod pallet {
 		RoundIndex,
 		Twox64Concat,
 		T::AccountId,
-		CollatorSnapshot<T::AccountId, Balance, TokenId>,
+		CollatorSnapshot<T::AccountId>,
 		ValueQuery,
 	>;
 
@@ -1625,13 +1581,13 @@ pub mod pallet {
 	/// Points for each collator per round
 	pub type StakingLiquidityTokens<T: Config> = StorageValue<
 		_,
-		Vec<StakingLiquidityTokenInfo<TokenId, Balance>>,
+		Vec<StakingLiquidityTokenInfo>,
 		ValueQuery,
 	>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
-		pub candidates: Vec<(T::AccountId, Balance)>,
+		pub candidates: Vec<(T::AccountId, Balance, TokenId)>,
 		pub delegations: Vec<(T::AccountId, T::AccountId, Balance)>,
 		pub inflation_config: InflationInfo<Balance>,
 	}
@@ -1655,7 +1611,7 @@ pub mod pallet {
 			// Initialize the candidates
 			for &(ref candidate, balance, liquidity_token) in &self.candidates {
 				assert!(
-					T::Currency::free_balance(liquidity_token, candidate) >= balance,
+					T::Currency::free_balance(liquidity_token.into(), candidate).into() >= balance,
 					"Account does not have enough balance to bond as a candidate."
 				);
 				candidate_count += 1u32;
@@ -1674,11 +1630,11 @@ pub mod pallet {
 			let mut del_delegation_count: BTreeMap<T::AccountId, u32> = BTreeMap::new();
 			// Initialize the delegations
 			for &(ref delegator, ref target, balance) in &self.delegations {
-				let associated_collator = self.candidates.iter().find(|b| b.0 == target);
+				let associated_collator = self.candidates.iter().find(|b| b.0 == *target);
 				assert!(associated_collator.is_some(), "Delegation to non-existant collator");
 				let collator_liquidity_token = associated_collator.expect("Above assertion prevents failure").2;
 				assert!(
-					T::Currency::free_balance(collator_liquidity_token, delegator) >= balance,
+					T::Currency::free_balance(collator_liquidity_token.into(), delegator).into() >= balance,
 					"Account does not have enough balance to place delegation."
 				);
 				let cd_count = if let Some(x) = col_delegator_count.get(target) {
@@ -1922,8 +1878,8 @@ pub mod pallet {
 				}),
 				Error::<T>::CandidateExists
 			);
-			T::Currency::reserve(liquidity_token, &acc, bond)?;
-			let candidate = CollatorCandidate::new(acc.clone(), bond);
+			T::Currency::reserve(liquidity_token.into(), &acc, bond.into())?;
+			let candidate = CollatorCandidate::new(acc.clone(), bond, liquidity_token);
 			<CandidateState<T>>::insert(&acc, candidate);
 			<CandidatePool<T>>::put(candidates);
 			let new_total = <Total<T>>::get(liquidity_token).saturating_add(bond);
@@ -1963,18 +1919,16 @@ pub mod pallet {
 			let state = <CandidateState<T>>::get(&candidate).ok_or(Error::<T>::CandidateDNE)?;
 			state.can_leave::<T>()?;
 			
-			let return_stake = |bond: Bond<T::AccountId, Balance>| {
-				T::Currency::unreserve(bond.liquidity_token, &bond.owner, bond.amount);
+			let return_stake = |bond: Bond<T::AccountId>| {
+				T::Currency::unreserve(bond.liquidity_token.into(), &bond.owner, bond.amount.into());
 				// remove delegation from delegator state
 				let mut delegator = DelegatorState::<T>::get(&bond.owner).expect(
 					"Collator state and delegator state are consistent. 
 						Collator state has a record of this delegation. Therefore, 
 						Delegator state also has a record. qed.",
 				);
-				// TODO
-				// Need to modify this to work with returned BTreeMap
 				if let Some(remaining) = delegator.rm_delegation(candidate.clone()) {
-					if remaining.is_zero() {
+					if remaining.values().sum::<Balance>().is_zero() {
 						<DelegatorState<T>>::remove(&bond.owner);
 					} else {
 						<DelegatorState<T>>::insert(&bond.owner, delegator);
@@ -1990,7 +1944,7 @@ pub mod pallet {
 				return_stake(bond);
 			}
 			// return stake to collator
-			T::Currency::unreserve(state.liquidity_token, &state.id, state.bond);
+			T::Currency::unreserve(state.liquidity_token.into(), &state.id, state.bond.into());
 			<CandidateState<T>>::remove(&candidate);
 			let new_total_staked = <Total<T>>::get(state.liquidity_token).saturating_sub(state.total_backing);
 			<Total<T>>::insert(state.liquidity_token, new_total_staked);
@@ -2178,7 +2132,7 @@ pub mod pallet {
 				Error::<T>::TooLowCandidateDelegationCountToDelegate
 			);
 			let delegator_position = collator_state.add_delegation::<T>(acc.clone(), amount)?;
-			T::Currency::reserve(collator_state.liquidity_token, &acc, amount)?;
+			T::Currency::reserve(collator_state.liquidity_token.into(), &acc, amount.into())?;
 			if let DelegatorAdded::AddedToTop { new_total } = delegator_position {
 				if collator_state.is_active() {
 					// collator in candidate pool
@@ -2226,7 +2180,7 @@ pub mod pallet {
 				}
 			}
 			<DelegatorState<T>>::remove(&delegator);
-			Self::deposit_event(Event::DelegatorLeft(delegator, state.total));
+			Self::deposit_event(Event::DelegatorLeft(delegator, state.total.values().sum::<Balance>()));
 			Ok(().into())
 		}
 		#[pallet::weight(<T as Config>::WeightInfo::cancel_leave_delegators())]
@@ -2325,9 +2279,9 @@ pub mod pallet {
 			current_liquidity_tokens: u32,
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
-			<StakingLiquidityTokens<T>>::try_mutate(|staking_liquidity_tokens| {
+			<StakingLiquidityTokens<T>>::try_mutate(|staking_liquidity_tokens| -> DispatchResult {
 				ensure!(
-					current_liquidity_tokens >= staking_liquidity_tokens.len(),
+					current_liquidity_tokens as usize >= staking_liquidity_tokens.len(),
 					Error::<T>::TooLowCurrentStakingLiquidityTokensCount
 				);
 				ensure!(
@@ -2336,7 +2290,7 @@ pub mod pallet {
 				);
 				staking_liquidity_tokens.push(StakingLiquidityTokenInfo{
 					liquidity_token_id: added_liquidity_token,
-					pool_liquidity_token_to_mng_ratio: None,
+					pool_mng_to_liquidity_token_ratio: None,
 				});
 				Ok(())
 			})?;
@@ -2352,7 +2306,7 @@ pub mod pallet {
 			ensure_root(origin)?;
 			<StakingLiquidityTokens<T>>::try_mutate(|staking_liquidity_tokens| -> DispatchResult {
 				ensure!(
-					current_liquidity_tokens >= staking_liquidity_tokens.len(),
+					current_liquidity_tokens as usize >= staking_liquidity_tokens.len(),
 					Error::<T>::TooLowCurrentStakingLiquidityTokensCount
 				);
 				ensure!(
@@ -2407,7 +2361,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let mut state = <CandidateState<T>>::get(&collator).ok_or(Error::<T>::CandidateDNE)?;
 			let (total_changed, delegator_stake) = state.rm_delegator::<T>(delegator.clone())?;
-			T::Currency::unreserve(state.liquidity_token, &delegator, delegator_stake);
+			T::Currency::unreserve(state.liquidity_token.into(), &delegator, delegator_stake.into());
 			if state.is_active() && total_changed {
 				Self::update_active(collator.clone(), state.total_counted, state.liquidity_token);
 			}
@@ -2442,18 +2396,18 @@ pub mod pallet {
 			let bond_config = <ParachainBondInfo<T>>::get();
 			let parachain_bond_reserve = bond_config.percent * total_issuance;
 			if let Ok(imb) =
-				T::Currency::deposit_into_existing(T::NativeTokenId::get(), &bond_config.account, parachain_bond_reserve)
+				T::Currency::deposit_into_existing(T::NativeTokenId::get().into(), &bond_config.account, parachain_bond_reserve.into())
 			{
 				// update round issuance iff transfer succeeds
-				left_issuance -= imb.peek();
+				left_issuance -= imb.peek().into();
 				Self::deposit_event(Event::ReservedForParachainBond(
 					bond_config.account,
-					imb.peek(),
+					imb.peek().into(),
 				));
 			}
 			let mint = |amt: Balance, to: T::AccountId| {
-				if let Ok(amount_transferred) = T::Currency::deposit_into_existing(T::NativeTokenId::get(), &to, amt) {
-					Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek()));
+				if let Ok(amount_transferred) = T::Currency::deposit_into_existing(T::NativeTokenId::get().into(), &to, amt.into()) {
+					Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek().into()));
 				}
 			};
 			// only pay out rewards at the end to transfer only total amount due
@@ -2484,7 +2438,7 @@ pub mod pallet {
 					let collator_reward = (collator_pct * amt_due) + commission;
 					mint(collator_reward, collator.clone());
 					// pay delegators due portion
-					for Bond { owner, amount } in state.delegations {
+					for Bond { owner, amount, .. } in state.delegations {
 						let percent = Perbill::from_rational(amount, state.total);
 						let due = percent * amt_due;
 						increase_due_rewards(due, owner.clone());
@@ -2522,39 +2476,39 @@ pub mod pallet {
 			let staking_liquidity_tokens_map: BTreeMap<TokenId, Option<(Balance, Balance)>> =
 				staking_liquidity_tokens.iter().cloned().map(|x| (x.liquidity_token_id, x.pool_mng_to_liquidity_token_ratio)).collect();
 			// morph amount in candidates to exposure in mng
-			let valuated_candidates: Vec<(T::AccountId, Balance)> = candidates.filter_map(|x| 
+			let mut valuated_candidates: Vec<(T::AccountId, Balance)> = candidates.iter().filter_map(|x| 
 				if let Some(pool_ratio_option) = staking_liquidity_tokens_map.get(&x.liquidity_token) {
 					if let Some(pool_ratio) = pool_ratio_option{
-						Some((x.owner, multiply_by_rational(x.amount, pool_ratio.0, pool_ratio.1).unwrap_or_else(|_| Balance::max_value())))
+						Some((x.owner.clone(), multiply_by_rational(x.amount, pool_ratio.0, pool_ratio.1).unwrap_or_else(|_| Balance::max_value())))
 					}else{
 						None
 					}
 				} else {
 					None
 				}
-			);
+			).collect();
 			// order candidates by stake (least to greatest so requires `rev()`)
 			valuated_candidates.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 			// Add all staked valuated mng for Staked storage item
 			let total_staked: Balance = valuated_candidates.iter().cloned().map(|x| x.1).sum();
 			let top_n = <TotalSelected<T>>::get() as usize;
 			// choose the top TotalSelected qualified candidates, ordered by stake
-			let mut valuated_collators = valuated_candidates
+			let mut valuated_collators: Vec<(T::AccountId, Balance)> = valuated_candidates
 				.into_iter()
 				.rev()
 				.take(top_n)
-				.filter(|x| x.amount >= T::MinCollatorStk::get())
+				.filter(|x| x.1 >= T::MinCollatorStk::get())
 				.collect::<_>();
-			valuated_collators.sort();
+			valuated_collators.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 			(valuated_collators, total_staked)
 		}
 
 		pub fn staking_liquidity_tokens_snapshot() {
-			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
+			let mut staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
 
 			for staking_liquidity_token in staking_liquidity_tokens.iter_mut(){
-				*staking_liquidity_token.pool_liquidity_token_to_mng_ratio =
-					T::StakingLiquidityTokenValuator::get_pool_state(*staking_liquidity_token.liquidity_token_id);
+				staking_liquidity_token.pool_mng_to_liquidity_token_ratio =
+					T::StakingLiquidityTokenValuator::get_pool_state(staking_liquidity_token.liquidity_token_id.into());
 			}
 
 			<StakingLiquidityTokens<T>>::put(staking_liquidity_tokens);
@@ -2575,14 +2529,14 @@ pub mod pallet {
 				collator_count += 1u32;
 				delegation_count += state.delegators.0.len() as u32;
 				let amount = collator.1;
-				total_relevant_exposure = total_relevant_exposure.saturated_add(amount);
-				let mut collator_snaphot: CollatorSnapshot<T::AccountId, Balance> = state.into();
-				<AtStake<T>>::insert(now, collator.0, collator_snaphot);
+				total_relevant_exposure = total_relevant_exposure.saturating_add(amount);
+				let collator_snaphot: CollatorSnapshot<T::AccountId> = state.into();
+				<AtStake<T>>::insert(now, collator.0.clone(), collator_snaphot);
 				Self::deposit_event(Event::CollatorChosen(now, collator.0.clone(), amount));
 			}
 
 			// insert canonical collator set
-			<SelectedCandidates<T>>::put(collators.iter().map(|x| x.0).collect::<T::AccountId>());
+			<SelectedCandidates<T>>::put(collators.iter().cloned().map(|x| x.0).collect::<Vec<T::AccountId>>());
 			(collator_count, delegation_count, total_relevant_exposure, total_round_exposure)
 		}
 	}
@@ -2632,11 +2586,11 @@ pub mod pallet {
 			Self::pay_stakers(round.current);
 			// select top collator candidates for next round
 			let (collator_count, delegation_count, total_relevant_exposure, total_round_exposure) =
-				Self::select_top_candidates(round.current + One::one());
+				Self::select_top_candidates(round.current.saturating_add(One::one()));
 			// start next round
 			<Round<T>>::put(round);
 			// snapshot total stake
-			<Staked<T>>::insert(round.current + One::one(), total_round_exposure);
+			<Staked<T>>::insert(round.current.saturating_add(One::one()), total_round_exposure);
 			// <RelevantStaked<T>>::insert(round.current + One::one(), total_relevant_exposure);
 			Self::deposit_event(Event::NewRound(
 				round.first,
@@ -2677,7 +2631,7 @@ pub mod pallet {
 			let round = <Round<T>>::get();
 
 			(
-				Some(round.first + round.length.into().saturating_sub(One::one())),
+				Some(round.first + round.length.saturating_sub(One::one()).into()),
 				// One read for the round info, blocknumber is read free
 				T::DbWeight::get().reads(1),
 			)
