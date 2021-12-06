@@ -884,7 +884,6 @@ pub mod pallet {
 					} else {
 						false
 					};
-					self.requests.revocations_count -= 1u32;
 					// remove delegation from delegator state
 					self.rm_delegation(candidate.clone());
 					// remove delegation from collator state delegations
@@ -989,18 +988,6 @@ pub mod pallet {
 				.requests
 				.remove(&candidate)
 				.ok_or(Error::<T>::PendingDelegationRequestDNE)?;
-			let Bond { amount: _, liquidity_token: liquidity_token, owner: _ } = self
-				.delegations
-				.0
-				.iter()
-				.find(|b| b.owner == candidate)
-				.ok_or(Error::<T>::DelegationDNE)?;
-			match order.action {
-				DelegationChange::Revoke => {
-					self.requests.revocations_count -= 1u32;
-				}
-				_ => {}
-			}
 			Ok(order)
 		}
 	}
@@ -1026,8 +1013,6 @@ pub mod pallet {
 	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Pending requests to mutate delegations for each delegator
 	pub struct PendingDelegationRequests<AccountId> {
-		/// Number of pending revocations (necessary for determining whether revoke is exit)
-		pub revocations_count: u32,
 		/// Map from collator -> Request (enforces at most 1 pending request per delegation)
 		pub requests: BTreeMap<AccountId, DelegationRequest<AccountId>>,
 	}
@@ -1035,7 +1020,6 @@ pub mod pallet {
 	impl<A: Ord> Default for PendingDelegationRequests<A> {
 		fn default() -> PendingDelegationRequests<A> {
 			PendingDelegationRequests {
-				revocations_count: 0u32,
 				requests: BTreeMap::new(),
 			}
 		}
@@ -1120,7 +1104,6 @@ pub mod pallet {
 					action: DelegationChange::Revoke,
 				},
 			);
-			self.revocations_count += 1u32;
 			Ok(())
 		}
 	}
