@@ -16,7 +16,7 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{pallet, AwardedPts, Config, InflationInfo, Points, Range};
+use crate::{pallet, AwardedPts, Config, InflationInfo, Points, Range, TokenId, Balance};
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Everything, GenesisBuild, OnFinalize, OnInitialize},
@@ -29,10 +29,17 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill, Percent,
 };
+use orml_traits::parameter_type_with_key;
+
+// TODO
+// Compile check mock
+
+// TODO
+// Fix imports
 
 pub type AccountId = u64;
-pub type Balance = u128;
 pub type BlockNumber = u64;
+pub const MGA_TOKEN_ID: TokenId = 0;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -45,8 +52,10 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>, Config<T>} = 10,
+		AssetsInfo: pallet_assets_info::{Pallet, Call, Config, Storage, Event<T>} = 12,
+		Xyk: pallet_xyk::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
+		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>}, = 21,
 	}
 );
 
@@ -73,7 +82,7 @@ impl frame_system::Config for Test {
 	type BlockHashCount = BlockHashCount;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<Balance>;
+	type AccountData = ();
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -82,20 +91,73 @@ impl frame_system::Config for Test {
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
 }
+
+parameter_type_with_key! {
+	pub ExistentialDeposits: |currency_id: TokenId| -> Balance {
+		match currency_id {
+			&MGA_TOKEN_ID => 100,
+			_ => 0,
+		}
+	};
+}
+
 parameter_types! {
-	pub const ExistentialDeposit: u128 = 1;
+	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+	pub const BnbTreasurySubAccDerive: [u8; 4] = *b"bnbt";
+	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
+	pub const MaxLocks: u32 = 50;
+	pub const MgaTokenId: TokenId = MGA_TOKEN_ID;
 }
-impl pallet_balances::Config for Test {
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 4];
-	type MaxLocks = ();
-	type Balance = Balance;
+
+pub struct DustRemovalWhitelist;
+impl Contains<AccountId> for DustRemovalWhitelist {
+	fn contains(a: &AccountId) -> bool {
+		*a == TreasuryAccount::get() 
+	}
+}
+
+impl orml_tokens::Config for Test {
 	type Event = Event;
-	type DustRemoval = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = TokenId;
 	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = TransferDust<Runtime, TreasuryAccount>;
+	type MaxLocks = MaxLocks;
+	type DustRemovalWhitelist = DustRemovalWhitelist;
 }
+
+impl pallet_xyk::Config for Test {
+    type Event = Event;
+    type Currency = orml_tokens::MultiTokenCurrencyAdapter<Runtime>;
+    type NativeCurrencyId = MgaTokenId;
+    type TreasuryPalletId = TreasuryPalletId;
+    type BnbTreasurySubAccDerive = BnbTreasurySubAccDerive;
+}
+
+parameter_types! {
+    pub const MinLengthName: usize = 1;
+    pub const MaxLengthName: usize = 255;
+    pub const MinLengthSymbol: usize = 1;
+    pub const MaxLengthSymbol: usize = 255;
+    pub const MinLengthDescription: usize = 1;
+    pub const MaxLengthDescription: usize = 255;
+    pub const MaxDecimals: u32 = 255;
+}
+
+impl pallet_assets_info::Config for Test {
+    type Event = Event;
+    type MinLengthName = MinLengthName;
+    type MaxLengthName = MaxLengthName;
+    type MinLengthSymbol = MinLengthSymbol;
+    type MaxLengthSymbol = MaxLengthSymbol;
+    type MinLengthDescription = MinLengthDescription;
+    type MaxLengthDescription = MaxLengthDescription;
+    type MaxDecimals = MaxDecimals;
+    type Currency = orml_tokens::MultiTokenCurrencyAdapter<Test>;
+}
+
 parameter_types! {
 	pub const MinBlocksPerRound: u32 = 3;
 	pub const DefaultBlocksPerRound: u32 = 5;
@@ -114,9 +176,10 @@ parameter_types! {
 	pub const MinDelegatorStk: u128 = 5;
 	pub const MinDelegation: u128 = 3;
 }
+
 impl Config for Test {
 	type Event = Event;
-	type Currency = Balances;
+	type Currency = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
 	type MinBlocksPerRound = MinBlocksPerRound;
 	type DefaultBlocksPerRound = DefaultBlocksPerRound;
@@ -133,16 +196,62 @@ impl Config for Test {
 	type DefaultParachainBondReservePercent = DefaultParachainBondReservePercent;
 	type MinCollatorStk = MinCollatorStk;
 	type MinCandidateStk = MinCollatorStk;
-	type MinDelegatorStk = MinDelegatorStk;
 	type MinDelegation = MinDelegation;
+	type NativeTokenId: NativeTokenId;
+	type StakingLiquidityTokenValuator: TestTokenValuator;
 	type WeightInfo = ();
 }
 
+#[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
+pub struct TestTokenValuator{
+}
+
+impl Valuate for TestTokenValuator {
+	type Balance = Balance;
+
+	type CurrencyId = TokenId;
+
+	fn get_liquidity_token_mga_pool(
+		liquidity_token_id: Self::CurrencyId,
+	) -> Result<(Self::CurrencyId, Self::CurrencyId), DispatchError> {
+		unimplemented!("Not required in tests!")
+	}
+
+	fn valuate_liquidity_token(
+		liquidity_token_id: Self::CurrencyId,
+		liquidity_token_amount: Self::Balance,
+	) -> Self::Balance {
+		lunimplemented!("Not required in tests!")
+	}
+
+	fn scale_liquidity_by_mga_valuation(
+		mga_valuation: Self::Balance,
+		liquidity_token_amount: Self::Balance,
+		mga_token_amount: Self::Balance,
+	) -> Self::Balance {
+		unimplemented!("Not required in tests!")
+	}
+
+	fn get_pool_state(liquidity_token_id: Self::CurrencyId) -> Option<(Self::Balance, Self::Balance)> {
+
+		match liquidity_token_id {
+			1 => Some((1,1)),
+			2 => Some((2,1)),
+			3 => Some((5,1)),
+			4 => Some((1,1)),
+			5 => Some((1,2)),
+			6 => Some((1,5)),
+			_ => None,
+		}
+
+	}
+}
+
 pub(crate) struct ExtBuilder {
-	// endowed accounts with balances
-	balances: Vec<(AccountId, Balance)>,
+	// tokens used for staking, these aren't backed in the xyk pallet and are just simply nominal tokens
+	staking_tokens: Vec<(AccountId, Balance, TokenId)>,
 	// [collator, amount]
-	collators: Vec<(AccountId, Balance)>,
+	collators: Vec<(AccountId, Balance, TokenId)>,
 	// [delegator, collator, delegation_amount]
 	delegations: Vec<(AccountId, AccountId, Balance)>,
 	// inflation config
@@ -152,7 +261,7 @@ pub(crate) struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> ExtBuilder {
 		ExtBuilder {
-			balances: vec![],
+			staking_tokens: vec![],
 			delegations: vec![],
 			collators: vec![],
 			inflation: InflationInfo {
@@ -179,8 +288,8 @@ impl Default for ExtBuilder {
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
-		self.balances = balances;
+	pub(crate) fn with_staking_tokens(mut self, staking_tokens: Vec<(AccountId, Balance, TokenId)>) -> Self {
+		self.staking_tokens = staking_tokens;
 		self
 	}
 
@@ -204,15 +313,30 @@ impl ExtBuilder {
 	}
 
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
+
 		let mut t = frame_system::GenesisConfig::default()
 			.build_storage::<Test>()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<Test> {
-			balances: self.balances,
+		orml_tokens::GenesisConfig::<Test> {
+			tokens_endowment: Default::default(),
+            created_tokens_for_staking: self.staking_tokens.iter().cloned().map(|(who, amount, token)| (who, token, amount)).collect(),
 		}
 		.assimilate_storage(&mut t)
-		.expect("Pallet balances storage can be assimilated");
+		.expect("Tokens storage can be assimilated");
+
+		pallet_assets_info::GenesisConfig::<Test> {
+			bridged_assets_info: Default::default(),
+		}
+		.assimilate_storage(&mut t)
+		.expect("AssestInfo storage can be assimilated");
+
+		pallet_xyk::GenesisConfig::<Test> {
+			created_pools_for_staking: Default::default(),
+		}
+		.assimilate_storage(&mut t)
+		.expect("Xyk storage can be assimilated");
+
 		stake::GenesisConfig::<Test> {
 			candidates: self.collators,
 			delegations: self.delegations,
@@ -226,6 +350,12 @@ impl ExtBuilder {
 		ext
 	}
 }
+
+// TODO
+// use pallet as SessionManager and trigger the new_Session when should_end_session is true
+
+// TODO
+// Update to align
 
 pub(crate) fn roll_to(n: u64) {
 	while System::block_number() < n {

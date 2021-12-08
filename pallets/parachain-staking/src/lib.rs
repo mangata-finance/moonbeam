@@ -91,8 +91,8 @@
 // #[cfg(any(test, feature = "runtime-benchmarks"))]
 // mod benchmarks;
 mod inflation;
-// #[cfg(test)]
-// mod mock;
+#[cfg(test)]
+mod mock;
 mod set;
 // #[cfg(test)]
 // mod tests;
@@ -1247,6 +1247,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type NativeTokenId: Get<TokenId>;
 		/// The valuator for our staking liquidity tokens, i.e., XYK
+		/// This should never return (_, Zero::zero())
 		type StakingLiquidityTokenValuator: Valuate;
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
@@ -1529,6 +1530,14 @@ pub mod pallet {
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
 			<InflationConfig<T>>::put(self.inflation_config.clone());
+			for liquidity_token_list: Vec<TokenId> = self.candidates.iter().cloned().map(|(_,_,l) l|).collect::Vec<TokenId>().dedup();
+			for (i, liquidity_token) in liquidity_token_list.iter().enumerate(){
+				<Pallet<T>>::add_staking_liquidity_token(
+					T::Origin::Root,
+					liquidity_token,
+					i,	
+				)
+			}
 			let mut candidate_count = 0u32;
 			// Initialize the candidates
 			for &(ref candidate, balance, liquidity_token) in &self.candidates {

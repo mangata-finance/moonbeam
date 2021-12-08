@@ -21,6 +21,22 @@
 //! 2. Monetary Governance
 //! 3. Public (Collator, Nominator)
 //! 4. Miscellaneous Property-Based Tests
+
+// TODO
+// Fix imports in mock
+
+// TODO
+// Fix test.rs imports
+
+// TODO
+// Fix mock tests
+
+// TODO
+// Add liquidity tokens to all setup fn calls
+
+// TODO
+// Replace Balances with Tokens
+
 use crate::mock::{
 	roll_to, set_author, Balances, Event as MetaEvent, ExtBuilder, Origin, Stake, Test,
 };
