@@ -1425,7 +1425,7 @@ dependencies = [
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
  "num_enum",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-crowdloan-rewards",
  "pallet-evm",
  "pallet-scheduler",
@@ -1711,7 +1711,7 @@ dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "parity-scale-codec",
  "polkadot-parachain",
  "scale-info",
@@ -3971,7 +3971,7 @@ dependencies = [
  "pallet-authorship 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-babe",
  "pallet-bags-list",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-bounties",
  "pallet-collective",
  "pallet-democracy",
@@ -5106,7 +5106,7 @@ dependencies = [
  "pallet-author-inherent",
  "pallet-author-mapping",
  "pallet-author-slot-filter",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-collective",
  "pallet-crowdloan-rewards",
  "pallet-democracy",
@@ -5506,7 +5506,7 @@ dependencies = [
  "pallet-author-inherent",
  "pallet-author-mapping",
  "pallet-author-slot-filter",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-collective",
  "pallet-crowdloan-rewards",
  "pallet-democracy",
@@ -5704,7 +5704,7 @@ dependencies = [
  "pallet-author-inherent",
  "pallet-author-mapping",
  "pallet-author-slot-filter",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-collective",
  "pallet-crowdloan-rewards",
  "pallet-democracy",
@@ -6323,7 +6323,7 @@ dependencies = [
  "frame-benchmarking 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -6391,7 +6391,7 @@ dependencies = [
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
  "nimbus-primitives",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -6500,20 +6500,6 @@ dependencies = [
  "scale-info",
  "sp-runtime 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "sp-std 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
-]
-
-[[package]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-dependencies = [
- "frame-benchmarking 4.0.0-dev",
- "frame-support 4.0.0-dev",
- "frame-system 4.0.0-dev",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-runtime 4.0.0-dev",
- "sp-std 4.0.0-dev",
 ]
 
 [[package]]
@@ -6680,7 +6666,7 @@ dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-utility",
  "parity-scale-codec",
  "scale-info",
@@ -6718,7 +6704,7 @@ dependencies = [
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
  "num_enum",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-democracy",
  "pallet-evm",
  "pallet-scheduler",
@@ -6786,7 +6772,7 @@ dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "num_enum",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-evm",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "parity-scale-codec",
@@ -6825,7 +6811,7 @@ dependencies = [
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "hex",
  "log",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "parity-scale-codec",
  "primitive-types",
@@ -6850,7 +6836,7 @@ dependencies = [
  "log",
  "num_enum",
  "pallet-assets",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-evm",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "parity-scale-codec",
@@ -6875,7 +6861,7 @@ dependencies = [
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
  "num_enum",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-evm",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "parity-scale-codec",
@@ -7180,7 +7166,7 @@ dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -7209,7 +7195,7 @@ version = "0.1.0"
 dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-proxy",
  "parity-scale-codec",
  "scale-info",
@@ -7478,7 +7464,7 @@ dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "impl-trait-for-tuples 0.2.1",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -7577,8 +7563,9 @@ dependencies = [
  "log",
  "mangata-primitives",
  "orml-tokens",
+ "orml-traits 0.4.1-dev",
+ "pallet-assets-info",
  "pallet-authorship 4.0.0-dev",
- "pallet-balances 4.0.0-dev",
  "pallet-session 4.0.0-dev",
  "pallet-xyk",
  "parity-scale-codec",
@@ -7603,7 +7590,7 @@ dependencies = [
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
  "num_enum",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-evm",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "parachain-staking",
@@ -8834,7 +8821,7 @@ dependencies = [
  "pallet-authority-discovery",
  "pallet-authorship 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-babe",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-bounties",
  "pallet-collective",
  "pallet-democracy",
@@ -8904,7 +8891,7 @@ dependencies = [
  "log",
  "pallet-authorship 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-bags-list",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-beefy-mmr",
  "pallet-election-provider-multi-phase",
  "pallet-session 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
@@ -8947,7 +8934,7 @@ dependencies = [
  "log",
  "pallet-authority-discovery",
  "pallet-authorship 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-session 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-staking",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
@@ -9828,7 +9815,7 @@ dependencies = [
  "hex-literal",
  "log",
  "num_enum",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-evm",
  "pallet-staking",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
@@ -9963,7 +9950,7 @@ dependencies = [
  "pallet-authority-discovery",
  "pallet-authorship 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-babe",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-beefy",
  "pallet-beefy-mmr",
  "pallet-bridge-dispatch",
@@ -14034,7 +14021,7 @@ dependencies = [
  "pallet-authorship 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-babe",
  "pallet-bags-list",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-collective",
  "pallet-democracy",
  "pallet-election-provider-multi-phase",
@@ -14316,7 +14303,7 @@ dependencies = [
  "frame-support 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "orml-traits 0.4.1-dev (git+https://github.com/purestake/open-runtime-module-library?branch=moonbeam-polkadot-v0.9.12)",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-xcm",
  "parity-scale-codec",
@@ -14344,7 +14331,7 @@ dependencies = [
  "frame-system 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "log",
  "num_enum",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-evm",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-xcm",
@@ -14377,7 +14364,7 @@ dependencies = [
  "log",
  "num_enum",
  "orml-xtokens",
- "pallet-balances 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+ "pallet-balances",
  "pallet-evm",
  "pallet-timestamp 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-xcm",
@@ -14539,6 +14526,10 @@ version = "4.0.0-dev"
 
 [[patch.unused]]
 name = "pallet-bags-list"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-balances"
 version = "4.0.0-dev"
 
 [[patch.unused]]
@@ -14991,6 +14982,10 @@ version = "4.0.0-dev"
 
 [[patch.unused]]
 name = "pallet-bags-list"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-balances"
 version = "4.0.0-dev"
 
 [[patch.unused]]

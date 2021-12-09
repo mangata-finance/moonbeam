@@ -110,6 +110,7 @@ use crate::{set::OrderedSet};
 use frame_support::pallet_prelude::*;
 use frame_support::traits::{Currency, Get, Imbalance, ReservableCurrency, EstimateNextSessionRotation};
 use frame_system::pallet_prelude::*;
+use frame_system::RawOrigin;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{
@@ -1530,13 +1531,15 @@ pub mod pallet {
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
 			<InflationConfig<T>>::put(self.inflation_config.clone());
-			for liquidity_token_list: Vec<TokenId> = self.candidates.iter().cloned().map(|(_,_,l) l|).collect::Vec<TokenId>().dedup();
+			let liquidity_token_list: Vec<TokenId> = self.candidates.iter().cloned().map(|(_,_,l)| l).collect::<Vec<TokenId>>();
 			for (i, liquidity_token) in liquidity_token_list.iter().enumerate(){
-				<Pallet<T>>::add_staking_liquidity_token(
-					T::Origin::Root,
-					liquidity_token,
-					i,	
-				)
+				if let Err(error) = <Pallet<T>>::add_staking_liquidity_token(
+					RawOrigin::Root.into(),
+					*liquidity_token,
+					i as u32,	
+				) {
+					log::warn!("Adding staking liquidity token failed in genesis with error {:?}", error);
+				}
 			}
 			let mut candidate_count = 0u32;
 			// Initialize the candidates

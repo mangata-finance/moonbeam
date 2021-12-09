@@ -16,26 +16,24 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{pallet, AwardedPts, Config, InflationInfo, Points, Range, TokenId, Balance};
+use crate::{pallet, AwardedPts, Config, InflationInfo, Points, Range, Valuate, TokenId, Balance, DispatchError};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Everything, GenesisBuild, OnFinalize, OnInitialize},
-	weights::Weight,
+	traits::{Everything, GenesisBuild, OnFinalize, OnInitialize, Contains},
+	weights::Weight, PalletId
 };
 use sp_core::H256;
 use sp_io;
 use sp_runtime::{
 	testing::Header,
-	traits::{BlakeTwo256, IdentityLookup},
-	Perbill, Percent,
+	traits::{BlakeTwo256, IdentityLookup, AccountIdConversion},
+	Perbill, Percent, RuntimeDebug
 };
+use parity_scale_codec::{Decode, Encode};
+use scale_info::TypeInfo;
+use orml_tokens::{TransferDust, MultiTokenCurrency, MultiTokenReservableCurrency};
 use orml_traits::parameter_type_with_key;
-
-// TODO
-// Compile check mock
-
-// TODO
-// Fix imports
+use mangata_primitives::Amount;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -52,10 +50,8 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>, Config<T>} = 10,
-		AssetsInfo: pallet_assets_info::{Pallet, Call, Config, Storage, Event<T>} = 12,
-		Xyk: pallet_xyk::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
-		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>}, = 21,
+		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -123,39 +119,9 @@ impl orml_tokens::Config for Test {
 	type CurrencyId = TokenId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = TransferDust<Runtime, TreasuryAccount>;
+	type OnDust = TransferDust<Test, TreasuryAccount>;
 	type MaxLocks = MaxLocks;
 	type DustRemovalWhitelist = DustRemovalWhitelist;
-}
-
-impl pallet_xyk::Config for Test {
-    type Event = Event;
-    type Currency = orml_tokens::MultiTokenCurrencyAdapter<Runtime>;
-    type NativeCurrencyId = MgaTokenId;
-    type TreasuryPalletId = TreasuryPalletId;
-    type BnbTreasurySubAccDerive = BnbTreasurySubAccDerive;
-}
-
-parameter_types! {
-    pub const MinLengthName: usize = 1;
-    pub const MaxLengthName: usize = 255;
-    pub const MinLengthSymbol: usize = 1;
-    pub const MaxLengthSymbol: usize = 255;
-    pub const MinLengthDescription: usize = 1;
-    pub const MaxLengthDescription: usize = 255;
-    pub const MaxDecimals: u32 = 255;
-}
-
-impl pallet_assets_info::Config for Test {
-    type Event = Event;
-    type MinLengthName = MinLengthName;
-    type MaxLengthName = MaxLengthName;
-    type MinLengthSymbol = MinLengthSymbol;
-    type MaxLengthSymbol = MaxLengthSymbol;
-    type MinLengthDescription = MinLengthDescription;
-    type MaxLengthDescription = MaxLengthDescription;
-    type MaxDecimals = MaxDecimals;
-    type Currency = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 }
 
 parameter_types! {
@@ -197,8 +163,8 @@ impl Config for Test {
 	type MinCollatorStk = MinCollatorStk;
 	type MinCandidateStk = MinCollatorStk;
 	type MinDelegation = MinDelegation;
-	type NativeTokenId: NativeTokenId;
-	type StakingLiquidityTokenValuator: TestTokenValuator;
+	type NativeTokenId = MgaTokenId;
+	type StakingLiquidityTokenValuator = TestTokenValuator;
 	type WeightInfo = ();
 }
 
@@ -221,7 +187,7 @@ impl Valuate for TestTokenValuator {
 		liquidity_token_id: Self::CurrencyId,
 		liquidity_token_amount: Self::Balance,
 	) -> Self::Balance {
-		lunimplemented!("Not required in tests!")
+		unimplemented!("Not required in tests!")
 	}
 
 	fn scale_liquidity_by_mga_valuation(
@@ -293,7 +259,7 @@ impl ExtBuilder {
 		self
 	}
 
-	pub(crate) fn with_candidates(mut self, collators: Vec<(AccountId, Balance)>) -> Self {
+	pub(crate) fn with_candidates(mut self, collators: Vec<(AccountId, Balance, TokenId)>) -> Self {
 		self.collators = collators;
 		self
 	}
@@ -325,18 +291,6 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.expect("Tokens storage can be assimilated");
 
-		pallet_assets_info::GenesisConfig::<Test> {
-			bridged_assets_info: Default::default(),
-		}
-		.assimilate_storage(&mut t)
-		.expect("AssestInfo storage can be assimilated");
-
-		pallet_xyk::GenesisConfig::<Test> {
-			created_pools_for_staking: Default::default(),
-		}
-		.assimilate_storage(&mut t)
-		.expect("Xyk storage can be assimilated");
-
 		stake::GenesisConfig::<Test> {
 			candidates: self.collators,
 			delegations: self.delegations,
@@ -351,21 +305,18 @@ impl ExtBuilder {
 	}
 }
 
-// TODO
-// use pallet as SessionManager and trigger the new_Session when should_end_session is true
-
-// TODO
-// Update to align
-
 pub(crate) fn roll_to(n: u64) {
 	while System::block_number() < n {
 		Stake::on_finalize(System::block_number());
-		Balances::on_finalize(System::block_number());
+		Tokens::on_finalize(System::block_number());
 		System::on_finalize(System::block_number());
 		System::set_block_number(System::block_number() + 1);
 		System::on_initialize(System::block_number());
-		Balances::on_initialize(System::block_number());
+		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
+		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number()){
+			<Stake as pallet_session::SessionManager<_>>::start_session(Default::default());
+		}
 	}
 }
 
@@ -431,66 +382,77 @@ pub(crate) fn set_author(round: u32, acc: u64, pts: u32) {
 	<AwardedPts<Test>>::mutate(round, acc, |p| *p += pts);
 }
 
+pub type StakeCurrency = <Test as pallet::Config>::Currency;
+
 #[test]
 fn geneses() {
 	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 1000),
-			(2, 300),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-			(6, 100),
-			(7, 100),
-			(8, 9),
-			(9, 4),
+		.with_staking_tokens(vec![
+			(999, 100,0),
+			(1, 1000, 1),
+			(2, 300, 2),
+			(3, 100, 1),
+			(4, 100, 1),
+			(5, 100, 2),
+			(6, 100, 2),
+			(7, 100, 3),
+			(8, 9, 3),
+			(9, 4, 3),
 		])
-		.with_candidates(vec![(1, 500), (2, 200)])
+		.with_candidates(vec![(1, 500, 1), (2, 200, 2)])
 		.with_delegations(vec![(3, 1, 100), (4, 1, 100), (5, 2, 100), (6, 2, 100)])
 		.build()
 		.execute_with(|| {
 			assert!(System::events().is_empty());
 			// collators
-			assert_eq!(Balances::reserved_balance(&1), 500);
-			assert_eq!(Balances::free_balance(&1), 500);
+			assert_eq!(StakeCurrency::reserved_balance(1, &1), 500);
+			assert_eq!(StakeCurrency::free_balance(1, &1), 500);
 			assert!(Stake::is_candidate(&1));
-			assert_eq!(Balances::reserved_balance(&2), 200);
-			assert_eq!(Balances::free_balance(&2), 100);
+			assert_eq!(StakeCurrency::reserved_balance(2, &2), 200);
+			assert_eq!(StakeCurrency::free_balance(2, &2), 100);
 			assert!(Stake::is_candidate(&2));
 			// delegators
-			for x in 3..7 {
+			for x in 3..5 {
 				assert!(Stake::is_delegator(&x));
-				assert_eq!(Balances::free_balance(&x), 0);
-				assert_eq!(Balances::reserved_balance(&x), 100);
+				assert_eq!(StakeCurrency::free_balance(1, &x), 0);
+				assert_eq!(StakeCurrency::reserved_balance(1, &x), 100);
+			}
+			for x in 5..7 {
+				assert!(Stake::is_delegator(&x));
+				assert_eq!(StakeCurrency::free_balance(2, &x), 0);
+				assert_eq!(StakeCurrency::reserved_balance(2, &x), 100);
 			}
 			// uninvolved
 			for x in 7..10 {
 				assert!(!Stake::is_delegator(&x));
 			}
-			assert_eq!(Balances::free_balance(&7), 100);
-			assert_eq!(Balances::reserved_balance(&7), 0);
-			assert_eq!(Balances::free_balance(&8), 9);
-			assert_eq!(Balances::reserved_balance(&8), 0);
-			assert_eq!(Balances::free_balance(&9), 4);
-			assert_eq!(Balances::reserved_balance(&9), 0);
+			assert_eq!(StakeCurrency::free_balance(3, &7), 100);
+			assert_eq!(StakeCurrency::reserved_balance(3, &7), 0);
+			assert_eq!(StakeCurrency::free_balance(3, &8), 9);
+			assert_eq!(StakeCurrency::reserved_balance(3, &8), 0);
+			assert_eq!(StakeCurrency::free_balance(3, &9), 4);
+			assert_eq!(StakeCurrency::reserved_balance(3, &9), 0);
 		});
 	ExtBuilder::default()
-		.with_balances(vec![
-			(1, 100),
-			(2, 100),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-			(6, 100),
-			(7, 100),
-			(8, 100),
-			(9, 100),
-			(10, 100),
+		.with_staking_tokens(vec![
+			(999, 100,0),
+			(1, 100, 1),
+			(2, 100, 2),
+			(3, 100, 1),
+			(4, 100, 3),
+			(5, 100, 3),
+			(6, 100, 1),
+			(7, 100, 1),
+			(8, 100, 1),
+			(8, 100, 2),
+			(9, 100, 2),
+			(10, 100, 1),
 		])
-		.with_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20), (5, 10)])
+		.with_candidates(vec![(1, 20, 1), (2, 20, 2), (3, 20, 1), (4, 20, 3), (5, 10, 3)])
 		.with_delegations(vec![
 			(6, 1, 10),
 			(7, 1, 10),
+			(8, 1, 10),
 			(8, 2, 10),
 			(9, 2, 10),
 			(10, 1, 10),
@@ -499,19 +461,32 @@ fn geneses() {
 		.execute_with(|| {
 			assert!(System::events().is_empty());
 			// collators
-			for x in 1..5 {
+			for x in [1, 3] {
 				assert!(Stake::is_candidate(&x));
-				assert_eq!(Balances::free_balance(&x), 80);
-				assert_eq!(Balances::reserved_balance(&x), 20);
+				assert_eq!(StakeCurrency::free_balance(1, &x), 80);
+				assert_eq!(StakeCurrency::reserved_balance(1, &x), 20);
+			}
+			assert!(Stake::is_candidate(&2));
+			assert_eq!(StakeCurrency::free_balance(2, &2), 80);
+			assert_eq!(StakeCurrency::reserved_balance(2, &2), 20);
+			for x in 4..5 {
+				assert!(Stake::is_candidate(&x));
+				assert_eq!(StakeCurrency::free_balance(3, &x), 80);
+				assert_eq!(StakeCurrency::reserved_balance(3, &x), 20);
 			}
 			assert!(Stake::is_candidate(&5));
-			assert_eq!(Balances::free_balance(&5), 90);
-			assert_eq!(Balances::reserved_balance(&5), 10);
+			assert_eq!(StakeCurrency::free_balance(3, &5), 90);
+			assert_eq!(StakeCurrency::reserved_balance(3, &5), 10);
 			// delegators
-			for x in 6..11 {
+			for x in [6, 7, 8, 10] {
 				assert!(Stake::is_delegator(&x));
-				assert_eq!(Balances::free_balance(&x), 90);
-				assert_eq!(Balances::reserved_balance(&x), 10);
+				assert_eq!(StakeCurrency::free_balance(1, &x), 90);
+				assert_eq!(StakeCurrency::reserved_balance(1, &x), 10);
+			}
+			for x in [8, 9] {
+				assert!(Stake::is_delegator(&x));
+				assert_eq!(StakeCurrency::free_balance(2, &x), 90);
+				assert_eq!(StakeCurrency::reserved_balance(2, &x), 10);
 			}
 		});
 }
