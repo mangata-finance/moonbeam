@@ -91,7 +91,7 @@ impl frame_system::Config for Test {
 parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: TokenId| -> Balance {
 		match currency_id {
-			&MGA_TOKEN_ID => 100,
+			&MGA_TOKEN_ID => 0,
 			_ => 0,
 		}
 	};
@@ -139,7 +139,6 @@ parameter_types! {
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
 	pub const DefaultParachainBondReservePercent: Percent = Percent::from_percent(30);
 	pub const MinCollatorStk: u128 = 10;
-	pub const MinDelegatorStk: u128 = 5;
 	pub const MinDelegation: u128 = 3;
 }
 
@@ -259,8 +258,20 @@ impl ExtBuilder {
 		self
 	}
 
+	pub(crate) fn with_default_staking_token(mut self, staking_tokens: Vec<(AccountId, Balance)>) -> Self {
+		let mut init_staking_token = vec![(999u64, 10u128, 0u32), (999u64, 100u128, 1u32)];
+		init_staking_token.append(&mut staking_tokens.iter().cloned().map(|(x, y)| (x, y, 1u32)).collect::<Vec<(u64, u128, u32)>>());
+		self.staking_tokens = init_staking_token;
+		self
+	}
+
 	pub(crate) fn with_candidates(mut self, collators: Vec<(AccountId, Balance, TokenId)>) -> Self {
 		self.collators = collators;
+		self
+	}
+
+	pub(crate) fn with_default_token_candidates(mut self, collators: Vec<(AccountId, Balance)>) -> Self {
+		self.collators = collators.iter().cloned().map(|(x, y)| (x, y, 1u32)).collect();
 		self
 	}
 

@@ -94,8 +94,8 @@ mod inflation;
 #[cfg(test)]
 mod mock;
 mod set;
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 pub mod weights;
 
 use frame_support::pallet;
@@ -1627,7 +1627,7 @@ pub mod pallet {
 			<Staked<T>>::insert(0u32, total_round_exposure);
 			<Pallet<T>>::deposit_event(Event::NewRound(
 				T::BlockNumber::zero(),
-				1u32,
+				0u32,
 				v_count,
 				total_relevant_exposure,
 			));
@@ -2326,12 +2326,13 @@ pub mod pallet {
 			}
 			let total_staked = <Staked<T>>::take(round_to_payout);
 			let total_issuance = Self::compute_issuance(total_staked);
+			println!("total_issuance => {:?}, {:?}", total_staked, total_issuance);
 			let mut left_issuance = total_issuance;
 			// reserve portion of issuance for parachain bond account
 			let bond_config = <ParachainBondInfo<T>>::get();
 			let parachain_bond_reserve = bond_config.percent * total_issuance;
-			if let Ok(imb) =
-				T::Currency::deposit_into_existing(T::NativeTokenId::get().into(), &bond_config.account, parachain_bond_reserve.into())
+			if let imb =
+				T::Currency::deposit_creating(T::NativeTokenId::get().into(), &bond_config.account, parachain_bond_reserve.into())
 			{
 				// update round issuance iff transfer succeeds
 				left_issuance -= imb.peek().into();
@@ -2340,10 +2341,19 @@ pub mod pallet {
 					imb.peek().into(),
 				));
 			}
+			println!("parachain_bond_reserve => {:?}, {:?}", parachain_bond_reserve, left_issuance);
 			let mint = |amt: Balance, to: T::AccountId| {
-				if let Ok(amount_transferred) = T::Currency::deposit_into_existing(T::NativeTokenId::get().into(), &to, amt.into()) {
+				
+				// TODO
+				// Undo
+
+				if let amount_transferred = T::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into()) {
 					Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek().into()));
 				}
+				// match T::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into()) {
+				// 	Ok(amount_transferred) => Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek().into())),
+				// 	Err(e) => println!("err : {:?}", e),
+				// }
 			};
 			// only pay out rewards at the end to transfer only total amount due
 			let mut due_rewards: BTreeMap<T::AccountId, Balance> = BTreeMap::new();
@@ -2360,8 +2370,10 @@ pub mod pallet {
 			for (collator, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
 				let pct_due = Perbill::from_rational(pts, total);
 				let mut amt_due = pct_due * left_issuance;
+				println!("amt_due => {:?}, {:?}", amt_due, pct_due);
 				// Take the snapshot of block author and delegations
 				let state = <AtStake<T>>::take(round_to_payout, &collator);
+				println!("state.delegations => {:?}, {:?}", state.delegations, round_to_payout);
 				if state.delegations.is_empty() {
 					// solo collator with no delegators
 					mint(amt_due, collator.clone());
@@ -2371,6 +2383,8 @@ pub mod pallet {
 					let commission = pct_due * collator_issuance;
 					amt_due -= commission;
 					let collator_reward = (collator_pct * amt_due) + commission;
+					println!("commission => {:?}, {:?}", commission, collator_pct);
+					println!("collator_reward => {:?}, {:?}", collator_reward, collator.clone());
 					mint(collator_reward, collator.clone());
 					// pay delegators due portion
 					for Bond { owner, amount, .. } in state.delegations {
@@ -2385,7 +2399,15 @@ pub mod pallet {
 					}
 				}
 			}
+			
+			// TODO
+			// Remove
+			println!("Due rewards => {:?}", due_rewards);
+
 			for (delegator, total_due) in due_rewards {
+				// TODO
+				// remove
+				println!("Due rewards => {:?}, {:?}", total_due, delegator);
 				mint(total_due, delegator);
 			}
 		}
