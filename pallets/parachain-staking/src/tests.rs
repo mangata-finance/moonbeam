@@ -43,7 +43,7 @@ use crate::mock::{
 use crate::{
 	assert_eq_events, assert_event_emitted, assert_last_event, Bond, CandidateBondChange,
 	CandidateBondRequest, CollatorStatus, DelegationChange, DelegationRequest, DelegatorAdded,
-	Error, Event, Range,
+	Error, Event, Range, CollatorSnapshot, OrderedSet
 };
 use frame_support::{assert_noop, assert_ok};
 use sp_runtime::{traits::Zero, DispatchError, Perbill, Percent};
@@ -3295,7 +3295,7 @@ fn parachain_bond_inflation_reserve_matches_config() {
 				Event::CollatorChosen(4, 5, 10),
 				Event::NewRound(15, 3, 5, 140),
 				Event::ReservedForParachainBond(11, 9),
-				Event::Rewarded(1, 12),
+				Event::Rewarded(1, 11),
 				Event::DelegatorDueReward(7, 1, 3),
 				Event::DelegatorDueReward(10, 1, 3),
 				Event::DelegatorDueReward(6, 1, 3),
@@ -3329,13 +3329,13 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			let mut new2 = vec![
 				Event::DelegatorExitScheduled(4, 6, 6),
 				Event::ReservedForParachainBond(11, 9),
-				Event::Rewarded(1, 12),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::DelegatorDueReward(6, 1, 3),
-				Event::Rewarded(6, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 11),
+				Event::DelegatorDueReward(7, 1, 4),
+				Event::DelegatorDueReward(10, 1, 4),
+				Event::DelegatorDueReward(6, 1, 4),
+				Event::Rewarded(6, 4),
+				Event::Rewarded(7, 4),
+				Event::Rewarded(10, 4),
 				Event::CollatorChosen(6, 1, 50),
 				Event::CollatorChosen(6, 2, 40),
 				Event::CollatorChosen(6, 3, 20),
@@ -3343,13 +3343,13 @@ fn parachain_bond_inflation_reserve_matches_config() {
 				Event::CollatorChosen(6, 5, 10),
 				Event::NewRound(25, 5, 5, 140),
 				Event::ReservedForParachainBond(11, 10),
-				Event::Rewarded(1, 13),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::DelegatorDueReward(6, 1, 3),
-				Event::Rewarded(6, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 12),
+				Event::DelegatorDueReward(7, 1, 4),
+				Event::DelegatorDueReward(10, 1, 4),
+				Event::DelegatorDueReward(6, 1, 4),
+				Event::Rewarded(6, 4),
+				Event::Rewarded(7, 4),
+				Event::Rewarded(10, 4),
 				Event::CollatorChosen(7, 1, 50),
 				Event::CollatorChosen(7, 2, 40),
 				Event::CollatorChosen(7, 3, 20),
@@ -3359,7 +3359,7 @@ fn parachain_bond_inflation_reserve_matches_config() {
 				Event::DelegatorLeftCandidate(6, 1, 10, 40),
 				Event::DelegatorLeft(6, 10),
 				Event::ReservedForParachainBond(11, 10),
-				Event::Rewarded(1, 14),
+				Event::Rewarded(1, 13),
 				Event::DelegatorDueReward(7, 1, 4),
 				Event::DelegatorDueReward(10, 1, 4),
 				Event::DelegatorDueReward(6, 1, 4),
@@ -3390,13 +3390,13 @@ fn parachain_bond_inflation_reserve_matches_config() {
 					Percent::from_percent(50),
 				),
 				Event::ReservedForParachainBond(11, 18),
-				Event::Rewarded(1, 11),
-				Event::DelegatorDueReward(7, 1, 2),
-				Event::DelegatorDueReward(10, 1, 2),
-				Event::DelegatorDueReward(6, 1, 2),
-				Event::Rewarded(6, 2),
-				Event::Rewarded(7, 2),
-				Event::Rewarded(10, 2),
+				Event::Rewarded(1, 10),
+				Event::DelegatorDueReward(7, 1, 3),
+				Event::DelegatorDueReward(10, 1, 3),
+				Event::DelegatorDueReward(6, 1, 3),
+				Event::Rewarded(6, 3),
+				Event::Rewarded(7, 3),
+				Event::Rewarded(10, 3),
 				Event::CollatorChosen(9, 1, 40),
 				Event::CollatorChosen(9, 2, 40),
 				Event::CollatorChosen(9, 3, 20),
@@ -3412,13 +3412,13 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// no more paying 6
 			let mut new4 = vec![
 				Event::ReservedForParachainBond(11, 19),
-				Event::Rewarded(1, 12),
-				Event::DelegatorDueReward(7, 1, 2),
-				Event::DelegatorDueReward(10, 1, 2),
-				Event::DelegatorDueReward(6, 1, 2),
-				Event::Rewarded(6, 2,),
-				Event::Rewarded(7, 2),
-				Event::Rewarded(10, 2),
+				Event::Rewarded(1, 10),
+				Event::DelegatorDueReward(7, 1, 3),
+				Event::DelegatorDueReward(10, 1, 3),
+				Event::DelegatorDueReward(6, 1, 3),
+				Event::Rewarded(6, 3),
+				Event::Rewarded(7, 3),
+				Event::Rewarded(10, 3),
 				Event::CollatorChosen(10, 1, 40),
 				Event::CollatorChosen(10, 2, 40),
 				Event::CollatorChosen(10, 3, 20),
@@ -3436,11 +3436,11 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			let mut new5 = vec![
 				Event::Delegation(8, 10, 1, DelegatorAdded::AddedToTop { new_total: 50 }),
 				Event::ReservedForParachainBond(11, 20),
-				Event::Rewarded(1, 14),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 12),
+				Event::DelegatorDueReward(7, 1, 4),
+				Event::DelegatorDueReward(10, 1, 4),
+				Event::Rewarded(7, 4),
+				Event::Rewarded(10, 4),
 				Event::CollatorChosen(11, 1, 50),
 				Event::CollatorChosen(11, 2, 40),
 				Event::CollatorChosen(11, 3, 20),
@@ -3457,11 +3457,11 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// new delegation is still not rewarded yet
 			let mut new6 = vec![
 				Event::ReservedForParachainBond(11, 21),
-				Event::Rewarded(1, 14),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 12),
+				Event::DelegatorDueReward(7, 1, 4),
+				Event::DelegatorDueReward(10, 1, 4),
+				Event::Rewarded(7, 4),
+				Event::Rewarded(10, 4),
 				Event::CollatorChosen(12, 1, 50),
 				Event::CollatorChosen(12, 2, 40),
 				Event::CollatorChosen(12, 3, 20),
@@ -3476,11 +3476,11 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// new delegation is rewarded, 2 rounds after joining (`RewardPaymentDelay` is 2)
 			let mut new7 = vec![
 				Event::ReservedForParachainBond(11, 22),
-				Event::Rewarded(1, 15),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 13),
+				Event::DelegatorDueReward(7, 1, 4),
+				Event::DelegatorDueReward(10, 1, 4),
+				Event::Rewarded(7, 4),
+				Event::Rewarded(10, 4),
 				Event::CollatorChosen(13, 1, 50),
 				Event::CollatorChosen(13, 2, 40),
 				Event::CollatorChosen(13, 3, 20),
@@ -3553,7 +3553,7 @@ fn paid_collator_commission_matches_config() {
 				Event::CollatorChosen(5, 4, 40),
 				Event::NewRound(20, 4, 2, 80),
 				Event::ReservedForParachainBond(0, 9),
-				Event::Rewarded(4, 13),
+				Event::Rewarded(4, 12),
 				Event::DelegatorDueReward(6, 4, 4),
 				Event::DelegatorDueReward(5, 4, 4),
 				Event::Rewarded(5, 4),
@@ -4026,13 +4026,13 @@ fn payouts_follow_delegation_changes() {
 			let mut new2 = vec![
 				Event::DelegatorExitScheduled(3, 6, 5),
 				Event::ReservedForParachainBond(0, 15),
-				Event::Rewarded(1, 20),
-				Event::DelegatorDueReward(7, 1, 5),
-				Event::DelegatorDueReward(10, 1, 5),
-				Event::DelegatorDueReward(6, 1, 5),
-				Event::Rewarded(6, 5),
-				Event::Rewarded(7, 5),
-				Event::Rewarded(10, 5),
+				Event::Rewarded(1, 18),
+				Event::DelegatorDueReward(7, 1, 6),
+				Event::DelegatorDueReward(10, 1, 6),
+				Event::DelegatorDueReward(6, 1, 6),
+				Event::Rewarded(6, 6),
+				Event::Rewarded(7, 6),
+				Event::Rewarded(10, 6),
 				Event::CollatorChosen(5, 1, 50),
 				Event::CollatorChosen(5, 2, 40),
 				Event::CollatorChosen(5, 3, 20),
@@ -4040,13 +4040,13 @@ fn payouts_follow_delegation_changes() {
 				Event::CollatorChosen(5, 5, 10),
 				Event::NewRound(20, 4, 5, 140),
 				Event::ReservedForParachainBond(0, 16),
-				Event::Rewarded(1, 20),
-				Event::DelegatorDueReward(7, 1, 5),
-				Event::DelegatorDueReward(10, 1, 5),
-				Event::DelegatorDueReward(6, 1, 5),
-				Event::Rewarded(6, 5),
-				Event::Rewarded(7, 5),
-				Event::Rewarded(10, 5),
+				Event::Rewarded(1, 19),
+				Event::DelegatorDueReward(7, 1, 6),
+				Event::DelegatorDueReward(10, 1, 6),
+				Event::DelegatorDueReward(6, 1, 6),
+				Event::Rewarded(6, 6),
+				Event::Rewarded(7, 6),
+				Event::Rewarded(10, 6),
 				Event::CollatorChosen(6, 1, 50),
 				Event::CollatorChosen(6, 2, 40),
 				Event::CollatorChosen(6, 3, 20),
@@ -4064,7 +4064,7 @@ fn payouts_follow_delegation_changes() {
 			// keep paying 6
 			let mut new3 = vec![
 				Event::ReservedForParachainBond(0, 16),
-				Event::Rewarded(1, 22),
+				Event::Rewarded(1, 20),
 				Event::DelegatorDueReward(7, 1, 6),
 				Event::DelegatorDueReward(10, 1, 6),
 				Event::DelegatorDueReward(6, 1, 6),
@@ -4078,13 +4078,13 @@ fn payouts_follow_delegation_changes() {
 				Event::CollatorChosen(7, 5, 10),
 				Event::NewRound(30, 6, 5, 130),
 				Event::ReservedForParachainBond(0, 17),
-				Event::Rewarded(1, 24),
-				Event::DelegatorDueReward(7, 1, 6),
-				Event::DelegatorDueReward(10, 1, 6),
-				Event::DelegatorDueReward(6, 1, 6),
-				Event::Rewarded(6, 6),
-				Event::Rewarded(7, 6),
-				Event::Rewarded(10, 6),
+				Event::Rewarded(1, 21),
+				Event::DelegatorDueReward(7, 1, 7),
+				Event::DelegatorDueReward(10, 1, 7),
+				Event::DelegatorDueReward(6, 1, 7),
+				Event::Rewarded(6, 7),
+				Event::Rewarded(7, 7),
+				Event::Rewarded(10, 7),
 				Event::CollatorChosen(8, 1, 40),
 				Event::CollatorChosen(8, 2, 40),
 				Event::CollatorChosen(8, 3, 20),
@@ -4099,13 +4099,13 @@ fn payouts_follow_delegation_changes() {
 			// no more paying 6
 			let mut new4 = vec![
 				Event::ReservedForParachainBond(0, 18),
-				Event::Rewarded(1, 24),
-				Event::DelegatorDueReward(7, 1, 6),
-				Event::DelegatorDueReward(10, 1, 6),
-				Event::DelegatorDueReward(6, 1, 6),
-				Event::Rewarded(6, 6),
-				Event::Rewarded(7, 6),
-				Event::Rewarded(10, 6),
+				Event::Rewarded(1, 23),
+				Event::DelegatorDueReward(7, 1, 7),
+				Event::DelegatorDueReward(10, 1, 7),
+				Event::DelegatorDueReward(6, 1, 7),
+				Event::Rewarded(6, 7),
+				Event::Rewarded(7, 7),
+				Event::Rewarded(10, 7),
 				Event::CollatorChosen(9, 1, 40),
 				Event::CollatorChosen(9, 2, 40),
 				Event::CollatorChosen(9, 3, 20),
@@ -4122,11 +4122,11 @@ fn payouts_follow_delegation_changes() {
 			let mut new5 = vec![
 				Event::Delegation(8, 10, 1, DelegatorAdded::AddedToTop { new_total: 50 }),
 				Event::ReservedForParachainBond(0, 19),
-				Event::Rewarded(1, 29),
-				Event::DelegatorDueReward(7, 1, 8),
-				Event::DelegatorDueReward(10, 1, 8),
-				Event::Rewarded(7, 8),
-				Event::Rewarded(10, 8),
+				Event::Rewarded(1, 27),
+				Event::DelegatorDueReward(7, 1, 9),
+				Event::DelegatorDueReward(10, 1, 9),
+				Event::Rewarded(7, 9),
+				Event::Rewarded(10, 9),
 				Event::CollatorChosen(10, 1, 50),
 				Event::CollatorChosen(10, 2, 40),
 				Event::CollatorChosen(10, 3, 20),
@@ -4141,11 +4141,11 @@ fn payouts_follow_delegation_changes() {
 			// new delegation not rewarded yet
 			let mut new6 = vec![
 				Event::ReservedForParachainBond(0, 20),
-				Event::Rewarded(1, 30),
-				Event::DelegatorDueReward(7, 1, 8),
-				Event::DelegatorDueReward(10, 1, 8),
-				Event::Rewarded(7, 8),
-				Event::Rewarded(10, 8),
+				Event::Rewarded(1, 28),
+				Event::DelegatorDueReward(7, 1, 9),
+				Event::DelegatorDueReward(10, 1, 9),
+				Event::Rewarded(7, 9),
+				Event::Rewarded(10, 9),
 				Event::CollatorChosen(11, 1, 50),
 				Event::CollatorChosen(11, 2, 40),
 				Event::CollatorChosen(11, 3, 20),
@@ -4160,11 +4160,11 @@ fn payouts_follow_delegation_changes() {
 			// 2 rounds after joining (`RewardPaymentDelay` = 2)
 			let mut new7 = vec![
 				Event::ReservedForParachainBond(0, 21),
-				Event::Rewarded(1, 31),
-				Event::DelegatorDueReward(7, 1, 9),
-				Event::DelegatorDueReward(10, 1, 9),
-				Event::Rewarded(7, 9),
-				Event::Rewarded(10, 9),
+				Event::Rewarded(1, 29),
+				Event::DelegatorDueReward(7, 1, 10),
+				Event::DelegatorDueReward(10, 1, 10),
+				Event::Rewarded(7, 10),
+				Event::Rewarded(10, 10),
 				Event::CollatorChosen(12, 1, 50),
 				Event::CollatorChosen(12, 2, 40),
 				Event::CollatorChosen(12, 3, 20),
@@ -4179,13 +4179,13 @@ fn payouts_follow_delegation_changes() {
 			// 2 rounds after joining (`RewardPaymentDelay` = 2)
 			let mut new8 = vec![
 				Event::ReservedForParachainBond(0, 22),
-				Event::Rewarded(1, 30),
-				Event::DelegatorDueReward(7, 1, 7),
-				Event::DelegatorDueReward(8, 1, 7),
-				Event::DelegatorDueReward(10, 1, 7),
-				Event::Rewarded(7, 7),
-				Event::Rewarded(8, 7),
-				Event::Rewarded(10, 7),
+				Event::Rewarded(1, 27),
+				Event::DelegatorDueReward(7, 1, 8),
+				Event::DelegatorDueReward(8, 1, 8),
+				Event::DelegatorDueReward(10, 1, 8),
+				Event::Rewarded(7, 8),
+				Event::Rewarded(8, 8),
+				Event::Rewarded(10, 8),
 				Event::CollatorChosen(13, 1, 50),
 				Event::CollatorChosen(13, 2, 40),
 				Event::CollatorChosen(13, 3, 20),
@@ -4556,3 +4556,355 @@ fn delegation_events_convey_correct_position() {
 			);
 		});
 }
+
+#[test]
+fn start_and_new_session_works() {
+	ExtBuilder::default()
+		.with_default_staking_token(vec![
+			(1, 100),
+			(2, 100),
+			(3, 100),
+			(4, 100),
+			(5, 100),
+		])
+		.with_default_token_candidates(vec![(1, 20), (2, 20)])
+		.build()
+		.execute_with(|| {
+			let mut expected = vec![
+			];
+			assert_eq_events!(expected.clone());
+
+			assert_eq!(Stake::staked(0), 40);
+			assert_eq!(Stake::at_stake(0, 1).bond, 20);
+			assert_eq!(Stake::at_stake(0, 2).bond, 20);
+
+			assert_eq!(Stake::staked(1), 40);
+			assert_eq!(Stake::at_stake(1, 1).bond, 20);
+			assert_eq!(Stake::at_stake(1, 2).bond, 20);
+
+			roll_to(5);
+
+			assert_eq!(Stake::staked(2), 40);
+			assert_eq!(Stake::at_stake(2, 1).bond, 20);
+			assert_eq!(Stake::at_stake(2, 2).bond, 20);
+			
+			assert_eq!(<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()), Some(vec![1, 2]));
+
+			let mut new = vec![
+				Event::CollatorChosen(2, 1, 20),
+				Event::CollatorChosen(2, 2, 20),
+				Event::NewRound(5, 1, 2, 40),
+			];
+			expected.append(&mut new);
+			assert_eq_events!(expected.clone());
+
+			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 1u32, 2u32));
+
+			roll_to(10);
+			
+			assert_eq!(Stake::staked(3), 50);
+			assert_eq!(Stake::at_stake(3, 1).bond, 20);
+			assert_eq!(Stake::at_stake(3, 2).bond, 20);
+			assert_eq!(Stake::at_stake(3, 3).bond, 10);
+
+			assert_eq!(<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()), Some(vec![1, 2, 3]));
+
+			let mut new1 = vec![
+				Event::JoinedCollatorCandidates(3, 10, 50),
+				Event::CollatorChosen(3, 1, 20),
+				Event::CollatorChosen(3, 2, 20),
+				Event::CollatorChosen(3, 3, 10),
+				Event::NewRound(10, 2, 3, 50),
+			];
+			expected.append(&mut new1);
+			assert_eq_events!(expected.clone());
+
+			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 1u32, 3u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(5), 10u128, 1u32, 4u32));
+
+			roll_to(15);
+			
+			assert_eq!(Stake::staked(4), 70);
+			assert_eq!(Stake::at_stake(4, 1).bond, 20);
+			assert_eq!(Stake::at_stake(4, 2).bond, 20);
+			assert_eq!(Stake::at_stake(4, 3).bond, 10);
+			assert_eq!(Stake::at_stake(4, 4).bond, 10);
+			assert_eq!(Stake::at_stake(4, 5).bond, 10);
+
+			assert_eq!(<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()), Some(vec![1, 2, 3, 4, 5]));
+
+			let mut new2 = vec![
+				Event::JoinedCollatorCandidates(4, 10, 60),
+				Event::JoinedCollatorCandidates(5, 10, 70),
+				Event::CollatorChosen(4, 1, 20),
+				Event::CollatorChosen(4, 2, 20),
+				Event::CollatorChosen(4, 3, 10),
+				Event::CollatorChosen(4, 4, 10),
+				Event::CollatorChosen(4, 5, 10),
+				Event::NewRound(15, 3, 5, 70),
+			];
+			expected.append(&mut new2);
+			assert_eq_events!(expected.clone());
+
+		});
+}
+
+#[test]
+fn adding_removing_staking_token_works() {
+	ExtBuilder::default()
+		.with_staking_tokens(vec![
+			(999, 100, 0),
+			(1, 100, 1),
+			(2, 100, 2),
+			(3, 100, 3),
+			(4, 100, 4),
+			(5, 100, 5),
+			(6, 100, 6),
+			(7, 100, 7),
+			(8, 100, 1),
+			(9, 100, 2),
+			(10, 100, 3),
+		])
+		.with_candidates(vec![(1, 20, 1), (2, 20, 2)])
+		.build()
+		.execute_with(|| {
+
+			assert_eq!(Stake::staking_liquidity_tokens().get(&1), Some(&Some((1u128, 1u128))));
+			assert_eq!(Stake::staking_liquidity_tokens().get(&2), Some(&Some((2u128, 1u128))));
+
+			assert_eq!(Stake::staking_liquidity_tokens().get(&3), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&4), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&5), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
+
+			assert_ok!(Stake::join_candidates(Origin::signed(8), 10u128, 1u32, 100u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(9), 10u128, 2u32, 100u32));
+
+			assert_noop!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			
+			// Add 3 as a staking token
+			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), 3u32, 100u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, 100u32));
+			assert_eq!(Stake::staking_liquidity_tokens().get(&3), Some(&None));
+			// Check that the rest remain the same
+			assert_eq!(Stake::staking_liquidity_tokens().get(&4), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&5), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
+			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			
+			roll_to(5);
+
+			// Check that 3 gets valuated and others don't
+			assert_eq!(Stake::staking_liquidity_tokens().get(&3), Some(&Some((5u128, 1u128))));
+			// Check that the rest remain the same
+			assert_eq!(Stake::staking_liquidity_tokens().get(&4), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&5), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
+			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			
+			// Adding same liquidity token doesn't work
+			assert_noop!(Stake::add_staking_liquidity_token(Origin::root(), 3u32, 100u32), Error::<Test>::StakingLiquidityTokenAlreadyListed);
+			// Remove a liquidity not yet added - noop
+			assert_noop!(Stake::remove_staking_liquidity_token(Origin::root(), 4u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			
+			// Remove a liquidity token
+			assert_ok!(Stake::remove_staking_liquidity_token(Origin::root(), 3u32, 100u32));
+			// Candidate cannot join using it.
+			assert_noop!(Stake::join_candidates(Origin::signed(10), 10u128, 3u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			
+			roll_to(10);
+
+			// Removed token is no longer valuated
+			assert_eq!(Stake::staking_liquidity_tokens().get(&3), None);
+			
+			// Add more staking tokens
+			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), 4u32, 100u32));
+			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), 5u32, 100u32));
+			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), 6u32, 100u32));
+			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), 7u32, 100u32));
+
+			// Candidates can join using the newly added tokens
+			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32));
+
+			roll_to(15);
+			
+			assert_eq!(Stake::staking_liquidity_tokens().get(&1), Some(&Some((1u128, 1u128))));
+			assert_eq!(Stake::staking_liquidity_tokens().get(&2), Some(&Some((2u128, 1u128))));
+			// No entry
+			assert_eq!(Stake::staking_liquidity_tokens().get(&3), None);
+			assert_eq!(Stake::staking_liquidity_tokens().get(&4), Some(&Some((1u128, 1u128))));
+			// Valuated even though no candidates or delegates use it
+			assert_eq!(Stake::staking_liquidity_tokens().get(&5), Some(&Some((1u128, 2u128))));
+			assert_eq!(Stake::staking_liquidity_tokens().get(&6), Some(&Some((1u128, 5u128))));
+			// Valuated as zero
+			assert_eq!(Stake::staking_liquidity_tokens().get(&7), Some(&None));
+			
+		});
+}
+
+#[test]
+fn delegation_tokens_work() {
+	ExtBuilder::default()
+		.with_staking_tokens(vec![
+			(999, 100, 0),
+			(1, 100, 1),
+			(2, 100, 2),
+			(3, 100, 3),
+			(4, 100, 4),
+			(5, 100, 5),
+			(6, 100, 6),
+			(7, 100, 7),
+			(8, 100, 1),
+			(8, 100, 2),
+			(9, 100, 1),
+			(9, 100, 2),
+			(10, 100, 3),
+			(11, 100, 7),
+		])
+		.with_candidates(vec![(1, 10, 1), (2, 10, 2), (3, 20, 3), (4, 20, 4), (5, 20, 5), (6, 20, 6), (7, 20, 7)])
+		.with_delegations(vec![(8, 1, 5), (8, 2, 10), (9, 1, 5), (10, 3, 10), (11, 7, 10)])
+		.build()
+		.execute_with(|| {
+
+			assert_noop!(Stake::delegate(Origin::signed(9), 3, 10, 100u32, 100u32), DispatchError::Module {
+				index: 1,
+				error: 0,
+				message: Some("BalanceTooLow")
+			});
+
+		});
+}
+
+
+#[test]
+fn token_valuations_works() {
+	ExtBuilder::default()
+		.with_staking_tokens(vec![
+			(999, 100, 0),
+			(1, 100, 1),
+			(2, 100, 2),
+			(3, 100, 3),
+			(4, 100, 4),
+			(5, 100, 5),
+			(6, 300, 6),
+			(7, 100, 7),
+			(8, 100, 1),
+			(8, 100, 2),
+			(9, 100, 1),
+			(9, 100, 2),
+			(10, 100, 3),
+			(11, 100, 7),
+		])
+		.with_candidates(vec![(1, 10, 1), (2, 10, 2), (3, 10, 3), (4, 20, 4), (5, 20, 5), (6, 200, 6), (7, 10, 7)])
+		.with_delegations(vec![(8, 1, 5), (8, 2, 10), (9, 1, 5), (10, 3, 10), (11, 7, 10)])
+		.build()
+		.execute_with(|| {
+
+		assert_ok!(Stake::set_total_selected(Origin::root(), 10));
+
+		assert_eq!(Stake::candidate_pool().0,
+			vec![Bond { owner: 1, amount: 20, liquidity_token: 1 }, Bond { owner: 2, amount: 20, liquidity_token: 2 }, Bond { owner: 3, amount: 20, liquidity_token: 3 }, Bond { owner: 4, amount: 20, liquidity_token: 4 }, Bond { owner: 5, amount: 20, liquidity_token: 5 }, Bond { owner: 6, amount: 200, liquidity_token: 6 }, Bond { owner: 7, amount: 20, liquidity_token: 7 }]);
+
+		assert_eq!(Stake::at_stake(0, 1).bond, 10);
+		assert_eq!(Stake::at_stake(0, 1).total, 20);
+		assert_eq!(Stake::at_stake(0, 2).bond, 10);
+		assert_eq!(Stake::at_stake(0, 2).total, 20);
+		assert_eq!(Stake::at_stake(0, 3).bond, 10);
+		assert_eq!(Stake::at_stake(0, 3).total, 20);
+		assert_eq!(Stake::at_stake(0, 4).bond, 20);
+		assert_eq!(Stake::at_stake(0, 4).total, 20);
+		assert_eq!(Stake::at_stake(0, 5).bond, 0);
+		assert_eq!(Stake::at_stake(0, 5).total, 0);
+		assert_eq!(Stake::at_stake(0, 6).bond, 200);
+		assert_eq!(Stake::at_stake(0, 6).total, 200);
+
+		assert_eq!(Stake::at_stake(1, 1).bond, 10);
+		assert_eq!(Stake::at_stake(1, 1).total, 20);
+		assert_eq!(Stake::at_stake(1, 2).bond, 10);
+		assert_eq!(Stake::at_stake(1, 2).total, 20);
+		assert_eq!(Stake::at_stake(1, 3).bond, 10);
+		assert_eq!(Stake::at_stake(1, 3).total, 20);
+		assert_eq!(Stake::at_stake(1, 4).bond, 20);
+		assert_eq!(Stake::at_stake(1, 4).total, 20);
+		assert_eq!(Stake::at_stake(1, 5).bond, 0);
+		assert_eq!(Stake::at_stake(1, 5).total, 0);
+		assert_eq!(Stake::at_stake(1, 6).bond, 200);
+		assert_eq!(Stake::at_stake(1, 6).total, 200);
+		assert_eq!(Stake::at_stake(1, 7).bond, 0);
+		assert_eq!(Stake::at_stake(1, 7).total, 0);
+
+		roll_to(5);
+
+		assert_eq!(Stake::at_stake(2, 1).bond, 10);
+		assert_eq!(Stake::at_stake(2, 1).total, 20);
+		assert_eq!(Stake::at_stake(2, 2).bond, 10);
+		assert_eq!(Stake::at_stake(2, 2).total, 20);
+		assert_eq!(Stake::at_stake(2, 3).bond, 10);
+		assert_eq!(Stake::at_stake(2, 3).total, 20);
+		assert_eq!(Stake::at_stake(2, 4).bond, 20);
+		assert_eq!(Stake::at_stake(2, 4).total, 20);
+		assert_eq!(Stake::at_stake(2, 5).bond, 20);
+		assert_eq!(Stake::at_stake(2, 5).total, 20);
+		assert_eq!(Stake::at_stake(2, 6).bond, 200);
+		assert_eq!(Stake::at_stake(2, 6).total, 200);
+		assert_eq!(Stake::at_stake(2, 7).bond, 0);
+		assert_eq!(Stake::at_stake(2, 7).total, 0);
+
+		let mut expected = vec![
+			Event::TotalSelectedSet(5, 10),
+			Event::CollatorChosen(2, 1, 20),
+			Event::CollatorChosen(2, 2, 40),
+			Event::CollatorChosen(2, 3, 100),
+			Event::CollatorChosen(2, 4, 20),
+			Event::CollatorChosen(2, 5, 10),
+			Event::CollatorChosen(2, 6, 40),
+			Event::NewRound(5, 1, 6, 230),];
+		assert_eq_events!(expected.clone());
+
+		assert_ok!(Stake::remove_staking_liquidity_token(Origin::root(), 3u32, 100u32));
+
+		roll_to(10);
+
+		assert_eq!(Stake::at_stake(3, 1).bond, 10);
+		assert_eq!(Stake::at_stake(3, 1).total, 20);
+		assert_eq!(Stake::at_stake(3, 2).bond, 10);
+		assert_eq!(Stake::at_stake(3, 2).total, 20);
+		assert_eq!(Stake::at_stake(3, 3).bond, 0);
+		assert_eq!(Stake::at_stake(3, 3).total, 0);
+		assert_eq!(Stake::at_stake(3, 4).bond, 20);
+		assert_eq!(Stake::at_stake(3, 4).total, 20);
+		assert_eq!(Stake::at_stake(3, 5).bond, 20);
+		assert_eq!(Stake::at_stake(3, 5).total, 20);
+		assert_eq!(Stake::at_stake(3, 6).bond, 200);
+		assert_eq!(Stake::at_stake(3, 6).total, 200);
+		assert_eq!(Stake::at_stake(3, 7).bond, 0);
+		assert_eq!(Stake::at_stake(3, 7).total, 0);
+
+		let mut new = vec![
+			Event::CollatorChosen(3, 1, 20),
+			Event::CollatorChosen(3, 2, 40),
+			Event::CollatorChosen(3, 4, 20),
+			Event::CollatorChosen(3, 5, 10),
+			Event::CollatorChosen(3, 6, 40),
+			Event::NewRound(10, 2, 5, 130),];
+		expected.append(&mut new);
+		assert_eq_events!(expected.clone());
+
+		});
+}
+

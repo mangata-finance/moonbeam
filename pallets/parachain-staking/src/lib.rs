@@ -135,7 +135,7 @@ pub mod pallet {
 	// TODO
 	// Bond needs to change
 
-	#[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
+	#[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo,)]
 	pub struct Bond<AccountId> {
 		pub owner: AccountId,
 		pub amount: Balance,
@@ -1178,12 +1178,6 @@ pub mod pallet {
 		}
 	}
 
-	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-	pub struct StakingLiquidityTokenInfo {
-		pub liquidity_token_id: TokenId,
-		pub pool_mng_to_liquidity_token_ratio: Option<(Balance, Balance)>,
-	}
-
 	pub(crate) type RoundIndex = u32;
 	type RewardPoint = u32;
 
@@ -1505,7 +1499,7 @@ pub mod pallet {
 	/// Points for each collator per round
 	pub type StakingLiquidityTokens<T: Config> = StorageValue<
 		_,
-		Vec<StakingLiquidityTokenInfo>,
+		BTreeMap<TokenId, Option<(Balance, Balance)>>,
 		ValueQuery,
 	>;
 
@@ -1791,7 +1785,7 @@ pub mod pallet {
 			ensure!(!Self::is_candidate(&acc), Error::<T>::CandidateExists);
 			ensure!(!Self::is_delegator(&acc), Error::<T>::DelegatorExists);
 			ensure!(
-				<StakingLiquidityTokens<T>>::get().into_iter().any(|x| x.liquidity_token_id == liquidity_token),
+				<StakingLiquidityTokens<T>>::get().contains_key(&liquidity_token),
 				Error::<T>::StakingLiquidityTokenNotListed
 			);
 			ensure!(
@@ -2220,13 +2214,10 @@ pub mod pallet {
 					Error::<T>::TooLowCurrentStakingLiquidityTokensCount
 				);
 				ensure!(
-					!staking_liquidity_tokens.into_iter().any(|x| x.liquidity_token_id == added_liquidity_token),
+					staking_liquidity_tokens.insert(added_liquidity_token, None).is_none(),
 					Error::<T>::StakingLiquidityTokenAlreadyListed
 				);
-				staking_liquidity_tokens.push(StakingLiquidityTokenInfo{
-					liquidity_token_id: added_liquidity_token,
-					pool_mng_to_liquidity_token_ratio: None,
-				});
+				
 				Ok(())
 			})?;
 			Ok(().into())
@@ -2245,10 +2236,10 @@ pub mod pallet {
 					Error::<T>::TooLowCurrentStakingLiquidityTokensCount
 				);
 				ensure!(
-					staking_liquidity_tokens.into_iter().any(|x| x.liquidity_token_id == removed_liquidity_token),
+					staking_liquidity_tokens.remove(&removed_liquidity_token).is_some(),
 					Error::<T>::StakingLiquidityTokenNotListed
 				);
-				staking_liquidity_tokens.retain( |x| ! x.liquidity_token_id == removed_liquidity_token);
+				
 				Ok(())
 			})?;
 			Ok(().into())
@@ -2366,7 +2357,7 @@ pub mod pallet {
 				}
 			};
 			let collator_fee = <CollatorCommission<T>>::get();
-			let collator_issuance = collator_fee * total_issuance;
+			let collator_issuance = collator_fee * left_issuance;
 			for (collator, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
 				let pct_due = Perbill::from_rational(pts, total);
 				let mut amt_due = pct_due * left_issuance;
@@ -2430,13 +2421,16 @@ pub mod pallet {
 		pub fn compute_top_candidates() -> (Vec<(T::AccountId, Balance)>, Balance) {
 			let mut candidates = <CandidatePool<T>>::get().0;
 			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
-			let staking_liquidity_tokens_map: BTreeMap<TokenId, Option<(Balance, Balance)>> =
-				staking_liquidity_tokens.iter().cloned().map(|x| (x.liquidity_token_id, x.pool_mng_to_liquidity_token_ratio)).collect();
-			// morph amount in candidates to exposure in mng
+
+			// morph amount in candidates to exposure in mga
 			let mut valuated_candidates: Vec<(T::AccountId, Balance)> = candidates.iter().filter_map(|x| 
-				if let Some(pool_ratio_option) = staking_liquidity_tokens_map.get(&x.liquidity_token) {
+				if let Some(pool_ratio_option) = staking_liquidity_tokens.get(&x.liquidity_token) {
 					if let Some(pool_ratio) = pool_ratio_option{
-						Some((x.owner.clone(), multiply_by_rational(x.amount, pool_ratio.0, pool_ratio.1).unwrap_or_else(|_| Balance::max_value())))
+						if !pool_ratio.1.is_zero(){
+							Some((x.owner.clone(), multiply_by_rational(x.amount, pool_ratio.0, pool_ratio.1).unwrap_or_else(|_| Balance::max_value())))
+						} else {
+							None
+						}
 					}else{
 						None
 					}
@@ -2446,9 +2440,11 @@ pub mod pallet {
 			).collect();
 			// order candidates by stake (least to greatest so requires `rev()`)
 			valuated_candidates.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-			// Add all staked valuated mng for Staked storage item
+			println!("valuated_candidates => {:?}", valuated_candidates);
+			// Add all staked valuated mga for Staked storage item
 			let total_staked: Balance = valuated_candidates.iter().cloned().fold(Zero::zero(), |acc, x| acc.saturating_add(x.1));
 			let top_n = <TotalSelected<T>>::get() as usize;
+			println!("TotalSelected => {:?}", top_n);
 			// choose the top TotalSelected qualified candidates, ordered by stake
 			let mut valuated_collators: Vec<(T::AccountId, Balance)> = valuated_candidates
 				.into_iter()
@@ -2463,9 +2459,8 @@ pub mod pallet {
 		pub fn staking_liquidity_tokens_snapshot() {
 			let mut staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
 
-			for staking_liquidity_token in staking_liquidity_tokens.iter_mut(){
-				staking_liquidity_token.pool_mng_to_liquidity_token_ratio =
-					T::StakingLiquidityTokenValuator::get_pool_state(staking_liquidity_token.liquidity_token_id.into());
+			for (token, valuation) in staking_liquidity_tokens.iter_mut(){
+				*valuation = T::StakingLiquidityTokenValuator::get_pool_state((*token).into());
 			}
 
 			<StakingLiquidityTokens<T>>::put(staking_liquidity_tokens);
