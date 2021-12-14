@@ -4336,7 +4336,6 @@ fn candidate_pool_updates_when_total_counted_changes() {
 				3
 			));
 			roll_to(30);
-			println!("test");
 			// 10: 18 -> 15 => 10 bumped to bottom, 8 bumped to top (- 18 + 16 = -2 for count)
 			assert_ok!(Stake::execute_delegation_request(Origin::signed(10), 10, 1));
 			// 16 + 17 + 19 + 20 + 20 = 92 (top 4 + self bond)

@@ -1226,6 +1226,9 @@ pub mod pallet {
 		/// Default commission due to collators, is `CollatorCommission` storage value in genesis
 		#[pallet::constant]
 		type DefaultCollatorCommission: Get<Perbill>;
+		/// Default parachain bond account 
+		#[pallet::constant]
+		type DefaultParachainBondReserveAccount: Get<Self::AccountId>;
 		/// Default percent of inflation set aside for parachain bond account
 		#[pallet::constant]
 		type DefaultParachainBondReservePercent: Get<Percent>;
@@ -1525,7 +1528,8 @@ pub mod pallet {
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
 			<InflationConfig<T>>::put(self.inflation_config.clone());
-			let liquidity_token_list: Vec<TokenId> = self.candidates.iter().cloned().map(|(_,_,l)| l).collect::<Vec<TokenId>>();
+			let mut liquidity_token_list: Vec<TokenId> = self.candidates.iter().cloned().map(|(_,_,l)| l).collect::<Vec<TokenId>>();
+			liquidity_token_list.dedup();
 			for (i, liquidity_token) in liquidity_token_list.iter().enumerate(){
 				if let Err(error) = <Pallet<T>>::add_staking_liquidity_token(
 					RawOrigin::Root.into(),
@@ -1601,7 +1605,7 @@ pub mod pallet {
 			// Set parachain bond config to default config
 			<ParachainBondInfo<T>>::put(ParachainBondConfig {
 				// must be set soon; if not => due inflation will be sent to collators/delegators
-				account: T::AccountId::default(),
+				account: T::DefaultParachainBondReserveAccount::get(),
 				percent: T::DefaultParachainBondReservePercent::get(),
 			});
 			// Set total selected candidates to minimum config
@@ -2317,7 +2321,7 @@ pub mod pallet {
 			}
 			let total_staked = <Staked<T>>::take(round_to_payout);
 			let total_issuance = Self::compute_issuance(total_staked);
-			println!("total_issuance => {:?}, {:?}", total_staked, total_issuance);
+			// println!("total_issuance => {:?}, {:?}", total_staked, total_issuance);
 			let mut left_issuance = total_issuance;
 			// reserve portion of issuance for parachain bond account
 			let bond_config = <ParachainBondInfo<T>>::get();
@@ -2332,7 +2336,7 @@ pub mod pallet {
 					imb.peek().into(),
 				));
 			}
-			println!("parachain_bond_reserve => {:?}, {:?}", parachain_bond_reserve, left_issuance);
+			// println!("parachain_bond_reserve => {:?}, {:?}", parachain_bond_reserve, left_issuance);
 			let mint = |amt: Balance, to: T::AccountId| {
 				
 				// TODO
@@ -2343,7 +2347,7 @@ pub mod pallet {
 				}
 				// match T::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into()) {
 				// 	Ok(amount_transferred) => Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek().into())),
-				// 	Err(e) => println!("err : {:?}", e),
+				// 	Err(e) => // println!("err : {:?}", e),
 				// }
 			};
 			// only pay out rewards at the end to transfer only total amount due
@@ -2361,10 +2365,10 @@ pub mod pallet {
 			for (collator, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
 				let pct_due = Perbill::from_rational(pts, total);
 				let mut amt_due = pct_due * left_issuance;
-				println!("amt_due => {:?}, {:?}", amt_due, pct_due);
+				// println!("amt_due => {:?}, {:?}", amt_due, pct_due);
 				// Take the snapshot of block author and delegations
 				let state = <AtStake<T>>::take(round_to_payout, &collator);
-				println!("state.delegations => {:?}, {:?}", state.delegations, round_to_payout);
+				// println!("state.delegations => {:?}, {:?}", state.delegations, round_to_payout);
 				if state.delegations.is_empty() {
 					// solo collator with no delegators
 					mint(amt_due, collator.clone());
@@ -2374,8 +2378,8 @@ pub mod pallet {
 					let commission = pct_due * collator_issuance;
 					amt_due -= commission;
 					let collator_reward = (collator_pct * amt_due) + commission;
-					println!("commission => {:?}, {:?}", commission, collator_pct);
-					println!("collator_reward => {:?}, {:?}", collator_reward, collator.clone());
+					// println!("commission => {:?}, {:?}", commission, collator_pct);
+					// println!("collator_reward => {:?}, {:?}", collator_reward, collator.clone());
 					mint(collator_reward, collator.clone());
 					// pay delegators due portion
 					for Bond { owner, amount, .. } in state.delegations {
@@ -2393,12 +2397,12 @@ pub mod pallet {
 			
 			// TODO
 			// Remove
-			println!("Due rewards => {:?}", due_rewards);
+			// println!("Due rewards => {:?}", due_rewards);
 
 			for (delegator, total_due) in due_rewards {
 				// TODO
 				// remove
-				println!("Due rewards => {:?}, {:?}", total_due, delegator);
+				// println!("Due rewards => {:?}, {:?}", total_due, delegator);
 				mint(total_due, delegator);
 			}
 		}
@@ -2440,11 +2444,11 @@ pub mod pallet {
 			).collect();
 			// order candidates by stake (least to greatest so requires `rev()`)
 			valuated_candidates.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-			println!("valuated_candidates => {:?}", valuated_candidates);
+			// println!("valuated_candidates => {:?}", valuated_candidates);
 			// Add all staked valuated mga for Staked storage item
 			let total_staked: Balance = valuated_candidates.iter().cloned().fold(Zero::zero(), |acc, x| acc.saturating_add(x.1));
 			let top_n = <TotalSelected<T>>::get() as usize;
-			println!("TotalSelected => {:?}", top_n);
+			// println!("TotalSelected => {:?}", top_n);
 			// choose the top TotalSelected qualified candidates, ordered by stake
 			let mut valuated_collators: Vec<(T::AccountId, Balance)> = valuated_candidates
 				.into_iter()
