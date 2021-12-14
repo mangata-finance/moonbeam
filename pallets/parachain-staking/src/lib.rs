@@ -43,49 +43,6 @@
 //! To revoke a delegation, call `revoke_delegation` with the collator candidate's account.
 //! To leave the set of delegators and revoke all delegations, call `leave_delegators`.
 
-// TODO
-// Collator liquidity token registration
-
-// TODO
-// Delegator liquidity token delegation unchecked maybe?
-
-// TODO
-// Modify Xyk to get pool snapshot
-
-// TODO
-// Create pool snapshot
-
-// TODO
-// Figure out changes required for the rest of the operations
-
-// TODO
-// Clear pool snapshot at appropriate place
-
-// TODO
-// Fix genesis setup vis-vis round/validators
-
-// TODO
-// Change parachain bond target to treasury
-
-// TODO
-// Check the pending request schedule works with the shift in validator injection 
-
-// Steps remaining
-// 1. Fix the extrinsics
-// 2. Fix the Pallet functions
-// 3. Add Multitoken storage items along with list updation mechanism
-// 4. Add Pool getters in xyk and incorporate in Config
-// 5. Make snapshot, and compute the valuation using them
-// 6. Figure out the genesis state vis-a-vis the shifted execution and the session pallet
-// 7. Build genesis accordingly
-// 8. Add chainspec
-// 9. Add dependencies and transform types
-// 10. Compile
-// 11. Dry runs for typical use cases
-// 12. Make mock
-// 13. Fix Tests
-// 14. Benchmarking? 
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 // #[cfg(any(test, feature = "runtime-benchmarks"))]
@@ -131,9 +88,6 @@ pub mod pallet {
 	/// Pallet for parachain staking
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
-
-	// TODO
-	// Bond needs to change
 
 	#[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo,)]
 	pub struct Bond<AccountId> {
@@ -189,9 +143,6 @@ pub mod pallet {
 		}
 	}
 
-	// COMMENT
-	// Only used in AtStake that is used in only in payouts, so it needs to only represent exposure
-
 	#[derive(Default, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Snapshot of collator state at the start of the round for which they are selected
 	pub struct CollatorSnapshot<AccountId> {
@@ -215,13 +166,7 @@ pub mod pallet {
 		pub change: CandidateBondChange,
 		pub when_executable: RoundIndex,
 	}
-
-	// TODO
-	// This needs liquidity_token id
-
-	// QUESTION
-	// Does collator withdrawal wipe storage related with this struct so as to allow rebond with another token?
-
+	
 	#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Collator candidate state with self bond + delegations
 	pub struct CollatorCandidate<AccountId> {
@@ -1459,11 +1404,7 @@ pub mod pallet {
 		CollatorSnapshot<T::AccountId>,
 		ValueQuery,
 	>;
-
-	// TODO
-	// Either relegate this storage item
-	// Or key it with liquidity_token id if useful
-
+	
 	#[pallet::storage]
 	#[pallet::getter(fn staked)]
 	/// Total counted stake for selected candidates in the round
@@ -2321,7 +2262,6 @@ pub mod pallet {
 			}
 			let total_staked = <Staked<T>>::take(round_to_payout);
 			let total_issuance = Self::compute_issuance(total_staked);
-			// println!("total_issuance => {:?}, {:?}", total_staked, total_issuance);
 			let mut left_issuance = total_issuance;
 			// reserve portion of issuance for parachain bond account
 			let bond_config = <ParachainBondInfo<T>>::get();
@@ -2336,19 +2276,10 @@ pub mod pallet {
 					imb.peek().into(),
 				));
 			}
-			// println!("parachain_bond_reserve => {:?}, {:?}", parachain_bond_reserve, left_issuance);
 			let mint = |amt: Balance, to: T::AccountId| {
-				
-				// TODO
-				// Undo
-
 				if let amount_transferred = T::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into()) {
 					Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek().into()));
 				}
-				// match T::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into()) {
-				// 	Ok(amount_transferred) => Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek().into())),
-				// 	Err(e) => // println!("err : {:?}", e),
-				// }
 			};
 			// only pay out rewards at the end to transfer only total amount due
 			let mut due_rewards: BTreeMap<T::AccountId, Balance> = BTreeMap::new();
@@ -2365,10 +2296,8 @@ pub mod pallet {
 			for (collator, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
 				let pct_due = Perbill::from_rational(pts, total);
 				let mut amt_due = pct_due * left_issuance;
-				// println!("amt_due => {:?}, {:?}", amt_due, pct_due);
 				// Take the snapshot of block author and delegations
 				let state = <AtStake<T>>::take(round_to_payout, &collator);
-				// println!("state.delegations => {:?}, {:?}", state.delegations, round_to_payout);
 				if state.delegations.is_empty() {
 					// solo collator with no delegators
 					mint(amt_due, collator.clone());
@@ -2378,8 +2307,6 @@ pub mod pallet {
 					let commission = pct_due * collator_issuance;
 					amt_due -= commission;
 					let collator_reward = (collator_pct * amt_due) + commission;
-					// println!("commission => {:?}, {:?}", commission, collator_pct);
-					// println!("collator_reward => {:?}, {:?}", collator_reward, collator.clone());
 					mint(collator_reward, collator.clone());
 					// pay delegators due portion
 					for Bond { owner, amount, .. } in state.delegations {
@@ -2394,31 +2321,11 @@ pub mod pallet {
 					}
 				}
 			}
-			
-			// TODO
-			// Remove
-			// println!("Due rewards => {:?}", due_rewards);
 
 			for (delegator, total_due) in due_rewards {
-				// TODO
-				// remove
-				// println!("Due rewards => {:?}, {:?}", total_due, delegator);
 				mint(total_due, delegator);
 			}
 		}
-
-		// COMMENT
-		// pay_stakers uses the Staked storage item to compute the issuance.
-		// For this to work as intended the Staked storage item must be updated with the valuated exposure of each collator.
-
-		// TODO
-		// Introduce RelevantStaked storage item and compute it in compute_top_candidates for it to used in pay_stakers
-
-		// TODO
-		// Edit the sort to use query the exposure of each candidate.
-
-		// TODO
-		// Must check in XYK that liquidity token reserve is not returned as zero
 
 		/// Compute the top `TotalSelected` candidates in the CandidatePool and return
 		/// a vec of their AccountIds (in the order of selection)
@@ -2444,11 +2351,9 @@ pub mod pallet {
 			).collect();
 			// order candidates by stake (least to greatest so requires `rev()`)
 			valuated_candidates.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-			// println!("valuated_candidates => {:?}", valuated_candidates);
 			// Add all staked valuated mga for Staked storage item
 			let total_staked: Balance = valuated_candidates.iter().cloned().fold(Zero::zero(), |acc, x| acc.saturating_add(x.1));
 			let top_n = <TotalSelected<T>>::get() as usize;
-			// println!("TotalSelected => {:?}", top_n);
 			// choose the top TotalSelected qualified candidates, ordered by stake
 			let mut valuated_collators: Vec<(T::AccountId, Balance)> = valuated_candidates
 				.into_iter()
@@ -2497,9 +2402,6 @@ pub mod pallet {
 		}
 	}
 
-	// COMMENT
-	// note_author always awards points to the actual current round using actual current validators 
-
 	/// Add reward points to block authors:
 	/// * 20 points to the block producer for producing a block in the chain
 	impl<T: Config> pallet_authorship::EventHandler<T::AccountId, T::BlockNumber> for Pallet<T> {
@@ -2515,20 +2417,6 @@ pub mod pallet {
 		}
 	}
 
-	// COMMENT
-	// RewardPaymentDelay needs to be >=1. It cannot be zero as the round is updated before the round number is passed in to fn pay_stakers.
-	// And since the current (post updation) round has just begun, it obviously has no payouts to be made.   
-
-	// COMMENT 
-	// pay_stakers pays the actual validators from RewardPaymentDelay rounds ago (from current round post updation)
-	// using the AwardedPts and Points updated during note_author with (actuals validator in acutal rounds)
-
-	// COMMENT
-	// select_top_candidates computes round winners by sorting exposure, and updating the AtStake and Staked for the provided round.
-	// So as to ensure that these items are against the correct round we pass in the round number of the next round, as the session pallet will push the validators it accquires via next_session to the Aura pallet in the next round (the one after the updated round) and not the current round (after updation).
-	
-	// COMMENT
-	// 
 	impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
 		fn new_session(index: SessionIndex) -> Option<Vec<T::AccountId>> {
 			Some(Self::selected_candidates())
@@ -2556,7 +2444,7 @@ pub mod pallet {
 			));
 		}
 		fn end_session(_: SessionIndex) {
-			// we don't care.
+			// ignore
 		}
 	}
 
