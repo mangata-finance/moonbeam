@@ -1504,8 +1504,7 @@ pub mod pallet {
 			// Initialize the delegations
 			for &(ref delegator, ref target, balance) in &self.delegations {
 				let associated_collator = self.candidates.iter().find(|b| b.0 == *target);
-				assert!(associated_collator.is_some(), "Delegation to non-existant collator");
-				let collator_liquidity_token = associated_collator.expect("Above assertion prevents failure").2;
+				let collator_liquidity_token = associated_collator.expect("Delegation to non-existant collator").2;
 				assert!(
 					T::Currency::free_balance(collator_liquidity_token.into(), delegator).into() >= balance,
 					"Account does not have enough balance to place delegation."
