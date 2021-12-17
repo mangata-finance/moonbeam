@@ -28,13 +28,13 @@ substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", defaul
 
 pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4" }
 mangata-primitives = { git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4", default-features = false }
-orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
+orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev-v4" }
 
 
 [dev-dependencies]
 similar-asserts = "1.1.0"
 
-orml-traits = { default-features = false, version = "0.4.1-dev", git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
+orml-traits = { default-features = false, version = "0.4.1-dev", git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev-v4" }
 pallet-assets-info = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4" }
 sp-core = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v4" }
 sp-io = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v4" }
