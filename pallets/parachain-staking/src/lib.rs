@@ -76,6 +76,7 @@ use sp_runtime::{
 };
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 use sp_staking::SessionIndex;
+use pallet_issuance::{ComputeIssuance, GetIssuance};
 
 pub use pallet::*;
 
@@ -1190,6 +1191,8 @@ pub mod pallet {
 		/// The valuator for our staking liquidity tokens, i.e., XYK
 		/// This should never return (_, Zero::zero())
 		type StakingLiquidityTokenValuator: Valuate;
+		/// The module used for computing and getting issuance
+		type Issuance: ComputeIssuance + GetIssuance;
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 	}
@@ -2434,6 +2437,7 @@ pub mod pallet {
 			let mut round = <Round<T>>::get();
 			// mutate round
 			round.update(n);
+			T::Issuance::compute_issuance(round.current);
 			// pay all stakers for T::RewardPaymentDelay rounds ago
 			Self::pay_stakers(round.current);
 			// select top collator candidates for next round
