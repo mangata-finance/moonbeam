@@ -6225,7 +6225,7 @@ dependencies = [
  "sp-io 4.0.0-dev",
  "sp-runtime 4.0.0-dev",
  "sp-std 4.0.0-dev",
- "xcm 0.9.12 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.12)",
+ "xcm 0.9.12 (git+https://github.com/mangata-finance/polkadot?branch=mangata-dev-v4)",
 ]
 
 [[package]]
@@ -7033,6 +7033,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-issuance"
+version = "2.0.0"
+dependencies = [
+ "frame-support 4.0.0-dev",
+ "frame-system 4.0.0-dev",
+ "mangata-primitives",
+ "orml-tokens",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime 4.0.0-dev",
+ "sp-std 4.0.0-dev",
+]
+
+[[package]]
 name = "pallet-maintenance-mode"
 version = "0.1.0"
 dependencies = [
@@ -7566,6 +7581,7 @@ dependencies = [
  "orml-traits 0.4.1-dev",
  "pallet-assets-info",
  "pallet-authorship 4.0.0-dev",
+ "pallet-issuance",
  "pallet-session 4.0.0-dev",
  "pallet-xyk",
  "parity-scale-codec",
@@ -14179,6 +14195,19 @@ dependencies = [
 [[package]]
 name = "xcm"
 version = "0.9.12"
+source = "git+https://github.com/mangata-finance/polkadot?branch=mangata-dev-v4#d4805336f1ff417e1f57f343594260da1a59660b"
+dependencies = [
+ "derivative",
+ "impl-trait-for-tuples 0.2.1",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "xcm-procedural 0.1.0 (git+https://github.com/mangata-finance/polkadot?branch=mangata-dev-v4)",
+]
+
+[[package]]
+name = "xcm"
+version = "0.9.12"
 source = "git+https://github.com/purestake/polkadot?branch=moonbeam-polkadot-v0.9.12#415ce0db8dd603903476a2361f23641a5dd0af47"
 dependencies = [
  "derivative",
@@ -14187,19 +14216,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "xcm-procedural 0.1.0 (git+https://github.com/purestake/polkadot?branch=moonbeam-polkadot-v0.9.12)",
-]
-
-[[package]]
-name = "xcm"
-version = "0.9.12"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.12#5feed981cf0fe671447eabaa9c0d235a8dd0003e"
-dependencies = [
- "derivative",
- "impl-trait-for-tuples 0.2.1",
- "log",
- "parity-scale-codec",
- "scale-info",
- "xcm-procedural 0.1.0 (git+https://github.com/paritytech/polkadot?branch=release-v0.9.12)",
 ]
 
 [[package]]
@@ -14261,7 +14277,7 @@ dependencies = [
 [[package]]
 name = "xcm-procedural"
 version = "0.1.0"
-source = "git+https://github.com/purestake/polkadot?branch=moonbeam-polkadot-v0.9.12#415ce0db8dd603903476a2361f23641a5dd0af47"
+source = "git+https://github.com/mangata-finance/polkadot?branch=mangata-dev-v4#d4805336f1ff417e1f57f343594260da1a59660b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -14271,7 +14287,7 @@ dependencies = [
 [[package]]
 name = "xcm-procedural"
 version = "0.1.0"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.12#5feed981cf0fe671447eabaa9c0d235a8dd0003e"
+source = "git+https://github.com/purestake/polkadot?branch=moonbeam-polkadot-v0.9.12#415ce0db8dd603903476a2361f23641a5dd0af47"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -14447,6 +14463,30 @@ dependencies = [
  "cc",
  "libc",
 ]
+
+[[patch.unused]]
+name = "artemis-asset"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-core"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-erc20-app"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-eth-app"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-ethereum"
+version = "0.1.0"
+
+[[patch.unused]]
+name = "pallet-verifier"
+version = "0.1.1"
 
 [[patch.unused]]
 name = "beefy-gadget"
@@ -14903,30 +14943,6 @@ version = "5.0.0-dev"
 [[patch.unused]]
 name = "try-runtime-cli"
 version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "artemis-asset"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-core"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-erc20-app"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-eth-app"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-ethereum"
-version = "0.1.0"
-
-[[patch.unused]]
-name = "pallet-verifier"
-version = "0.1.1"
 
 [[patch.unused]]
 name = "beefy-gadget"

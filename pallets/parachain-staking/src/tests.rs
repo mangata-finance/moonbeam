@@ -28,7 +28,7 @@ use crate::mock::{
 use crate::{
 	assert_eq_events, assert_event_emitted, assert_last_event, Bond, CandidateBondChange,
 	CandidateBondRequest, CollatorStatus, DelegationChange, DelegationRequest, DelegatorAdded,
-	Error, Event, Range, PairedOrLiquidityToken
+	Error, Event, PairedOrLiquidityToken
 };
 use frame_support::{assert_noop, assert_ok};
 use sp_runtime::{traits::Zero, DispatchError, Perbill, Percent};
@@ -45,10 +45,6 @@ fn invalid_root_origin_fails() {
 		);
 		assert_noop!(
 			Stake::set_collator_commission(Origin::signed(45), Perbill::from_percent(5)),
-			sp_runtime::DispatchError::BadOrigin
-		);
-		assert_noop!(
-			Stake::set_blocks_per_round(Origin::signed(45), 3u32),
 			sp_runtime::DispatchError::BadOrigin
 		);
 	});
@@ -126,375 +122,6 @@ fn cannot_set_collator_commission_to_current_collator_commission() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
 			Stake::set_collator_commission(Origin::root(), Perbill::from_percent(20)),
-			Error::<Test>::NoWritingSameValue
-		);
-	});
-}
-
-// SET BLOCKS PER ROUND
-
-#[test]
-fn set_blocks_per_round_event_emits_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Stake::set_blocks_per_round(Origin::root(), 3u32));
-		assert_last_event!(MetaEvent::Stake(Event::BlocksPerRoundSet(
-			0,
-			0,
-			5,
-			3,
-			Perbill::from_parts(463),
-			Perbill::from_parts(463),
-			Perbill::from_parts(463),
-		)));
-	});
-}
-
-#[test]
-fn set_blocks_per_round_storage_updates_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Stake::round().length, 5);
-		assert_ok!(Stake::set_blocks_per_round(Origin::root(), 3u32));
-		assert_eq!(Stake::round().length, 3);
-	});
-}
-
-#[test]
-fn cannot_set_blocks_per_round_below_module_min() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(
-			Stake::set_blocks_per_round(Origin::root(), 2u32),
-			Error::<Test>::CannotSetBelowMin
-		);
-	});
-}
-
-#[test]
-fn cannot_set_blocks_per_round_to_current_blocks_per_round() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(
-			Stake::set_blocks_per_round(Origin::root(), 5u32),
-			Error::<Test>::NoWritingSameValue
-		);
-	});
-}
-
-#[test]
-fn round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round() {
-	ExtBuilder::default()
-		.with_default_staking_token(vec![(1, 20)])
-		.with_default_token_candidates(vec![(1, 20)])
-		.build()
-		.execute_with(|| {
-			// default round every 5 blocks
-			roll_to(8);
-			assert_last_event!(MetaEvent::Stake(Event::NewRound(5, 1, 1, 20)));
-			assert_ok!(Stake::set_blocks_per_round(Origin::root(), 3u32));
-			roll_to(10);
-			assert_last_event!(MetaEvent::Stake(Event::NewRound(10, 2, 1, 20)));
-		});
-}
-
-// ~~ MONETARY GOVERNANCE ~~
-
-#[test]
-fn invalid_monetary_origin_fails() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(
-			Stake::set_staking_expectations(
-				Origin::signed(45),
-				Range {
-					min: 3u32.into(),
-					ideal: 4u32.into(),
-					max: 5u32.into()
-				}
-			),
-			sp_runtime::DispatchError::BadOrigin
-		);
-		assert_noop!(
-			Stake::set_inflation(
-				Origin::signed(45),
-				Range {
-					min: Perbill::from_percent(3),
-					ideal: Perbill::from_percent(4),
-					max: Perbill::from_percent(5)
-				}
-			),
-			sp_runtime::DispatchError::BadOrigin
-		);
-		assert_noop!(
-			Stake::set_inflation(
-				Origin::signed(45),
-				Range {
-					min: Perbill::from_percent(3),
-					ideal: Perbill::from_percent(4),
-					max: Perbill::from_percent(5)
-				}
-			),
-			sp_runtime::DispatchError::BadOrigin
-		);
-		assert_noop!(
-			Stake::set_parachain_bond_account(Origin::signed(45), 11),
-			sp_runtime::DispatchError::BadOrigin
-		);
-		assert_noop!(
-			Stake::set_parachain_bond_reserve_percent(Origin::signed(45), Percent::from_percent(2)),
-			sp_runtime::DispatchError::BadOrigin
-		);
-	});
-}
-
-// SET STAKING EXPECTATIONS
-
-#[test]
-fn set_staking_event_emits_event_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		// valid call succeeds
-		assert_ok!(Stake::set_staking_expectations(
-			Origin::root(),
-			Range {
-				min: 3u128,
-				ideal: 4u128,
-				max: 5u128,
-			}
-		));
-		assert_last_event!(MetaEvent::Stake(Event::StakeExpectationsSet(
-			3u128, 4u128, 5u128,
-		)));
-	});
-}
-
-#[test]
-fn set_staking_updates_storage_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			Stake::inflation_config().expect,
-			Range {
-				min: 700,
-				ideal: 700,
-				max: 700
-			}
-		);
-		assert_ok!(Stake::set_staking_expectations(
-			Origin::root(),
-			Range {
-				min: 3u128,
-				ideal: 4u128,
-				max: 5u128,
-			}
-		));
-		assert_eq!(
-			Stake::inflation_config().expect,
-			Range {
-				min: 3u128,
-				ideal: 4u128,
-				max: 5u128
-			}
-		);
-	});
-}
-
-#[test]
-fn cannot_set_invalid_staking_expectations() {
-	ExtBuilder::default().build().execute_with(|| {
-		// invalid call fails
-		assert_noop!(
-			Stake::set_staking_expectations(
-				Origin::root(),
-				Range {
-					min: 5u128,
-					ideal: 4u128,
-					max: 3u128
-				}
-			),
-			Error::<Test>::InvalidSchedule
-		);
-	});
-}
-
-#[test]
-fn cannot_set_same_staking_expectations() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Stake::set_staking_expectations(
-			Origin::root(),
-			Range {
-				min: 3u128,
-				ideal: 4u128,
-				max: 5u128
-			}
-		));
-		assert_noop!(
-			Stake::set_staking_expectations(
-				Origin::root(),
-				Range {
-					min: 3u128,
-					ideal: 4u128,
-					max: 5u128
-				}
-			),
-			Error::<Test>::NoWritingSameValue
-		);
-	});
-}
-
-// SET INFLATION
-
-#[test]
-fn set_inflation_event_emits_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		let (min, ideal, max): (Perbill, Perbill, Perbill) = (
-			Perbill::from_percent(3),
-			Perbill::from_percent(4),
-			Perbill::from_percent(5),
-		);
-		assert_ok!(Stake::set_inflation(
-			Origin::root(),
-			Range { min, ideal, max }
-		));
-		assert_last_event!(MetaEvent::Stake(Event::InflationSet(
-			min,
-			ideal,
-			max,
-			Perbill::from_parts(57),
-			Perbill::from_parts(75),
-			Perbill::from_parts(93),
-		)));
-	});
-}
-
-#[test]
-fn set_inflation_storage_updates_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		let (min, ideal, max): (Perbill, Perbill, Perbill) = (
-			Perbill::from_percent(3),
-			Perbill::from_percent(4),
-			Perbill::from_percent(5),
-		);
-		assert_eq!(
-			Stake::inflation_config().annual,
-			Range {
-				min: Perbill::from_percent(50),
-				ideal: Perbill::from_percent(50),
-				max: Perbill::from_percent(50)
-			}
-		);
-		assert_eq!(
-			Stake::inflation_config().round,
-			Range {
-				min: Perbill::from_percent(5),
-				ideal: Perbill::from_percent(5),
-				max: Perbill::from_percent(5)
-			}
-		);
-		assert_ok!(Stake::set_inflation(
-			Origin::root(),
-			Range { min, ideal, max }
-		),);
-		assert_eq!(Stake::inflation_config().annual, Range { min, ideal, max });
-		assert_eq!(
-			Stake::inflation_config().round,
-			Range {
-				min: Perbill::from_parts(57),
-				ideal: Perbill::from_parts(75),
-				max: Perbill::from_parts(93)
-			}
-		);
-	});
-}
-
-#[test]
-fn cannot_set_invalid_inflation() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(
-			Stake::set_inflation(
-				Origin::root(),
-				Range {
-					min: Perbill::from_percent(5),
-					ideal: Perbill::from_percent(4),
-					max: Perbill::from_percent(3)
-				}
-			),
-			Error::<Test>::InvalidSchedule
-		);
-	});
-}
-
-#[test]
-fn cannot_set_same_inflation() {
-	ExtBuilder::default().build().execute_with(|| {
-		let (min, ideal, max): (Perbill, Perbill, Perbill) = (
-			Perbill::from_percent(3),
-			Perbill::from_percent(4),
-			Perbill::from_percent(5),
-		);
-		assert_ok!(Stake::set_inflation(
-			Origin::root(),
-			Range { min, ideal, max }
-		),);
-		assert_noop!(
-			Stake::set_inflation(Origin::root(), Range { min, ideal, max }),
-			Error::<Test>::NoWritingSameValue
-		);
-	});
-}
-
-// SET PARACHAIN BOND ACCOUNT
-
-#[test]
-fn set_parachain_bond_account_event_emits_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Stake::set_parachain_bond_account(Origin::root(), 11));
-		assert_last_event!(MetaEvent::Stake(Event::ParachainBondAccountSet(0, 11)));
-	});
-}
-
-#[test]
-fn set_parachain_bond_account_storage_updates_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Stake::parachain_bond_info().account, 0);
-		assert_ok!(Stake::set_parachain_bond_account(Origin::root(), 11));
-		assert_eq!(Stake::parachain_bond_info().account, 11);
-	});
-}
-
-// SET PARACHAIN BOND RESERVE PERCENT
-
-#[test]
-fn set_parachain_bond_reserve_percent_event_emits_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Stake::set_parachain_bond_reserve_percent(
-			Origin::root(),
-			Percent::from_percent(50)
-		));
-		assert_last_event!(MetaEvent::Stake(Event::ParachainBondReservePercentSet(
-			Percent::from_percent(30),
-			Percent::from_percent(50),
-		)));
-	});
-}
-
-#[test]
-fn set_parachain_bond_reserve_percent_storage_updates_correctly() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			Stake::parachain_bond_info().percent,
-			Percent::from_percent(30)
-		);
-		assert_ok!(Stake::set_parachain_bond_reserve_percent(
-			Origin::root(),
-			Percent::from_percent(50)
-		));
-		assert_eq!(
-			Stake::parachain_bond_info().percent,
-			Percent::from_percent(50)
-		);
-	});
-}
-
-#[test]
-fn cannot_set_same_parachain_bond_reserve_percent() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(
-			Stake::set_parachain_bond_reserve_percent(Origin::root(), Percent::from_percent(30)),
 			Error::<Test>::NoWritingSameValue
 		);
 	});
@@ -3213,8 +2840,9 @@ fn delegator_schedule_revocation() {
 		});
 }
 
+// #[ignore]
 #[test]
-fn parachain_bond_inflation_reserve_matches_config() {
+fn reworked_deprecated_test() {
 	ExtBuilder::default()
 		.with_staking_tokens(vec![
 			(999, 600, 0),
@@ -3241,13 +2869,9 @@ fn parachain_bond_inflation_reserve_matches_config() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(StakeCurrency::free_balance(1, &11), 1);
-			// set parachain bond account so DefaultParachainBondReservePercent = 30% of inflation
-			// is allocated to this account hereafter
-			assert_ok!(Stake::set_parachain_bond_account(Origin::root(), 11));
 			roll_to(8);
 			// chooses top TotalSelectedCandidates (5), in order
 			let mut expected = vec![
-				Event::ParachainBondAccountSet(0, 11),
 				Event::CollatorChosen(2, 1, 50),
 				Event::CollatorChosen(2, 2, 40),
 				Event::CollatorChosen(2, 3, 20),
@@ -3279,14 +2903,13 @@ fn parachain_bond_inflation_reserve_matches_config() {
 				Event::CollatorChosen(4, 4, 20),
 				Event::CollatorChosen(4, 5, 10),
 				Event::NewRound(15, 3, 5, 140),
-				Event::ReservedForParachainBond(11, 9),
-				Event::Rewarded(1, 11),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::DelegatorDueReward(6, 1, 3),
-				Event::Rewarded(6, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(5, 1, 50),
 				Event::CollatorChosen(5, 2, 40),
 				Event::CollatorChosen(5, 3, 20),
@@ -3296,7 +2919,8 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			];
 			expected.append(&mut new);
 			assert_eq_events!(expected.clone());
-			assert_eq!(StakeCurrency::free_balance(0, &11), 9);
+
+			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 			// ~ set block author as 1 for all blocks this round
 			set_author(3, 1, 100);
 			set_author(4, 1, 100);
@@ -3313,28 +2937,26 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			roll_to(35);
 			let mut new2 = vec![
 				Event::DelegatorExitScheduled(4, 6, 6),
-				Event::ReservedForParachainBond(11, 9),
-				Event::Rewarded(1, 11),
-				Event::DelegatorDueReward(7, 1, 4),
-				Event::DelegatorDueReward(10, 1, 4),
-				Event::DelegatorDueReward(6, 1, 4),
-				Event::Rewarded(6, 4),
-				Event::Rewarded(7, 4),
-				Event::Rewarded(10, 4),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(6, 1, 50),
 				Event::CollatorChosen(6, 2, 40),
 				Event::CollatorChosen(6, 3, 20),
 				Event::CollatorChosen(6, 4, 20),
 				Event::CollatorChosen(6, 5, 10),
 				Event::NewRound(25, 5, 5, 140),
-				Event::ReservedForParachainBond(11, 10),
-				Event::Rewarded(1, 12),
-				Event::DelegatorDueReward(7, 1, 4),
-				Event::DelegatorDueReward(10, 1, 4),
-				Event::DelegatorDueReward(6, 1, 4),
-				Event::Rewarded(6, 4),
-				Event::Rewarded(7, 4),
-				Event::Rewarded(10, 4),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(7, 1, 50),
 				Event::CollatorChosen(7, 2, 40),
 				Event::CollatorChosen(7, 3, 20),
@@ -3343,14 +2965,13 @@ fn parachain_bond_inflation_reserve_matches_config() {
 				Event::NewRound(30, 6, 5, 140),
 				Event::DelegatorLeftCandidate(6, 1, 10, 40),
 				Event::DelegatorLeft(6, 10),
-				Event::ReservedForParachainBond(11, 10),
-				Event::Rewarded(1, 13),
-				Event::DelegatorDueReward(7, 1, 4),
-				Event::DelegatorDueReward(10, 1, 4),
-				Event::DelegatorDueReward(6, 1, 4),
-				Event::Rewarded(6, 4),
-				Event::Rewarded(7, 4),
-				Event::Rewarded(10, 4),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(8, 1, 40),
 				Event::CollatorChosen(8, 2, 40),
 				Event::CollatorChosen(8, 3, 20),
@@ -3360,28 +2981,19 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			];
 			expected.append(&mut new2);
 			assert_eq_events!(expected.clone());
-			assert_eq!(StakeCurrency::free_balance(0, &11), 38);
-			assert_ok!(Stake::set_parachain_bond_reserve_percent(
-				Origin::root(),
-				Percent::from_percent(50)
-			));
+			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 			// 6 won't be paid for this round because they left already
 			set_author(6, 1, 100);
 			roll_to(40);
 			// keep paying 6
 			let mut new3 = vec![
-				Event::ParachainBondReservePercentSet(
-					Percent::from_percent(30),
-					Percent::from_percent(50),
-				),
-				Event::ReservedForParachainBond(11, 18),
-				Event::Rewarded(1, 10),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::DelegatorDueReward(6, 1, 3),
-				Event::Rewarded(6, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(9, 1, 40),
 				Event::CollatorChosen(9, 2, 40),
 				Event::CollatorChosen(9, 3, 20),
@@ -3391,19 +3003,18 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			];
 			expected.append(&mut new3);
 			assert_eq_events!(expected.clone());
-			assert_eq!(StakeCurrency::free_balance(0, &11), 56);
+			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 			set_author(7, 1, 100);
 			roll_to(45);
 			// no more paying 6
 			let mut new4 = vec![
-				Event::ReservedForParachainBond(11, 19),
-				Event::Rewarded(1, 10),
-				Event::DelegatorDueReward(7, 1, 3),
-				Event::DelegatorDueReward(10, 1, 3),
-				Event::DelegatorDueReward(6, 1, 3),
-				Event::Rewarded(6, 3),
-				Event::Rewarded(7, 3),
-				Event::Rewarded(10, 3),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(10, 1, 40),
 				Event::CollatorChosen(10, 2, 40),
 				Event::CollatorChosen(10, 3, 20),
@@ -3413,19 +3024,18 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			];
 			expected.append(&mut new4);
 			assert_eq_events!(expected.clone());
-			assert_eq!(StakeCurrency::free_balance(0, &11), 75);
+			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 			set_author(8, 1, 100);
 			assert_ok!(Stake::delegate(Origin::signed(8), 1, 10, 10, 10));
 			roll_to(50);
 			// new delegation is not rewarded yet
 			let mut new5 = vec![
 				Event::Delegation(8, 10, 1, DelegatorAdded::AddedToTop { new_total: 50 }),
-				Event::ReservedForParachainBond(11, 20),
-				Event::Rewarded(1, 12),
-				Event::DelegatorDueReward(7, 1, 4),
-				Event::DelegatorDueReward(10, 1, 4),
-				Event::Rewarded(7, 4),
-				Event::Rewarded(10, 4),
+				Event::Rewarded(1, 182),
+				Event::DelegatorDueReward(7, 1, 61),
+				Event::DelegatorDueReward(10, 1, 61),
+				Event::Rewarded(7, 61),
+				Event::Rewarded(10, 61),
 				Event::CollatorChosen(11, 1, 50),
 				Event::CollatorChosen(11, 2, 40),
 				Event::CollatorChosen(11, 3, 20),
@@ -3435,18 +3045,17 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			];
 			expected.append(&mut new5);
 			assert_eq_events!(expected.clone());
-			assert_eq!(StakeCurrency::free_balance(0, &11), 95);
+			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 			set_author(9, 1, 100);
 			set_author(10, 1, 100);
 			roll_to(55);
 			// new delegation is still not rewarded yet
 			let mut new6 = vec![
-				Event::ReservedForParachainBond(11, 21),
-				Event::Rewarded(1, 12),
-				Event::DelegatorDueReward(7, 1, 4),
-				Event::DelegatorDueReward(10, 1, 4),
-				Event::Rewarded(7, 4),
-				Event::Rewarded(10, 4),
+				Event::Rewarded(1, 182),
+				Event::DelegatorDueReward(7, 1, 61),
+				Event::DelegatorDueReward(10, 1, 61),
+				Event::Rewarded(7, 61),
+				Event::Rewarded(10, 61),
 				Event::CollatorChosen(12, 1, 50),
 				Event::CollatorChosen(12, 2, 40),
 				Event::CollatorChosen(12, 3, 20),
@@ -3456,16 +3065,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			];
 			expected.append(&mut new6);
 			assert_eq_events!(expected.clone());
-			assert_eq!(StakeCurrency::free_balance(0, &11), 116);
+			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 			roll_to(60);
 			// new delegation is rewarded, 2 rounds after joining (`RewardPaymentDelay` is 2)
 			let mut new7 = vec![
-				Event::ReservedForParachainBond(11, 22),
-				Event::Rewarded(1, 13),
-				Event::DelegatorDueReward(7, 1, 4),
-				Event::DelegatorDueReward(10, 1, 4),
-				Event::Rewarded(7, 4),
-				Event::Rewarded(10, 4),
+				Event::Rewarded(1, 182),
+				Event::DelegatorDueReward(7, 1, 61),
+				Event::DelegatorDueReward(10, 1, 61),
+				Event::Rewarded(7, 61),
+				Event::Rewarded(10, 61),
 				Event::CollatorChosen(13, 1, 50),
 				Event::CollatorChosen(13, 2, 40),
 				Event::CollatorChosen(13, 3, 20),
@@ -3475,7 +3083,7 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			];
 			expected.append(&mut new7);
 			assert_eq_events!(expected);
-			assert_eq!(StakeCurrency::free_balance(0, &11), 138);
+			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 		});
 }
 
@@ -3537,12 +3145,11 @@ fn paid_collator_commission_matches_config() {
 				Event::CollatorChosen(5, 1, 40),
 				Event::CollatorChosen(5, 4, 40),
 				Event::NewRound(20, 4, 2, 80),
-				Event::ReservedForParachainBond(0, 9),
-				Event::Rewarded(4, 12),
-				Event::DelegatorDueReward(6, 4, 4),
-				Event::DelegatorDueReward(5, 4, 4),
-				Event::Rewarded(5, 4),
-				Event::Rewarded(6, 4),
+				Event::Rewarded(4, 182),
+				Event::DelegatorDueReward(6, 4, 61),
+				Event::DelegatorDueReward(5, 4, 61),
+				Event::Rewarded(5, 61),
+				Event::Rewarded(6, 61),
 				Event::CollatorChosen(6, 1, 40),
 				Event::CollatorChosen(6, 4, 40),
 				Event::NewRound(25, 5, 2, 80),
@@ -3730,8 +3337,7 @@ fn payout_distribution_to_solo_collators() {
 			roll_to(26);
 			// pay 60% total issuance to 1 and 40% total issuance to 2
 			let mut new1 = vec![
-				Event::ReservedForParachainBond(0, 15),
-				Event::Rewarded(1, 35),
+				Event::Rewarded(1, 304),
 				Event::CollatorChosen(5, 1, 100),
 				Event::CollatorChosen(5, 2, 90),
 				Event::CollatorChosen(5, 3, 80),
@@ -3756,9 +3362,8 @@ fn payout_distribution_to_solo_collators() {
 			roll_to(36);
 			// pay 20% issuance for all collators
 			let mut new2 = vec![
-				Event::ReservedForParachainBond(0, 16),
-				Event::Rewarded(1, 22),
-				Event::Rewarded(2, 14),
+				Event::Rewarded(1, 182),
+				Event::Rewarded(2, 122),
 				Event::CollatorChosen(7, 1, 100),
 				Event::CollatorChosen(7, 2, 90),
 				Event::CollatorChosen(7, 3, 80),
@@ -3778,12 +3383,11 @@ fn payout_distribution_to_solo_collators() {
 			roll_to(46);
 			// pay 20% issuance for all collators
 			let mut new3 = vec![
-				Event::ReservedForParachainBond(0, 16),
-				Event::Rewarded(5, 8),
-				Event::Rewarded(3, 8),
-				Event::Rewarded(4, 8),
-				Event::Rewarded(1, 8),
-				Event::Rewarded(2, 8),
+				Event::Rewarded(5, 61),
+				Event::Rewarded(3, 61),
+				Event::Rewarded(4, 61),
+				Event::Rewarded(1, 61),
+				Event::Rewarded(2, 61),
 				Event::CollatorChosen(9, 1, 100),
 				Event::CollatorChosen(9, 2, 90),
 				Event::CollatorChosen(9, 3, 80),
@@ -4010,28 +3614,26 @@ fn payouts_follow_delegation_changes() {
 			// keep paying 6 (note: inflation is in terms of total issuance so that's why 1 is 21)
 			let mut new2 = vec![
 				Event::DelegatorExitScheduled(3, 6, 5),
-				Event::ReservedForParachainBond(0, 15),
-				Event::Rewarded(1, 18),
-				Event::DelegatorDueReward(7, 1, 6),
-				Event::DelegatorDueReward(10, 1, 6),
-				Event::DelegatorDueReward(6, 1, 6),
-				Event::Rewarded(6, 6),
-				Event::Rewarded(7, 6),
-				Event::Rewarded(10, 6),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(5, 1, 50),
 				Event::CollatorChosen(5, 2, 40),
 				Event::CollatorChosen(5, 3, 20),
 				Event::CollatorChosen(5, 4, 20),
 				Event::CollatorChosen(5, 5, 10),
 				Event::NewRound(20, 4, 5, 140),
-				Event::ReservedForParachainBond(0, 16),
-				Event::Rewarded(1, 19),
-				Event::DelegatorDueReward(7, 1, 6),
-				Event::DelegatorDueReward(10, 1, 6),
-				Event::DelegatorDueReward(6, 1, 6),
-				Event::Rewarded(6, 6),
-				Event::Rewarded(7, 6),
-				Event::Rewarded(10, 6),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(6, 1, 50),
 				Event::CollatorChosen(6, 2, 40),
 				Event::CollatorChosen(6, 3, 20),
@@ -4048,28 +3650,26 @@ fn payouts_follow_delegation_changes() {
 			roll_to(35);
 			// keep paying 6
 			let mut new3 = vec![
-				Event::ReservedForParachainBond(0, 16),
-				Event::Rewarded(1, 20),
-				Event::DelegatorDueReward(7, 1, 6),
-				Event::DelegatorDueReward(10, 1, 6),
-				Event::DelegatorDueReward(6, 1, 6),
-				Event::Rewarded(6, 6),
-				Event::Rewarded(7, 6),
-				Event::Rewarded(10, 6),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(7, 1, 40),
 				Event::CollatorChosen(7, 2, 40),
 				Event::CollatorChosen(7, 3, 20),
 				Event::CollatorChosen(7, 4, 20),
 				Event::CollatorChosen(7, 5, 10),
 				Event::NewRound(30, 6, 5, 130),
-				Event::ReservedForParachainBond(0, 17),
-				Event::Rewarded(1, 21),
-				Event::DelegatorDueReward(7, 1, 7),
-				Event::DelegatorDueReward(10, 1, 7),
-				Event::DelegatorDueReward(6, 1, 7),
-				Event::Rewarded(6, 7),
-				Event::Rewarded(7, 7),
-				Event::Rewarded(10, 7),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(8, 1, 40),
 				Event::CollatorChosen(8, 2, 40),
 				Event::CollatorChosen(8, 3, 20),
@@ -4083,14 +3683,13 @@ fn payouts_follow_delegation_changes() {
 			roll_to(40);
 			// no more paying 6
 			let mut new4 = vec![
-				Event::ReservedForParachainBond(0, 18),
-				Event::Rewarded(1, 23),
-				Event::DelegatorDueReward(7, 1, 7),
-				Event::DelegatorDueReward(10, 1, 7),
-				Event::DelegatorDueReward(6, 1, 7),
-				Event::Rewarded(6, 7),
-				Event::Rewarded(7, 7),
-				Event::Rewarded(10, 7),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::DelegatorDueReward(6, 1, 49),
+				Event::Rewarded(6, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(9, 1, 40),
 				Event::CollatorChosen(9, 2, 40),
 				Event::CollatorChosen(9, 3, 20),
@@ -4106,12 +3705,11 @@ fn payouts_follow_delegation_changes() {
 			// new delegation is not rewarded yet
 			let mut new5 = vec![
 				Event::Delegation(8, 10, 1, DelegatorAdded::AddedToTop { new_total: 50 }),
-				Event::ReservedForParachainBond(0, 19),
-				Event::Rewarded(1, 27),
-				Event::DelegatorDueReward(7, 1, 9),
-				Event::DelegatorDueReward(10, 1, 9),
-				Event::Rewarded(7, 9),
-				Event::Rewarded(10, 9),
+				Event::Rewarded(1, 182),
+				Event::DelegatorDueReward(7, 1, 61),
+				Event::DelegatorDueReward(10, 1, 61),
+				Event::Rewarded(7, 61),
+				Event::Rewarded(10, 61),
 				Event::CollatorChosen(10, 1, 50),
 				Event::CollatorChosen(10, 2, 40),
 				Event::CollatorChosen(10, 3, 20),
@@ -4125,12 +3723,11 @@ fn payouts_follow_delegation_changes() {
 			roll_to(50);
 			// new delegation not rewarded yet
 			let mut new6 = vec![
-				Event::ReservedForParachainBond(0, 20),
-				Event::Rewarded(1, 28),
-				Event::DelegatorDueReward(7, 1, 9),
-				Event::DelegatorDueReward(10, 1, 9),
-				Event::Rewarded(7, 9),
-				Event::Rewarded(10, 9),
+				Event::Rewarded(1, 182),
+				Event::DelegatorDueReward(7, 1, 61),
+				Event::DelegatorDueReward(10, 1, 61),
+				Event::Rewarded(7, 61),
+				Event::Rewarded(10, 61),
 				Event::CollatorChosen(11, 1, 50),
 				Event::CollatorChosen(11, 2, 40),
 				Event::CollatorChosen(11, 3, 20),
@@ -4144,12 +3741,11 @@ fn payouts_follow_delegation_changes() {
 			// new delegation is rewarded for first time
 			// 2 rounds after joining (`RewardPaymentDelay` = 2)
 			let mut new7 = vec![
-				Event::ReservedForParachainBond(0, 21),
-				Event::Rewarded(1, 29),
-				Event::DelegatorDueReward(7, 1, 10),
-				Event::DelegatorDueReward(10, 1, 10),
-				Event::Rewarded(7, 10),
-				Event::Rewarded(10, 10),
+				Event::Rewarded(1, 182),
+				Event::DelegatorDueReward(7, 1, 61),
+				Event::DelegatorDueReward(10, 1, 61),
+				Event::Rewarded(7, 61),
+				Event::Rewarded(10, 61),
 				Event::CollatorChosen(12, 1, 50),
 				Event::CollatorChosen(12, 2, 40),
 				Event::CollatorChosen(12, 3, 20),
@@ -4163,14 +3759,13 @@ fn payouts_follow_delegation_changes() {
 			// new delegation is rewarded for first time
 			// 2 rounds after joining (`RewardPaymentDelay` = 2)
 			let mut new8 = vec![
-				Event::ReservedForParachainBond(0, 22),
-				Event::Rewarded(1, 27),
-				Event::DelegatorDueReward(7, 1, 8),
-				Event::DelegatorDueReward(8, 1, 8),
-				Event::DelegatorDueReward(10, 1, 8),
-				Event::Rewarded(7, 8),
-				Event::Rewarded(8, 8),
-				Event::Rewarded(10, 8),
+				Event::Rewarded(1, 158),
+				Event::DelegatorDueReward(7, 1, 49),
+				Event::DelegatorDueReward(8, 1, 49),
+				Event::DelegatorDueReward(10, 1, 49),
+				Event::Rewarded(7, 49),
+				Event::Rewarded(8, 49),
+				Event::Rewarded(10, 49),
 				Event::CollatorChosen(13, 1, 50),
 				Event::CollatorChosen(13, 2, 40),
 				Event::CollatorChosen(13, 3, 20),
@@ -4197,7 +3792,7 @@ fn delegations_merged_before_reward_payout() {
 			set_author(1, 3, 1);
 			set_author(1, 4, 1);
 			roll_to(16);
-			assert_eq!(StakeCurrency::free_balance(0u32, &1), 1);
+			assert_eq!(StakeCurrency::free_balance(0u32, &1), 39);
 			let expected_events = vec![
 				Event::CollatorChosen(2, 1, 50),
 				Event::CollatorChosen(2, 2, 50),
@@ -4209,17 +3804,16 @@ fn delegations_merged_before_reward_payout() {
 				Event::CollatorChosen(3, 3, 50),
 				Event::CollatorChosen(3, 4, 50),
 				Event::NewRound(10, 2, 4, 200),
-				Event::ReservedForParachainBond(0, 4),
-				Event::Rewarded(3, 1),
-				Event::DelegatorDueReward(5, 3, 1),
-				Event::Rewarded(4, 1),
-				Event::DelegatorDueReward(5, 4, 1),
-				Event::Rewarded(1, 1),
-				Event::DelegatorDueReward(5, 1, 1),
-				Event::Rewarded(2, 1),
-				Event::DelegatorDueReward(5, 2, 1),
+				Event::Rewarded(3, 39),
+				Event::DelegatorDueReward(5, 3, 37),
+				Event::Rewarded(4, 39),
+				Event::DelegatorDueReward(5, 4, 37),
+				Event::Rewarded(1, 39),
+				Event::DelegatorDueReward(5, 1, 37),
+				Event::Rewarded(2, 39),
+				Event::DelegatorDueReward(5, 2, 37),
 				// ALL REWARDS FOR 5 are merged into one payment + event
-				Event::Rewarded(5, 4),
+				Event::Rewarded(5, 148),
 				Event::CollatorChosen(4, 1, 50),
 				Event::CollatorChosen(4, 2, 50),
 				Event::CollatorChosen(4, 3, 50),
@@ -4558,17 +4152,14 @@ fn start_and_new_session_works() {
 			];
 			assert_eq_events!(expected.clone());
 
-			assert_eq!(Stake::staked(0), 40);
 			assert_eq!(Stake::at_stake(0, 1).bond, 20);
 			assert_eq!(Stake::at_stake(0, 2).bond, 20);
 
-			assert_eq!(Stake::staked(1), 40);
 			assert_eq!(Stake::at_stake(1, 1).bond, 20);
 			assert_eq!(Stake::at_stake(1, 2).bond, 20);
 
 			roll_to(5);
 
-			assert_eq!(Stake::staked(2), 40);
 			assert_eq!(Stake::at_stake(2, 1).bond, 20);
 			assert_eq!(Stake::at_stake(2, 2).bond, 20);
 			
@@ -4586,7 +4177,6 @@ fn start_and_new_session_works() {
 
 			roll_to(10);
 			
-			assert_eq!(Stake::staked(3), 50);
 			assert_eq!(Stake::at_stake(3, 1).bond, 20);
 			assert_eq!(Stake::at_stake(3, 2).bond, 20);
 			assert_eq!(Stake::at_stake(3, 3).bond, 10);
@@ -4608,7 +4198,6 @@ fn start_and_new_session_works() {
 
 			roll_to(15);
 			
-			assert_eq!(Stake::staked(4), 70);
 			assert_eq!(Stake::at_stake(4, 1).bond, 20);
 			assert_eq!(Stake::at_stake(4, 2).bond, 20);
 			assert_eq!(Stake::at_stake(4, 3).bond, 10);

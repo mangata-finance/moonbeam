@@ -16,7 +16,7 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{pallet, AwardedPts, Config, InflationInfo, Points, Range, Valuate, TokenId, Balance, DispatchError};
+use crate::{pallet, AwardedPts, Config, Points, Valuate, TokenId, Balance, DispatchError};
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Everything, GenesisBuild, OnFinalize, OnInitialize, Contains},
@@ -34,6 +34,7 @@ use scale_info::TypeInfo;
 use orml_tokens::{TransferDust, MultiTokenCurrency, MultiTokenReservableCurrency};
 use orml_traits::parameter_type_with_key;
 use mangata_primitives::Amount;
+use pallet_issuance::IssuanceConfigType;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -52,6 +53,7 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Issuance: pallet_issuance::{Pallet, Storage, Config, Event<T>},
 	}
 );
 
@@ -86,6 +88,18 @@ impl frame_system::Config for Test {
 	type BlockLength = ();
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
+}
+
+parameter_types! {
+	pub const HistoryLimit: u32 = 10u32;
+}
+
+impl pallet_issuance::Config for Test {
+	type Event = Event;
+	type NativeCurrencyId = MgaTokenId;
+	type Tokens = orml_tokens::MultiTokenCurrencyAdapter<Test>;
+	type BlocksPerRound = DefaultBlocksPerRound;
+	type HistoryLimit = HistoryLimit;
 }
 
 parameter_type_with_key! {
@@ -137,8 +151,6 @@ parameter_types! {
 	pub const MaxDelegatorsPerCandidate: u32 = 4;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
-	pub const DefaultParachainBondReserveAccount: AccountId = 0u64;
-	pub const DefaultParachainBondReservePercent: Percent = Percent::from_percent(30);
 	pub const MinCollatorStk: u128 = 10;
 	pub const MinDelegation: u128 = 3;
 }
@@ -159,13 +171,12 @@ impl Config for Test {
 	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
-	type DefaultParachainBondReserveAccount = DefaultParachainBondReserveAccount;
-	type DefaultParachainBondReservePercent = DefaultParachainBondReservePercent;
 	type MinCollatorStk = MinCollatorStk;
 	type MinCandidateStk = MinCollatorStk;
 	type MinDelegation = MinDelegation;
 	type NativeTokenId = MgaTokenId;
 	type StakingLiquidityTokenValuator = TestTokenValuator;
+	type Issuance = Issuance;
 	type WeightInfo = ();
 }
 
@@ -228,8 +239,6 @@ pub(crate) struct ExtBuilder {
 	collators: Vec<(AccountId, Balance, TokenId)>,
 	// [delegator, collator, delegation_amount]
 	delegations: Vec<(AccountId, AccountId, Balance)>,
-	// inflation config
-	inflation: InflationInfo<Balance>,
 }
 
 impl Default for ExtBuilder {
@@ -238,25 +247,6 @@ impl Default for ExtBuilder {
 			staking_tokens: vec![],
 			delegations: vec![],
 			collators: vec![],
-			inflation: InflationInfo {
-				expect: Range {
-					min: 700,
-					ideal: 700,
-					max: 700,
-				},
-				// not used
-				annual: Range {
-					min: Perbill::from_percent(50),
-					ideal: Perbill::from_percent(50),
-					max: Perbill::from_percent(50),
-				},
-				// unrealistically high parameterization, only for testing
-				round: Range {
-					min: Perbill::from_percent(5),
-					ideal: Perbill::from_percent(5),
-					max: Perbill::from_percent(5),
-				},
-			},
 		}
 	}
 }
@@ -292,12 +282,6 @@ impl ExtBuilder {
 		self
 	}
 
-	#[allow(dead_code)]
-	pub(crate) fn with_inflation(mut self, inflation: InflationInfo<Balance>) -> Self {
-		self.inflation = inflation;
-		self
-	}
-
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
 
 		let mut t = frame_system::GenesisConfig::default()
@@ -314,10 +298,24 @@ impl ExtBuilder {
 		stake::GenesisConfig::<Test> {
 			candidates: self.collators,
 			delegations: self.delegations,
-			inflation_config: self.inflation,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");
+
+		GenesisBuild::<Test>::assimilate_storage(
+			&pallet_issuance::GenesisConfig {
+				issuance_config: IssuanceConfigType {
+					cap: 4_000_000_000u128,
+					tge: 2_000_000_000u128,
+					linear_issuance_blocks: 13_140_000u32,
+					liquidity_mining_split: Percent::from_percent(50),
+					staking_split: Percent::from_percent(40),
+					crowdloan_split: Percent::from_percent(10),
+				}
+			},
+			&mut t,
+		)
+		.expect("pallet-issuance's storage can be assimilated");
 
 		let mut ext = sp_io::TestExternalities::new(t);
 		ext.execute_with(|| System::set_block_number(1));

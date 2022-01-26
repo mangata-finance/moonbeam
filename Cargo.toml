@@ -27,6 +27,7 @@ panic = "unwind"
 pallet-xyk = { path = "../mangata-node/pallets/xyk" }
 mangata-primitives = { path = "../mangata-node/primitives/mangata" }
 pallet-assets-info = { path = "../mangata-node/pallets/assets-info" }
+pallet-issuance = { path = "../mangata-node/pallets/issuance" }
 
 [patch."https://github.com/mangata-finance/open-runtime-module-library"]
 orml-tokens = { path = "../open-runtime-module-library/tokens" }
