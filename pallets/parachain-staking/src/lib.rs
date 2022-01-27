@@ -2218,12 +2218,14 @@ pub mod pallet {
 			let mut round = <Round<T>>::get();
 			// mutate round
 			round.update(n);
-			T::Issuance::compute_issuance(round.current);
 			// pay all stakers for T::RewardPaymentDelay rounds ago
 			Self::pay_stakers(round.current);
 			// select top collator candidates for next round
 			let (collator_count, _delegation_count, total_relevant_exposure, total_round_exposure) =
 				Self::select_top_candidates(round.current.saturating_add(One::one()));
+			// Calculate the issuance for next round
+			// No Issuance must happen after this point
+			T::Issuance::compute_issuance(round.current);
 			// start next round
 			<Round<T>>::put(round);
 			// Emit new round event
