@@ -16,26 +16,27 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{pallet, AwardedPts, Config, Points, Valuate, TokenId, Balance, DispatchError};
+use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Everything, GenesisBuild, OnFinalize, OnInitialize, Contains},
-	weights::Weight, PalletId
+	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize},
+	weights::Weight,
+	PalletId,
 };
-use sp_core::H256;
-use sp_io;
-use sp_runtime::{
-	testing::Header,
-	traits::{BlakeTwo256, IdentityLookup, AccountIdConversion},
-	Perbill, Percent, RuntimeDebug
-};
+use mangata_primitives::Amount;
+use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency, TransferDust};
+use orml_traits::parameter_type_with_key;
+use pallet_issuance::IssuanceInfo;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use orml_tokens::{TransferDust, MultiTokenCurrency, MultiTokenReservableCurrency};
-use orml_traits::parameter_type_with_key;
-use mangata_primitives::Amount;
-use pallet_issuance::IssuanceInfo;
+use sp_core::H256;
+use sp_io;
 use sp_runtime::traits::Zero;
+use sp_runtime::{
+	testing::Header,
+	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
+	Perbill, Percent, RuntimeDebug,
+};
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -123,7 +124,7 @@ parameter_types! {
 pub struct DustRemovalWhitelist;
 impl Contains<AccountId> for DustRemovalWhitelist {
 	fn contains(a: &AccountId) -> bool {
-		*a == TreasuryAccount::get() 
+		*a == TreasuryAccount::get()
 	}
 }
 
@@ -180,8 +181,7 @@ impl Config for Test {
 }
 
 #[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct TestTokenValuator{
-}
+pub struct TestTokenValuator {}
 
 impl Valuate for TestTokenValuator {
 	type Balance = Balance;
@@ -189,10 +189,10 @@ impl Valuate for TestTokenValuator {
 	type CurrencyId = TokenId;
 
 	fn get_liquidity_asset(
-        first_asset_id: Self::CurrencyId,
-        _second_asset_id: Self::CurrencyId,
-    ) -> Result<TokenId, DispatchError> {
-		Ok(first_asset_id/100)
+		first_asset_id: Self::CurrencyId,
+		_second_asset_id: Self::CurrencyId,
+	) -> Result<TokenId, DispatchError> {
+		Ok(first_asset_id / 100)
 	}
 
 	fn get_liquidity_token_mga_pool(
@@ -216,18 +216,18 @@ impl Valuate for TestTokenValuator {
 		unimplemented!("Not required in tests!")
 	}
 
-	fn get_pool_state(liquidity_token_id: Self::CurrencyId) -> Option<(Self::Balance, Self::Balance)> {
-
+	fn get_pool_state(
+		liquidity_token_id: Self::CurrencyId,
+	) -> Option<(Self::Balance, Self::Balance)> {
 		match liquidity_token_id {
-			1 => Some((1,1)),
-			2 => Some((2,1)),
-			3 => Some((5,1)),
-			4 => Some((1,1)),
-			5 => Some((1,2)),
-			6 => Some((1,5)),
+			1 => Some((1, 1)),
+			2 => Some((2, 1)),
+			3 => Some((5, 1)),
+			4 => Some((1, 1)),
+			5 => Some((1, 2)),
+			6 => Some((1, 5)),
 			_ => None,
 		}
-
 	}
 }
 
@@ -251,14 +251,26 @@ impl Default for ExtBuilder {
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_staking_tokens(mut self, staking_tokens: Vec<(AccountId, Balance, TokenId)>) -> Self {
+	pub(crate) fn with_staking_tokens(
+		mut self,
+		staking_tokens: Vec<(AccountId, Balance, TokenId)>,
+	) -> Self {
 		self.staking_tokens = staking_tokens;
 		self
 	}
 
-	pub(crate) fn with_default_staking_token(mut self, staking_tokens: Vec<(AccountId, Balance)>) -> Self {
+	pub(crate) fn with_default_staking_token(
+		mut self,
+		staking_tokens: Vec<(AccountId, Balance)>,
+	) -> Self {
 		let mut init_staking_token = vec![(999u64, 10u128, 0u32), (999u64, 100u128, 1u32)];
-		init_staking_token.append(&mut staking_tokens.iter().cloned().map(|(x, y)| (x, y, 1u32)).collect::<Vec<(u64, u128, u32)>>());
+		init_staking_token.append(
+			&mut staking_tokens
+				.iter()
+				.cloned()
+				.map(|(x, y)| (x, y, 1u32))
+				.collect::<Vec<(u64, u128, u32)>>(),
+		);
 		self.staking_tokens = init_staking_token;
 		self
 	}
@@ -268,8 +280,15 @@ impl ExtBuilder {
 		self
 	}
 
-	pub(crate) fn with_default_token_candidates(mut self, collators: Vec<(AccountId, Balance)>) -> Self {
-		self.collators = collators.iter().cloned().map(|(x, y)| (x, y, 1u32)).collect();
+	pub(crate) fn with_default_token_candidates(
+		mut self,
+		collators: Vec<(AccountId, Balance)>,
+	) -> Self {
+		self.collators = collators
+			.iter()
+			.cloned()
+			.map(|(x, y)| (x, y, 1u32))
+			.collect();
 		self
 	}
 
@@ -282,14 +301,18 @@ impl ExtBuilder {
 	}
 
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-
 		let mut t = frame_system::GenesisConfig::default()
 			.build_storage::<Test>()
 			.expect("Frame system builds valid default genesis config");
 
 		orml_tokens::GenesisConfig::<Test> {
 			tokens_endowment: Default::default(),
-            created_tokens_for_staking: self.staking_tokens.iter().cloned().map(|(who, amount, token)| (who, token, amount)).collect(),
+			created_tokens_for_staking: self
+				.staking_tokens
+				.iter()
+				.cloned()
+				.map(|(who, amount, token)| (who, token, amount))
+				.collect(),
 		}
 		.assimilate_storage(&mut t)
 		.expect("Tokens storage can be assimilated");
@@ -310,7 +333,7 @@ impl ExtBuilder {
 					liquidity_mining_split: Percent::from_percent(50),
 					staking_split: Percent::from_percent(40),
 					crowdloan_split: Percent::from_percent(10),
-				}
+				},
 			},
 			&mut t,
 		)
@@ -331,8 +354,9 @@ pub(crate) fn roll_to(n: u64) {
 		System::on_initialize(System::block_number());
 		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
-		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number()){
-			if System::block_number().is_zero(){
+		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number())
+		{
+			if System::block_number().is_zero() {
 				<Stake as pallet_session::SessionManager<_>>::start_session(Default::default());
 			} else {
 				<Stake as pallet_session::SessionManager<_>>::start_session(1);
@@ -409,7 +433,7 @@ pub type StakeCurrency = <Test as pallet::Config>::Currency;
 fn geneses() {
 	ExtBuilder::default()
 		.with_staking_tokens(vec![
-			(999, 100,0),
+			(999, 100, 0),
 			(1, 1000, 1),
 			(2, 300, 2),
 			(3, 100, 1),
@@ -456,7 +480,7 @@ fn geneses() {
 		});
 	ExtBuilder::default()
 		.with_staking_tokens(vec![
-			(999, 100,0),
+			(999, 100, 0),
 			(1, 100, 1),
 			(2, 100, 2),
 			(3, 100, 1),
@@ -469,7 +493,13 @@ fn geneses() {
 			(9, 100, 2),
 			(10, 100, 1),
 		])
-		.with_candidates(vec![(1, 20, 1), (2, 20, 2), (3, 20, 1), (4, 20, 3), (5, 10, 3)])
+		.with_candidates(vec![
+			(1, 20, 1),
+			(2, 20, 2),
+			(3, 20, 1),
+			(4, 20, 3),
+			(5, 10, 3),
+		])
 		.with_delegations(vec![
 			(6, 1, 10),
 			(7, 1, 10),

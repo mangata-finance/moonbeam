@@ -23,16 +23,16 @@
 //! 4. Miscellaneous Property-Based Tests
 
 use crate::mock::{
-	roll_to, set_author, StakeCurrency, Event as MetaEvent, ExtBuilder, Origin, Stake, Test,
+	roll_to, set_author, Event as MetaEvent, ExtBuilder, Origin, Stake, StakeCurrency, Test,
 };
 use crate::{
 	assert_eq_events, assert_event_emitted, assert_last_event, Bond, CandidateBondChange,
 	CandidateBondRequest, CollatorStatus, DelegationChange, DelegationRequest, DelegatorAdded,
-	Error, Event, PairedOrLiquidityToken
+	Error, Event, PairedOrLiquidityToken,
 };
 use frame_support::{assert_noop, assert_ok};
-use sp_runtime::{traits::Zero, DispatchError, Perbill};
 use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
+use sp_runtime::{traits::Zero, DispatchError, Perbill};
 
 // ~~ ROOT ~~
 
@@ -138,7 +138,12 @@ fn join_candidates_event_emits_correctly() {
 		.with_default_token_candidates(vec![(999, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(1),
+				10u128,
+				1u32,
+				1u32
+			));
 			assert_last_event!(MetaEvent::Stake(Event::JoinedCollatorCandidates(
 				1, 10u128, 20u128,
 			)));
@@ -154,7 +159,12 @@ fn join_candidates_reserves_balance() {
 		.execute_with(|| {
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 0);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 10);
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(1),
+				10u128,
+				1u32,
+				1u32
+			));
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 10);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 0);
 		});
@@ -168,7 +178,12 @@ fn join_candidates_increases_total_staked() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(Stake::total(1u32), 10);
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(1),
+				10u128,
+				1u32,
+				1u32
+			));
 			assert_eq!(Stake::total(1u32), 20);
 		});
 }
@@ -181,7 +196,12 @@ fn join_candidates_creates_candidate_state() {
 		.build()
 		.execute_with(|| {
 			assert!(Stake::candidate_state(1).is_none());
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(1),
+				10u128,
+				1u32,
+				1u32
+			));
 			let candidate_state = Stake::candidate_state(1).expect("just joined => exists");
 			assert_eq!(candidate_state.bond, 10u128);
 		});
@@ -195,7 +215,12 @@ fn join_candidates_adds_to_candidate_pool() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(Stake::candidate_pool().0.len(), 1usize);
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(1),
+				10u128,
+				1u32,
+				1u32
+			));
 			let candidate_pool = Stake::candidate_pool();
 			assert_eq!(
 				candidate_pool.0[0],
@@ -3110,7 +3135,12 @@ fn paid_collator_commission_matches_config() {
 				Event::NewRound(5, 1, 1, 40),
 			];
 			assert_eq_events!(expected.clone());
-			assert_ok!(Stake::join_candidates(Origin::signed(4), 20u128, 1u32, 100u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(4),
+				20u128,
+				1u32,
+				100u32
+			));
 			assert_last_event!(MetaEvent::Stake(Event::JoinedCollatorCandidates(
 				4, 20u128, 60u128,
 			)));
@@ -3236,7 +3266,12 @@ fn collator_selection_chooses_top_candidates() {
 			assert_last_event!(MetaEvent::Stake(Event::CandidateScheduledExit(1, 6, 3)));
 			roll_to(21);
 			assert_ok!(Stake::execute_leave_candidates(Origin::signed(6), 6));
-			assert_ok!(Stake::join_candidates(Origin::signed(6), 69u128, 1u32, 100u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(6),
+				69u128,
+				1u32,
+				100u32
+			));
 			assert_last_event!(MetaEvent::Stake(Event::JoinedCollatorCandidates(
 				6, 69u128, 469u128,
 			)));
@@ -3379,7 +3414,7 @@ fn payout_distribution_to_solo_collators() {
 			];
 			expected.append(&mut new2);
 			assert_eq_events!(expected);
-			
+
 			roll_to(46);
 			// pay 20% issuance for all collators
 			let mut new3 = vec![
@@ -3781,7 +3816,14 @@ fn payouts_follow_delegation_changes() {
 #[test]
 fn delegations_merged_before_reward_payout() {
 	ExtBuilder::default()
-		.with_staking_tokens(vec![(999, 280, 0),(1, 20, 1), (2, 20, 1), (3, 20, 1), (4, 20, 1), (5, 120, 1)])
+		.with_staking_tokens(vec![
+			(999, 280, 0),
+			(1, 20, 1),
+			(2, 20, 1),
+			(3, 20, 1),
+			(4, 20, 1),
+			(5, 120, 1),
+		])
 		.with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
 		.with_delegations(vec![(5, 1, 30), (5, 2, 30), (5, 3, 30), (5, 4, 30)])
 		.build()
@@ -4138,18 +4180,11 @@ fn delegation_events_convey_correct_position() {
 #[test]
 fn start_and_new_session_works() {
 	ExtBuilder::default()
-		.with_default_staking_token(vec![
-			(1, 100),
-			(2, 100),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-		])
+		.with_default_staking_token(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100)])
 		.with_default_token_candidates(vec![(1, 20), (2, 20)])
 		.build()
 		.execute_with(|| {
-			let mut expected = vec![
-			];
+			let mut expected = vec![];
 			assert_eq_events!(expected.clone());
 
 			assert_eq!(Stake::at_stake(0, 1).bond, 20);
@@ -4162,8 +4197,11 @@ fn start_and_new_session_works() {
 
 			assert_eq!(Stake::at_stake(2, 1).bond, 20);
 			assert_eq!(Stake::at_stake(2, 2).bond, 20);
-			
-			assert_eq!(<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()), Some(vec![1, 2]));
+
+			assert_eq!(
+				<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()),
+				Some(vec![1, 2])
+			);
 
 			let mut new = vec![
 				Event::CollatorChosen(2, 1, 20),
@@ -4173,15 +4211,23 @@ fn start_and_new_session_works() {
 			expected.append(&mut new);
 			assert_eq_events!(expected.clone());
 
-			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 1u32, 2u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(3),
+				10u128,
+				1u32,
+				2u32
+			));
 
 			roll_to(10);
-			
+
 			assert_eq!(Stake::at_stake(3, 1).bond, 20);
 			assert_eq!(Stake::at_stake(3, 2).bond, 20);
 			assert_eq!(Stake::at_stake(3, 3).bond, 10);
 
-			assert_eq!(<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()), Some(vec![1, 2, 3]));
+			assert_eq!(
+				<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()),
+				Some(vec![1, 2, 3])
+			);
 
 			let mut new1 = vec![
 				Event::JoinedCollatorCandidates(3, 10, 50),
@@ -4193,18 +4239,31 @@ fn start_and_new_session_works() {
 			expected.append(&mut new1);
 			assert_eq_events!(expected.clone());
 
-			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 1u32, 3u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(5), 10u128, 1u32, 4u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(4),
+				10u128,
+				1u32,
+				3u32
+			));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(5),
+				10u128,
+				1u32,
+				4u32
+			));
 
 			roll_to(15);
-			
+
 			assert_eq!(Stake::at_stake(4, 1).bond, 20);
 			assert_eq!(Stake::at_stake(4, 2).bond, 20);
 			assert_eq!(Stake::at_stake(4, 3).bond, 10);
 			assert_eq!(Stake::at_stake(4, 4).bond, 10);
 			assert_eq!(Stake::at_stake(4, 5).bond, 10);
 
-			assert_eq!(<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()), Some(vec![1, 2, 3, 4, 5]));
+			assert_eq!(
+				<Stake as pallet_session::SessionManager<_>>::new_session(Default::default()),
+				Some(vec![1, 2, 3, 4, 5])
+			);
 
 			let mut new2 = vec![
 				Event::JoinedCollatorCandidates(4, 10, 60),
@@ -4218,7 +4277,6 @@ fn start_and_new_session_works() {
 			];
 			expected.append(&mut new2);
 			assert_eq_events!(expected.clone());
-
 		});
 }
 
@@ -4241,9 +4299,14 @@ fn adding_removing_staking_token_works() {
 		.with_candidates(vec![(1, 20, 1), (2, 20, 2)])
 		.build()
 		.execute_with(|| {
-
-			assert_eq!(Stake::staking_liquidity_tokens().get(&1), Some(&Some((1u128, 1u128))));
-			assert_eq!(Stake::staking_liquidity_tokens().get(&2), Some(&Some((2u128, 1u128))));
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&1),
+				Some(&Some((1u128, 1u128)))
+			);
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&2),
+				Some(&Some((2u128, 1u128)))
+			);
 
 			assert_eq!(Stake::staking_liquidity_tokens().get(&3), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&4), None);
@@ -4251,82 +4314,209 @@ fn adding_removing_staking_token_works() {
 			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
 
-			assert_ok!(Stake::join_candidates(Origin::signed(8), 10u128, 1u32, 100u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(9), 10u128, 2u32, 100u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(8),
+				10u128,
+				1u32,
+				100u32
+			));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(9),
+				10u128,
+				2u32,
+				100u32
+			));
 
-			assert_noop!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(3), 10u128, 3u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+
 			// Add 3 as a staking token
-			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(3u32), 100u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, 100u32));
+			assert_ok!(Stake::add_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(3u32),
+				100u32
+			));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(3),
+				10u128,
+				3u32,
+				100u32
+			));
 			assert_eq!(Stake::staking_liquidity_tokens().get(&3), Some(&None));
 			// Check that the rest remain the same
 			assert_eq!(Stake::staking_liquidity_tokens().get(&4), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&5), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
-			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+
 			roll_to(5);
 
 			// Check that 3 gets valuated and others don't
-			assert_eq!(Stake::staking_liquidity_tokens().get(&3), Some(&Some((5u128, 1u128))));
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&3),
+				Some(&Some((5u128, 1u128)))
+			);
 			// Check that the rest remain the same
 			assert_eq!(Stake::staking_liquidity_tokens().get(&4), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&5), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
-			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+
 			// Adding same liquidity token doesn't work
-			assert_noop!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(3u32), 100u32), Error::<Test>::StakingLiquidityTokenAlreadyListed);
+			assert_noop!(
+				Stake::add_staking_liquidity_token(
+					Origin::root(),
+					PairedOrLiquidityToken::Liquidity(3u32),
+					100u32
+				),
+				Error::<Test>::StakingLiquidityTokenAlreadyListed
+			);
 			// Remove a liquidity not yet added - noop
-			assert_noop!(Stake::remove_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(4u32), 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+			assert_noop!(
+				Stake::remove_staking_liquidity_token(
+					Origin::root(),
+					PairedOrLiquidityToken::Liquidity(4u32),
+					100u32
+				),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+
 			// Remove a liquidity token
-			assert_ok!(Stake::remove_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(3u32), 100u32));
+			assert_ok!(Stake::remove_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(3u32),
+				100u32
+			));
 			// Candidate cannot join using it.
-			assert_noop!(Stake::join_candidates(Origin::signed(10), 10u128, 3u32, 100u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+			assert_noop!(
+				Stake::join_candidates(Origin::signed(10), 10u128, 3u32, 100u32),
+				Error::<Test>::StakingLiquidityTokenNotListed
+			);
+
 			roll_to(10);
 
 			// Removed token is no longer valuated
 			assert_eq!(Stake::staking_liquidity_tokens().get(&3), None);
-			
+
 			// Add more staking tokens
-			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(4u32), 100u32));
-			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(5u32), 100u32));
-			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(6u32), 100u32));
-			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(7u32), 100u32));
+			assert_ok!(Stake::add_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(4u32),
+				100u32
+			));
+			assert_ok!(Stake::add_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(5u32),
+				100u32
+			));
+			assert_ok!(Stake::add_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(6u32),
+				100u32
+			));
+			assert_ok!(Stake::add_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(7u32),
+				100u32
+			));
 
 			// Candidates can join using the newly added tokens
-			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(4),
+				10u128,
+				4u32,
+				100u32
+			));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(6),
+				10u128,
+				6u32,
+				100u32
+			));
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(7),
+				10u128,
+				7u32,
+				100u32
+			));
 
 			roll_to(15);
-			
-			assert_eq!(Stake::staking_liquidity_tokens().get(&1), Some(&Some((1u128, 1u128))));
-			assert_eq!(Stake::staking_liquidity_tokens().get(&2), Some(&Some((2u128, 1u128))));
+
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&1),
+				Some(&Some((1u128, 1u128)))
+			);
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&2),
+				Some(&Some((2u128, 1u128)))
+			);
 			// No entry
 			assert_eq!(Stake::staking_liquidity_tokens().get(&3), None);
-			assert_eq!(Stake::staking_liquidity_tokens().get(&4), Some(&Some((1u128, 1u128))));
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&4),
+				Some(&Some((1u128, 1u128)))
+			);
 			// Valuated even though no candidates or delegates use it
-			assert_eq!(Stake::staking_liquidity_tokens().get(&5), Some(&Some((1u128, 2u128))));
-			assert_eq!(Stake::staking_liquidity_tokens().get(&6), Some(&Some((1u128, 5u128))));
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&5),
+				Some(&Some((1u128, 2u128)))
+			);
+			assert_eq!(
+				Stake::staking_liquidity_tokens().get(&6),
+				Some(&Some((1u128, 5u128)))
+			);
 			// Valuated as zero
 			assert_eq!(Stake::staking_liquidity_tokens().get(&7), Some(&None));
-			
 		});
 }
 
@@ -4349,20 +4539,34 @@ fn delegation_tokens_work() {
 			(10, 100, 3),
 			(11, 100, 7),
 		])
-		.with_candidates(vec![(1, 10, 1), (2, 10, 2), (3, 20, 3), (4, 20, 4), (5, 20, 5), (6, 20, 6), (7, 20, 7)])
-		.with_delegations(vec![(8, 1, 5), (8, 2, 10), (9, 1, 5), (10, 3, 10), (11, 7, 10)])
+		.with_candidates(vec![
+			(1, 10, 1),
+			(2, 10, 2),
+			(3, 20, 3),
+			(4, 20, 4),
+			(5, 20, 5),
+			(6, 20, 6),
+			(7, 20, 7),
+		])
+		.with_delegations(vec![
+			(8, 1, 5),
+			(8, 2, 10),
+			(9, 1, 5),
+			(10, 3, 10),
+			(11, 7, 10),
+		])
 		.build()
 		.execute_with(|| {
-
-			assert_noop!(Stake::delegate(Origin::signed(9), 3, 10, 100u32, 100u32), DispatchError::Module {
-				index: 1,
-				error: 0,
-				message: Some("BalanceTooLow")
-			});
-
+			assert_noop!(
+				Stake::delegate(Origin::signed(9), 3, 10, 100u32, 100u32),
+				DispatchError::Module {
+					index: 1,
+					error: 0,
+					message: Some("BalanceTooLow")
+				}
+			);
 		});
 }
-
 
 #[test]
 fn token_valuations_works() {
@@ -4383,128 +4587,193 @@ fn token_valuations_works() {
 			(10, 100, 3),
 			(11, 100, 7),
 		])
-		.with_candidates(vec![(1, 10, 1), (2, 10, 2), (3, 10, 3), (4, 20, 4), (5, 20, 5), (6, 200, 6), (7, 10, 7)])
-		.with_delegations(vec![(8, 1, 5), (8, 2, 10), (9, 1, 5), (10, 3, 10), (11, 7, 10)])
+		.with_candidates(vec![
+			(1, 10, 1),
+			(2, 10, 2),
+			(3, 10, 3),
+			(4, 20, 4),
+			(5, 20, 5),
+			(6, 200, 6),
+			(7, 10, 7),
+		])
+		.with_delegations(vec![
+			(8, 1, 5),
+			(8, 2, 10),
+			(9, 1, 5),
+			(10, 3, 10),
+			(11, 7, 10),
+		])
 		.build()
 		.execute_with(|| {
+			assert_ok!(Stake::set_total_selected(Origin::root(), 10));
 
-		assert_ok!(Stake::set_total_selected(Origin::root(), 10));
+			assert_eq!(
+				Stake::candidate_pool().0,
+				vec![
+					Bond {
+						owner: 1,
+						amount: 20,
+						liquidity_token: 1
+					},
+					Bond {
+						owner: 2,
+						amount: 20,
+						liquidity_token: 2
+					},
+					Bond {
+						owner: 3,
+						amount: 20,
+						liquidity_token: 3
+					},
+					Bond {
+						owner: 4,
+						amount: 20,
+						liquidity_token: 4
+					},
+					Bond {
+						owner: 5,
+						amount: 20,
+						liquidity_token: 5
+					},
+					Bond {
+						owner: 6,
+						amount: 200,
+						liquidity_token: 6
+					},
+					Bond {
+						owner: 7,
+						amount: 20,
+						liquidity_token: 7
+					}
+				]
+			);
 
-		assert_eq!(Stake::candidate_pool().0,
-			vec![Bond { owner: 1, amount: 20, liquidity_token: 1 }, Bond { owner: 2, amount: 20, liquidity_token: 2 }, Bond { owner: 3, amount: 20, liquidity_token: 3 }, Bond { owner: 4, amount: 20, liquidity_token: 4 }, Bond { owner: 5, amount: 20, liquidity_token: 5 }, Bond { owner: 6, amount: 200, liquidity_token: 6 }, Bond { owner: 7, amount: 20, liquidity_token: 7 }]);
+			assert_eq!(Stake::at_stake(0, 1).bond, 10);
+			assert_eq!(Stake::at_stake(0, 1).total, 20);
+			assert_eq!(Stake::at_stake(0, 2).bond, 10);
+			assert_eq!(Stake::at_stake(0, 2).total, 20);
+			assert_eq!(Stake::at_stake(0, 3).bond, 10);
+			assert_eq!(Stake::at_stake(0, 3).total, 20);
+			assert_eq!(Stake::at_stake(0, 4).bond, 20);
+			assert_eq!(Stake::at_stake(0, 4).total, 20);
+			assert_eq!(Stake::at_stake(0, 5).bond, 0);
+			assert_eq!(Stake::at_stake(0, 5).total, 0);
+			assert_eq!(Stake::at_stake(0, 6).bond, 200);
+			assert_eq!(Stake::at_stake(0, 6).total, 200);
 
-		assert_eq!(Stake::at_stake(0, 1).bond, 10);
-		assert_eq!(Stake::at_stake(0, 1).total, 20);
-		assert_eq!(Stake::at_stake(0, 2).bond, 10);
-		assert_eq!(Stake::at_stake(0, 2).total, 20);
-		assert_eq!(Stake::at_stake(0, 3).bond, 10);
-		assert_eq!(Stake::at_stake(0, 3).total, 20);
-		assert_eq!(Stake::at_stake(0, 4).bond, 20);
-		assert_eq!(Stake::at_stake(0, 4).total, 20);
-		assert_eq!(Stake::at_stake(0, 5).bond, 0);
-		assert_eq!(Stake::at_stake(0, 5).total, 0);
-		assert_eq!(Stake::at_stake(0, 6).bond, 200);
-		assert_eq!(Stake::at_stake(0, 6).total, 200);
+			assert_eq!(Stake::at_stake(1, 1).bond, 10);
+			assert_eq!(Stake::at_stake(1, 1).total, 20);
+			assert_eq!(Stake::at_stake(1, 2).bond, 10);
+			assert_eq!(Stake::at_stake(1, 2).total, 20);
+			assert_eq!(Stake::at_stake(1, 3).bond, 10);
+			assert_eq!(Stake::at_stake(1, 3).total, 20);
+			assert_eq!(Stake::at_stake(1, 4).bond, 20);
+			assert_eq!(Stake::at_stake(1, 4).total, 20);
+			assert_eq!(Stake::at_stake(1, 5).bond, 0);
+			assert_eq!(Stake::at_stake(1, 5).total, 0);
+			assert_eq!(Stake::at_stake(1, 6).bond, 200);
+			assert_eq!(Stake::at_stake(1, 6).total, 200);
+			assert_eq!(Stake::at_stake(1, 7).bond, 0);
+			assert_eq!(Stake::at_stake(1, 7).total, 0);
 
-		assert_eq!(Stake::at_stake(1, 1).bond, 10);
-		assert_eq!(Stake::at_stake(1, 1).total, 20);
-		assert_eq!(Stake::at_stake(1, 2).bond, 10);
-		assert_eq!(Stake::at_stake(1, 2).total, 20);
-		assert_eq!(Stake::at_stake(1, 3).bond, 10);
-		assert_eq!(Stake::at_stake(1, 3).total, 20);
-		assert_eq!(Stake::at_stake(1, 4).bond, 20);
-		assert_eq!(Stake::at_stake(1, 4).total, 20);
-		assert_eq!(Stake::at_stake(1, 5).bond, 0);
-		assert_eq!(Stake::at_stake(1, 5).total, 0);
-		assert_eq!(Stake::at_stake(1, 6).bond, 200);
-		assert_eq!(Stake::at_stake(1, 6).total, 200);
-		assert_eq!(Stake::at_stake(1, 7).bond, 0);
-		assert_eq!(Stake::at_stake(1, 7).total, 0);
+			roll_to(5);
 
-		roll_to(5);
+			assert_eq!(Stake::at_stake(2, 1).bond, 10);
+			assert_eq!(Stake::at_stake(2, 1).total, 20);
+			assert_eq!(Stake::at_stake(2, 2).bond, 10);
+			assert_eq!(Stake::at_stake(2, 2).total, 20);
+			assert_eq!(Stake::at_stake(2, 3).bond, 10);
+			assert_eq!(Stake::at_stake(2, 3).total, 20);
+			assert_eq!(Stake::at_stake(2, 4).bond, 20);
+			assert_eq!(Stake::at_stake(2, 4).total, 20);
+			assert_eq!(Stake::at_stake(2, 5).bond, 20);
+			assert_eq!(Stake::at_stake(2, 5).total, 20);
+			assert_eq!(Stake::at_stake(2, 6).bond, 200);
+			assert_eq!(Stake::at_stake(2, 6).total, 200);
+			assert_eq!(Stake::at_stake(2, 7).bond, 0);
+			assert_eq!(Stake::at_stake(2, 7).total, 0);
 
-		assert_eq!(Stake::at_stake(2, 1).bond, 10);
-		assert_eq!(Stake::at_stake(2, 1).total, 20);
-		assert_eq!(Stake::at_stake(2, 2).bond, 10);
-		assert_eq!(Stake::at_stake(2, 2).total, 20);
-		assert_eq!(Stake::at_stake(2, 3).bond, 10);
-		assert_eq!(Stake::at_stake(2, 3).total, 20);
-		assert_eq!(Stake::at_stake(2, 4).bond, 20);
-		assert_eq!(Stake::at_stake(2, 4).total, 20);
-		assert_eq!(Stake::at_stake(2, 5).bond, 20);
-		assert_eq!(Stake::at_stake(2, 5).total, 20);
-		assert_eq!(Stake::at_stake(2, 6).bond, 200);
-		assert_eq!(Stake::at_stake(2, 6).total, 200);
-		assert_eq!(Stake::at_stake(2, 7).bond, 0);
-		assert_eq!(Stake::at_stake(2, 7).total, 0);
+			let mut expected = vec![
+				Event::TotalSelectedSet(5, 10),
+				Event::CollatorChosen(2, 1, 20),
+				Event::CollatorChosen(2, 2, 40),
+				Event::CollatorChosen(2, 3, 100),
+				Event::CollatorChosen(2, 4, 20),
+				Event::CollatorChosen(2, 5, 10),
+				Event::CollatorChosen(2, 6, 40),
+				Event::NewRound(5, 1, 6, 230),
+			];
+			assert_eq_events!(expected.clone());
 
-		let mut expected = vec![
-			Event::TotalSelectedSet(5, 10),
-			Event::CollatorChosen(2, 1, 20),
-			Event::CollatorChosen(2, 2, 40),
-			Event::CollatorChosen(2, 3, 100),
-			Event::CollatorChosen(2, 4, 20),
-			Event::CollatorChosen(2, 5, 10),
-			Event::CollatorChosen(2, 6, 40),
-			Event::NewRound(5, 1, 6, 230),];
-		assert_eq_events!(expected.clone());
+			assert_ok!(Stake::remove_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(3u32),
+				100u32
+			));
 
-		assert_ok!(Stake::remove_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(3u32), 100u32));
+			roll_to(10);
 
-		roll_to(10);
+			assert_eq!(Stake::at_stake(3, 1).bond, 10);
+			assert_eq!(Stake::at_stake(3, 1).total, 20);
+			assert_eq!(Stake::at_stake(3, 2).bond, 10);
+			assert_eq!(Stake::at_stake(3, 2).total, 20);
+			assert_eq!(Stake::at_stake(3, 3).bond, 0);
+			assert_eq!(Stake::at_stake(3, 3).total, 0);
+			assert_eq!(Stake::at_stake(3, 4).bond, 20);
+			assert_eq!(Stake::at_stake(3, 4).total, 20);
+			assert_eq!(Stake::at_stake(3, 5).bond, 20);
+			assert_eq!(Stake::at_stake(3, 5).total, 20);
+			assert_eq!(Stake::at_stake(3, 6).bond, 200);
+			assert_eq!(Stake::at_stake(3, 6).total, 200);
+			assert_eq!(Stake::at_stake(3, 7).bond, 0);
+			assert_eq!(Stake::at_stake(3, 7).total, 0);
 
-		assert_eq!(Stake::at_stake(3, 1).bond, 10);
-		assert_eq!(Stake::at_stake(3, 1).total, 20);
-		assert_eq!(Stake::at_stake(3, 2).bond, 10);
-		assert_eq!(Stake::at_stake(3, 2).total, 20);
-		assert_eq!(Stake::at_stake(3, 3).bond, 0);
-		assert_eq!(Stake::at_stake(3, 3).total, 0);
-		assert_eq!(Stake::at_stake(3, 4).bond, 20);
-		assert_eq!(Stake::at_stake(3, 4).total, 20);
-		assert_eq!(Stake::at_stake(3, 5).bond, 20);
-		assert_eq!(Stake::at_stake(3, 5).total, 20);
-		assert_eq!(Stake::at_stake(3, 6).bond, 200);
-		assert_eq!(Stake::at_stake(3, 6).total, 200);
-		assert_eq!(Stake::at_stake(3, 7).bond, 0);
-		assert_eq!(Stake::at_stake(3, 7).total, 0);
-
-		let mut new = vec![
-			Event::CollatorChosen(3, 1, 20),
-			Event::CollatorChosen(3, 2, 40),
-			Event::CollatorChosen(3, 4, 20),
-			Event::CollatorChosen(3, 5, 10),
-			Event::CollatorChosen(3, 6, 40),
-			Event::NewRound(10, 2, 5, 130),];
-		expected.append(&mut new);
-		assert_eq_events!(expected.clone());
-
+			let mut new = vec![
+				Event::CollatorChosen(3, 1, 20),
+				Event::CollatorChosen(3, 2, 40),
+				Event::CollatorChosen(3, 4, 20),
+				Event::CollatorChosen(3, 5, 10),
+				Event::CollatorChosen(3, 6, 40),
+				Event::NewRound(10, 2, 5, 130),
+			];
+			expected.append(&mut new);
+			assert_eq_events!(expected.clone());
 		});
 }
 
 #[test]
 fn paired_or_liquidity_token_works() {
 	ExtBuilder::default()
-		.with_default_staking_token(vec![
-			(1, 100),
-			(2, 100),
-			(3, 100),
-			(4, 100),
-			(5, 100),
-		])
+		.with_default_staking_token(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100)])
 		.with_default_token_candidates(vec![(1, 20), (2, 20)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Paired(7000u32), 100u32));
+			assert_ok!(Stake::add_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Paired(7000u32),
+				100u32
+			));
 			assert_eq!(Stake::staking_liquidity_tokens().get(&70), Some(&None));
 
-			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(700u32), 100u32));
+			assert_ok!(Stake::add_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(700u32),
+				100u32
+			));
 			assert_eq!(Stake::staking_liquidity_tokens().get(&700), Some(&None));
 
-			assert_ok!(Stake::remove_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(70u32), 100u32), );
+			assert_ok!(Stake::remove_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Liquidity(70u32),
+				100u32
+			),);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&70), None);
 
-			assert_ok!(Stake::remove_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Paired(70000u32), 100u32));
+			assert_ok!(Stake::remove_staking_liquidity_token(
+				Origin::root(),
+				PairedOrLiquidityToken::Paired(70000u32),
+				100u32
+			));
 			assert_eq!(Stake::staking_liquidity_tokens().get(&700), None);
-
 		});
 }
