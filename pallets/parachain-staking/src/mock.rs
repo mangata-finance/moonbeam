@@ -34,7 +34,8 @@ use scale_info::TypeInfo;
 use orml_tokens::{TransferDust, MultiTokenCurrency, MultiTokenReservableCurrency};
 use orml_traits::parameter_type_with_key;
 use mangata_primitives::Amount;
-use pallet_issuance::IssuanceConfigType;
+use pallet_issuance::IssuanceInfo;
+use sp_runtime::traits::Zero;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -98,7 +99,7 @@ impl pallet_issuance::Config for Test {
 	type Event = Event;
 	type NativeCurrencyId = MgaTokenId;
 	type Tokens = orml_tokens::MultiTokenCurrencyAdapter<Test>;
-	type BlocksPerRound = DefaultBlocksPerRound;
+	type BlocksPerRound = BlocksPerRound;
 	type HistoryLimit = HistoryLimit;
 }
 
@@ -139,8 +140,7 @@ impl orml_tokens::Config for Test {
 }
 
 parameter_types! {
-	pub const MinBlocksPerRound: u32 = 3;
-	pub const DefaultBlocksPerRound: u32 = 5;
+	pub const BlocksPerRound: u32 = 5;
 	pub const LeaveCandidatesDelay: u32 = 2;
 	pub const CandidateBondDelay: u32 = 2;
 	pub const LeaveDelegatorsDelay: u32 = 2;
@@ -159,8 +159,7 @@ impl Config for Test {
 	type Event = Event;
 	type Currency = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
-	type MinBlocksPerRound = MinBlocksPerRound;
-	type DefaultBlocksPerRound = DefaultBlocksPerRound;
+	type BlocksPerRound = BlocksPerRound;
 	type LeaveCandidatesDelay = LeaveCandidatesDelay;
 	type CandidateBondDelay = CandidateBondDelay;
 	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
@@ -304,7 +303,7 @@ impl ExtBuilder {
 
 		GenesisBuild::<Test>::assimilate_storage(
 			&pallet_issuance::GenesisConfig {
-				issuance_config: IssuanceConfigType {
+				issuance_config: IssuanceInfo {
 					cap: 4_000_000_000u128,
 					tge: 2_000_000_000u128,
 					linear_issuance_blocks: 13_140_000u32,
@@ -333,7 +332,11 @@ pub(crate) fn roll_to(n: u64) {
 		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
 		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number()){
-			<Stake as pallet_session::SessionManager<_>>::start_session(Default::default());
+			if System::block_number().is_zero(){
+				<Stake as pallet_session::SessionManager<_>>::start_session(Default::default());
+			} else {
+				<Stake as pallet_session::SessionManager<_>>::start_session(1);
+			}
 		}
 	}
 }

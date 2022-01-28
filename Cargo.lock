@@ -7038,6 +7038,7 @@ version = "2.0.0"
 dependencies = [
  "frame-support 4.0.0-dev",
  "frame-system 4.0.0-dev",
+ "log",
  "mangata-primitives",
  "orml-tokens",
  "parity-scale-codec",

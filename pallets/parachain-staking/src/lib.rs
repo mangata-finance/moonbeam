@@ -69,7 +69,7 @@ use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{
 	traits::{Saturating, Zero, One},
-	Perbill, Permill, Percent, RuntimeDebug,
+	Perbill, Permill, RuntimeDebug,
 	helpers_128bit::multiply_by_rational,
 };
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
@@ -1114,12 +1114,9 @@ pub mod pallet {
 		type Currency: MultiTokenCurrency<Self::AccountId> + MultiTokenReservableCurrency<Self::AccountId>;
 		/// The origin for monetary governance
 		type MonetaryGovernanceOrigin: EnsureOrigin<Self::Origin>;
-		/// Minimum number of blocks per round
-		#[pallet::constant]
-		type MinBlocksPerRound: Get<u32>;
 		/// Default number of blocks per round at genesis
 		#[pallet::constant]
-		type DefaultBlocksPerRound: Get<u32>;
+		type BlocksPerRound: Get<u32>;
 		/// Number of rounds that candidates remain bonded before exit request is executable
 		#[pallet::constant]
 		type LeaveCandidatesDelay: Get<RoundIndex>;
@@ -1478,10 +1475,10 @@ pub mod pallet {
 			// Set total selected candidates to minimum config
 			<TotalSelected<T>>::put(T::MinSelectedCandidates::get());
 			// Choose top TotalSelected collator candidates
-			let (v_count, _, total_relevant_exposure, total_round_exposure) = <Pallet<T>>::select_top_candidates(1u32);
+			let (v_count, _, total_relevant_exposure) = <Pallet<T>>::select_top_candidates(1u32);
 			// Start Round 1 at Block 0
 			let round: RoundInfo<T::BlockNumber> =
-				RoundInfo::new(0u32, 0u32.into(), T::DefaultBlocksPerRound::get());
+				RoundInfo::new(0u32, 0u32.into(), T::BlocksPerRound::get());
 			<Round<T>>::put(round);
 			// So that round 0 can be rewarded
 			for atstake in <AtStake<T>>::iter_prefix(1u32){
@@ -2121,7 +2118,7 @@ pub mod pallet {
 
 		/// Compute the top `TotalSelected` candidates in the CandidatePool and return
 		/// a vec of their AccountIds (in the order of selection)
-		pub fn compute_top_candidates() -> (Vec<(T::AccountId, Balance)>, Balance) {
+		pub fn compute_top_candidates() -> Vec<(T::AccountId, Balance)> {
 			let candidates = <CandidatePool<T>>::get().0;
 			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
 
@@ -2143,8 +2140,6 @@ pub mod pallet {
 			).collect();
 			// order candidates by stake (least to greatest so requires `rev()`)
 			valuated_candidates.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-			// Add all staked valuated mga for Staked storage item
-			let total_staked: Balance = valuated_candidates.iter().cloned().fold(Zero::zero(), |acc, x| acc.saturating_add(x.1));
 			let top_n = <TotalSelected<T>>::get() as usize;
 			// choose the top TotalSelected qualified candidates, ordered by stake
 			let mut valuated_collators: Vec<(T::AccountId, Balance)> = valuated_candidates
@@ -2154,7 +2149,7 @@ pub mod pallet {
 				.filter(|x| x.1 >= T::MinCollatorStk::get())
 				.collect::<_>();
 			valuated_collators.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-			(valuated_collators, total_staked)
+			valuated_collators
 		}
 
 		pub fn staking_liquidity_tokens_snapshot() {
@@ -2169,12 +2164,12 @@ pub mod pallet {
 
 		/// Best as in most cumulatively supported in terms of stake
 		/// Returns [collator_count, delegation_count, total staked]
-		fn select_top_candidates(now: RoundIndex) -> (u32, u32, Balance, Balance) {
+		fn select_top_candidates(now: RoundIndex) -> (u32, u32, Balance) {
 			let (mut collator_count, mut delegation_count, mut total_relevant_exposure) =
 				(0u32, 0u32, Balance::zero());
 			Self::staking_liquidity_tokens_snapshot();
 			// choose the top TotalSelected qualified candidates, ordered by stake
-			let (collators, total_round_exposure) = Self::compute_top_candidates();
+			let collators = Self::compute_top_candidates();
 			// snapshot exposure for round for weighting reward distribution
 			for collator in collators.iter() {
 				let state = <CandidateState<T>>::get(&collator.0)
@@ -2190,7 +2185,7 @@ pub mod pallet {
 
 			// insert canonical collator set
 			<SelectedCandidates<T>>::put(collators.iter().cloned().map(|x| x.0).collect::<Vec<T::AccountId>>());
-			(collator_count, delegation_count, total_relevant_exposure, total_round_exposure)
+			(collator_count, delegation_count, total_relevant_exposure)
 		}
 	}
 
@@ -2213,28 +2208,30 @@ pub mod pallet {
 		fn new_session(_: SessionIndex) -> Option<Vec<T::AccountId>> {
 			Some(Self::selected_candidates())
 		}
-		fn start_session(_: SessionIndex) {
-			let n = <frame_system::Pallet<T>>::block_number().saturating_add(One::one());
-			let mut round = <Round<T>>::get();
-			// mutate round
-			round.update(n);
-			// pay all stakers for T::RewardPaymentDelay rounds ago
-			Self::pay_stakers(round.current);
-			// select top collator candidates for next round
-			let (collator_count, _delegation_count, total_relevant_exposure, total_round_exposure) =
-				Self::select_top_candidates(round.current.saturating_add(One::one()));
-			// Calculate the issuance for next round
-			// No Issuance must happen after this point
-			T::Issuance::compute_issuance(round.current);
-			// start next round
-			<Round<T>>::put(round);
-			// Emit new round event
-			Self::deposit_event(Event::NewRound(
-				round.first,
-				round.current,
-				collator_count,
-				total_relevant_exposure,
-			));
+		fn start_session(session_index: SessionIndex) {
+			if !session_index.is_zero(){
+				let n = <frame_system::Pallet<T>>::block_number().saturating_add(One::one());
+				let mut round = <Round<T>>::get();
+				// mutate round
+				round.update(n);
+				// pay all stakers for T::RewardPaymentDelay rounds ago
+				Self::pay_stakers(round.current);
+				// select top collator candidates for next round
+				let (collator_count, _delegation_count, total_relevant_exposure) =
+					Self::select_top_candidates(round.current.saturating_add(One::one()));
+				// Calculate the issuance for next round
+				// No issuance must happen after this point
+				T::Issuance::compute_issuance(round.current);
+				// start next round
+				<Round<T>>::put(round);
+				// Emit new round event
+				Self::deposit_event(Event::NewRound(
+					round.first,
+					round.current,
+					collator_count,
+					total_relevant_exposure,
+				));
+			}
 		}
 		fn end_session(_: SessionIndex) {
 			// ignore

@@ -31,7 +31,7 @@ use crate::{
 	Error, Event, PairedOrLiquidityToken
 };
 use frame_support::{assert_noop, assert_ok};
-use sp_runtime::{traits::Zero, DispatchError, Perbill, Percent};
+use sp_runtime::{traits::Zero, DispatchError, Perbill};
 use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
 
 // ~~ ROOT ~~
