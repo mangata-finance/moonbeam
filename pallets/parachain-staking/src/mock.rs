@@ -94,6 +94,13 @@ impl frame_system::Config for Test {
 
 parameter_types! {
 	pub const HistoryLimit: u32 = 10u32;
+
+	pub const LiquidityMiningIssuanceVaultId: PalletId = PalletId(*b"py/lqmiv");
+	pub LiquidityMiningIssuanceVault: AccountId = LiquidityMiningIssuanceVaultId::get().into_account();
+	pub const StakingIssuanceVaultId: PalletId = PalletId(*b"py/stkiv");
+	pub StakingIssuanceVault: AccountId = StakingIssuanceVaultId::get().into_account();
+	pub const CrowdloanIssuanceVaultId: PalletId = PalletId(*b"py/crliv");
+	pub CrowdloanIssuanceVault: AccountId = CrowdloanIssuanceVaultId::get().into_account();
 }
 
 impl pallet_issuance::Config for Test {
@@ -102,6 +109,9 @@ impl pallet_issuance::Config for Test {
 	type Tokens = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 	type BlocksPerRound = BlocksPerRound;
 	type HistoryLimit = HistoryLimit;
+	type LiquidityMiningIssuanceVault = LiquidityMiningIssuanceVault;
+	type StakingIssuanceVault = StakingIssuanceVault;
+	type CrowdloanIssuanceVault = CrowdloanIssuanceVault;
 }
 
 parameter_type_with_key! {
@@ -177,6 +187,7 @@ impl Config for Test {
 	type NativeTokenId = MgaTokenId;
 	type StakingLiquidityTokenValuator = TestTokenValuator;
 	type Issuance = Issuance;
+	type StakingIssuanceVault = StakingIssuanceVault;
 	type WeightInfo = ();
 }
 

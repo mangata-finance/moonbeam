@@ -62,7 +62,7 @@ use weights::WeightInfo;
 
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
-use frame_support::traits::{EstimateNextSessionRotation, Get, Imbalance};
+use frame_support::traits::{EstimateNextSessionRotation, ExistenceRequirement, Get};
 use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
 use pallet_issuance::{ComputeIssuance, GetIssuance};
@@ -1195,6 +1195,9 @@ pub mod pallet {
 		type StakingLiquidityTokenValuator: Valuate;
 		/// The module used for computing and getting issuance
 		type Issuance: ComputeIssuance + GetIssuance;
+		#[pallet::constant]
+		/// The account id that holds the liquidity mining issuance
+		type StakingIssuanceVault: Get<Self::AccountId>;
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 	}
@@ -2131,12 +2134,16 @@ pub mod pallet {
 				T::Issuance::get_staking_issuance(round_to_payout).unwrap_or(Balance::zero());
 
 			let mint = |amt: Balance, to: T::AccountId| {
-				let amount_transferred =
-					T::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into());
-				Self::deposit_event(Event::Rewarded(
-					to.clone(),
-					amount_transferred.peek().into(),
-				));
+				let amount_transferred: Balance = T::Currency::transfer(
+					T::NativeTokenId::get().into(),
+					&T::StakingIssuanceVault::get(),
+					&to,
+					amt.into(),
+					ExistenceRequirement::AllowDeath,
+				)
+				.map_or(Zero::zero(), |_| amt)
+				.into();
+				Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred));
 			};
 			// only pay out rewards at the end to transfer only total amount due
 			let mut due_rewards: BTreeMap<T::AccountId, Balance> = BTreeMap::new();
