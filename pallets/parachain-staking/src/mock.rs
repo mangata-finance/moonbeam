@@ -318,6 +318,7 @@ impl ExtBuilder {
 
 		orml_tokens::GenesisConfig::<Test> {
 			tokens_endowment: Default::default(),
+			vesting_tokens: Default::default(),
 			created_tokens_for_staking: self
 				.staking_tokens
 				.iter()
@@ -341,9 +342,9 @@ impl ExtBuilder {
 					cap: 4_000_000_000u128,
 					tge: 2_000_000_000u128,
 					linear_issuance_blocks: 13_140_000u32,
-					liquidity_mining_split: Percent::from_percent(50),
-					staking_split: Percent::from_percent(40),
-					crowdloan_split: Percent::from_percent(10),
+					liquidity_mining_split: Perbill::from_parts(555555556),
+					staking_split: Perbill::from_parts(444444444),
+					crowdloan_allocation: 200_000_000u128,
 				},
 			},
 			&mut t,
