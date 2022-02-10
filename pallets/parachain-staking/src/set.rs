@@ -14,23 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
+use frame_support::traits::{Get, TryCollect};
 /* TODO: use orml_utilities::OrderedSet without leaking substrate v2.0 dependencies*/
-use parity_scale_codec::{Decode, Encode};
+use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
 
+pub struct MaxSize;
+
+impl Get<u32> for MaxSize {
+	fn get() -> u32 {
+		u32::MAX
+	}
+}
+
 /// An ordered set backed by `Vec`
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(RuntimeDebug, PartialEq, Eq, Encode, Decode, Default, Clone, TypeInfo)]
-pub struct OrderedSet<T>(pub Vec<T>);
+// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(RuntimeDebug, PartialEq, Eq, Encode, Decode, Default, Clone, TypeInfo, MaxEncodedLen)]
+pub struct OrderedSet<T>(pub frame_support::storage::bounded_vec::BoundedVec<T, MaxSize>);
 
 impl<T: Ord> OrderedSet<T> {
 	/// Create a new empty set
 	pub fn new() -> Self {
-		Self(Vec::new())
+		Self(Default::default())
 	}
 
 	/// Create a set from a `Vec`.
@@ -44,7 +53,7 @@ impl<T: Ord> OrderedSet<T> {
 	/// Create a set from a `Vec`.
 	/// Assume `v` is sorted and contain unique elements.
 	pub fn from_sorted_set(v: Vec<T>) -> Self {
-		Self(v)
+		Self(v.into_iter().try_collect().unwrap())
 	}
 
 	/// Insert an element.
@@ -53,8 +62,7 @@ impl<T: Ord> OrderedSet<T> {
 		match self.0.binary_search(&value) {
 			Ok(_) => false,
 			Err(loc) => {
-				self.0.insert(loc, value);
-				true
+				self.0.try_insert(loc, value).is_ok()
 			}
 		}
 	}
@@ -78,7 +86,7 @@ impl<T: Ord> OrderedSet<T> {
 
 	/// Clear the set
 	pub fn clear(&mut self) {
-		self.0.clear();
+		self.0.truncate(0);
 	}
 }
 
