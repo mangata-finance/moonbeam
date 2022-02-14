@@ -25,6 +25,7 @@ sp-runtime = { git = "https://github.com/mangata-finance/substrate", branch = "m
 sp-std = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v4", default-features = false }
 sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v4", default-features = false }
 substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
+pallet-collective = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v4", default-features = false }
 
 pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4" }
 mangata-primitives = { git = "https://github.com/mangata-finance/mangata-node", branch = "mangata-dev-v4", default-features = false }

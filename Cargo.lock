@@ -3973,7 +3973,7 @@ dependencies = [
  "pallet-bags-list",
  "pallet-balances",
  "pallet-bounties",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-democracy",
  "pallet-election-provider-multi-phase",
  "pallet-elections-phragmen",
@@ -4128,6 +4128,11 @@ name = "libm"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
+
+[[package]]
+name = "libm"
+version = "0.2.1"
+source = "git+https://github.com/rust-lang/libm?rev=2f3fc968f43d345f9b449938d050a9ea46a04c83#2f3fc968f43d345f9b449938d050a9ea46a04c83"
 
 [[package]]
 name = "libp2p"
@@ -5107,7 +5112,7 @@ dependencies = [
  "pallet-author-mapping",
  "pallet-author-slot-filter",
  "pallet-balances",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-crowdloan-rewards",
  "pallet-democracy",
  "pallet-democracy-precompiles",
@@ -5507,7 +5512,7 @@ dependencies = [
  "pallet-author-mapping",
  "pallet-author-slot-filter",
  "pallet-balances",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-crowdloan-rewards",
  "pallet-democracy",
  "pallet-ethereum",
@@ -5705,7 +5710,7 @@ dependencies = [
  "pallet-author-mapping",
  "pallet-author-slot-filter",
  "pallet-balances",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-crowdloan-rewards",
  "pallet-democracy",
  "pallet-ethereum",
@@ -6117,7 +6122,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a64b1ec5cda2586e284722486d802acf1f7dbdc623e2bfc57e65ca1cd099290"
 dependencies = [
  "autocfg 1.0.1",
- "libm",
+ "libm 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -6634,6 +6639,21 @@ dependencies = [
  "sp-core 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "sp-runtime 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "sp-std 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
+]
+
+[[package]]
+name = "pallet-collective"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-support 4.0.0-dev",
+ "frame-system 4.0.0-dev",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 4.0.0-dev",
+ "sp-io 4.0.0-dev",
+ "sp-runtime 4.0.0-dev",
+ "sp-std 4.0.0-dev",
 ]
 
 [[package]]
@@ -7541,6 +7561,7 @@ dependencies = [
  "frame-support 4.0.0-dev",
  "frame-system 4.0.0-dev",
  "hex-literal",
+ "libm 0.2.1 (git+https://github.com/rust-lang/libm?rev=2f3fc968f43d345f9b449938d050a9ea46a04c83)",
  "log",
  "mangata-primitives",
  "orml-tokens",
@@ -7581,6 +7602,7 @@ dependencies = [
  "orml-traits 0.4.1-dev",
  "pallet-assets-info",
  "pallet-authorship 4.0.0-dev",
+ "pallet-collective 4.0.0-dev",
  "pallet-issuance",
  "pallet-session 4.0.0-dev",
  "pallet-xyk",
@@ -8839,7 +8861,7 @@ dependencies = [
  "pallet-babe",
  "pallet-balances",
  "pallet-bounties",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-democracy",
  "pallet-election-provider-multi-phase",
  "pallet-elections-phragmen",
@@ -9972,7 +9994,7 @@ dependencies = [
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-grandpa",
  "pallet-im-online",
  "pallet-indices",
@@ -10038,7 +10060,7 @@ dependencies = [
  "log",
  "pallet-asset-manager",
  "pallet-author-mapping",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-migrations",
  "parachain-staking",
  "sp-runtime 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
@@ -14038,7 +14060,7 @@ dependencies = [
  "pallet-babe",
  "pallet-bags-list",
  "pallet-balances",
- "pallet-collective",
+ "pallet-collective 4.0.0-dev (git+https://github.com/purestake/substrate?branch=moonbeam-polkadot-v0.9.12)",
  "pallet-democracy",
  "pallet-election-provider-multi-phase",
  "pallet-elections-phragmen",
@@ -14465,6 +14487,910 @@ dependencies = [
 ]
 
 [[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "beefy-primitives"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-executive"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-mmr-primitives"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-mmr-rpc"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "remote-externalities"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-light"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.9.0"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-block-builder"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-blockchain"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-database"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-npos-elections-solution-type"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "sp-tasks"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.9.0"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "beefy-primitives"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-executive"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-mmr-primitives"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-mmr-rpc"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "remote-externalities"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-light"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.9.0"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-block-builder"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-blockchain"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+
+[[patch.unused]]
+name = "sp-database"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-npos-elections-solution-type"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "sp-tasks"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.9.0"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+
+[[patch.unused]]
 name = "artemis-asset"
 version = "0.1.1"
 
@@ -14487,915 +15413,3 @@ version = "0.1.0"
 [[patch.unused]]
 name = "pallet-verifier"
 version = "0.1.1"
-
-[[patch.unused]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-merkle-tree"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "fork-tree"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "frame-benchmarking-cli"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-election-provider-support"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-system-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-try-runtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "pallet-aura"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-babe"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bags-list"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-democracy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-election-provider-multi-phase"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-identity"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-im-online"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-indices"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-rpc"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-nicks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-proxy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-scheduler"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-sudo"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-treasury"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-utility"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-vesting"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "remote-externalities"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-allocator"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-authority-discovery"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-basic-authorship"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-block-builder"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec-derive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-cli"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-client-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-epochs"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-informant"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-light"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-network"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-network-gossip"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-peerset"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-proposer-metrics"
-version = "0.9.0"
-
-[[patch.unused]]
-name = "sc-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-api"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-server"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-service"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-sync-state-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-telemetry"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing-proc-macro"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-utils"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-block-builder"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-blockchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-vrf"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-database"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-keyring"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-maybe-compressed-blob"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections-solution-type"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-serializer"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "sp-tasks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-storage-proof"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-build-script-utils"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "substrate-frame-rpc-system"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-prometheus-endpoint"
-version = "0.9.0"
-
-[[patch.unused]]
-name = "substrate-test-client"
-version = "2.0.1"
-
-[[patch.unused]]
-name = "substrate-wasm-builder"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "try-runtime-cli"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-merkle-tree"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "fork-tree"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "frame-benchmarking-cli"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-election-provider-support"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-system-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-try-runtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "pallet-aura"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-babe"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bags-list"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-democracy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-election-provider-multi-phase"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-identity"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-im-online"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-indices"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-rpc"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-nicks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-proxy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-scheduler"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-sudo"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-treasury"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-utility"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-vesting"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "remote-externalities"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-allocator"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-authority-discovery"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-basic-authorship"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-block-builder"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec-derive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-cli"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-client-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-epochs"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-informant"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-light"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-network"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-network-gossip"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-peerset"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-proposer-metrics"
-version = "0.9.0"
-
-[[patch.unused]]
-name = "sc-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-api"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-server"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-service"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-sync-state-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-telemetry"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing-proc-macro"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-utils"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-block-builder"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-blockchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-vrf"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-database"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-keyring"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-maybe-compressed-blob"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections-solution-type"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-serializer"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "sp-tasks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-storage-proof"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-build-script-utils"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "substrate-frame-rpc-system"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-prometheus-endpoint"
-version = "0.9.0"
-
-[[patch.unused]]
-name = "substrate-test-client"
-version = "2.0.1"
-
-[[patch.unused]]
-name = "substrate-wasm-builder"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "try-runtime-cli"
-version = "0.10.0-dev"
