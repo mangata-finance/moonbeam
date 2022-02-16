@@ -32,7 +32,6 @@ impl Get<u32> for MaxSize {
 }
 
 /// An ordered set backed by `Vec`
-// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(RuntimeDebug, PartialEq, Eq, Encode, Decode, Default, Clone, TypeInfo, MaxEncodedLen)]
 pub struct OrderedSet<T>(pub frame_support::storage::bounded_vec::BoundedVec<T, MaxSize>);
 
