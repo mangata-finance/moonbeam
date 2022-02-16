@@ -1514,12 +1514,10 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
-			log::debug!(target: "mat", "BUILD BLAH3 !");
 			<InflationConfig<T>>::put(self.inflation_config.clone());
 			let mut liquidity_token_list: Vec<TokenId> = self.candidates.iter().cloned().map(|(_,_,l)| l).collect::<Vec<TokenId>>();
 			liquidity_token_list.dedup();
 			for (i, liquidity_token) in liquidity_token_list.iter().enumerate(){
-				log::debug!(target: "mat", "BLAH3 token: {:?} {:?}", i, liquidity_token);
 				if let Err(error) = <Pallet<T>>::add_staking_liquidity_token(
 					RawOrigin::Root.into(),
 					PairedOrLiquidityToken::Liquidity(*liquidity_token),
@@ -2263,7 +2261,6 @@ pub mod pallet {
 		}
 		/// Caller must ensure candidate is active before calling
 		fn update_active(candidate: T::AccountId, total: Balance, candidate_liquidity_token: TokenId) {
-			log::debug!(target: "mat", "BLAH3 update active {:?}", candidate);
 			let mut candidates = <CandidatePool<T>>::get();
 			candidates.remove(&Bond::from_owner(candidate.clone()));
 			candidates.insert(Bond {
@@ -2390,7 +2387,6 @@ pub mod pallet {
 		/// a vec of their AccountIds (in the order of selection)
 		pub fn compute_top_candidates() -> (Vec<(T::AccountId, Balance)>, Balance) {
 			let candidates = <CandidatePool<T>>::get().0;
-			log::debug!(target: "mat", "BLAH3 candidates {:?}", candidates);
 			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
 
 			// morph amount in candidates to exposure in mga
@@ -2446,7 +2442,6 @@ pub mod pallet {
 			Self::staking_liquidity_tokens_snapshot();
 			// choose the top TotalSelected qualified candidates, ordered by stake
 			let (collators, total_round_exposure) = Self::compute_top_candidates();
-			log::debug!(target: "mat", "BLAH3 collators {:?}", collators);
 			// snapshot exposure for round for weighting reward distribution
 			for collator in collators.iter() {
 				let state = <CandidateState<T>>::get(&collator.0)
@@ -2460,7 +2455,6 @@ pub mod pallet {
 				Self::deposit_event(Event::CollatorChosen(now, collator.0.clone(), amount));
 			}
 
-			log::debug!(target: "mat", "BLAH3 put");
 			// insert canonical collator set
 			<SelectedCandidates<T>>::put(
 				BoundedVec::try_from(
@@ -2488,15 +2482,6 @@ pub mod pallet {
 
 	impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
 		fn new_session(_: SessionIndex) -> Option<Vec<T::AccountId>> {
-
-
-			// let result = Self::selected_candidates().to_vec();
-			// log::debug!(target: "mat", "BLAH3 {:?}!", result);
-			// if result.is_empty(){
-			// 	None
-			// }else{
-			// 	Some(result)
-			// }
 			Some(Self::selected_candidates().to_vec())
 		}
 		fn start_session(_: SessionIndex) {
