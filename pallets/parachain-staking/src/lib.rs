@@ -64,8 +64,7 @@ use pallet_xyk::Valuate;
 
 use crate::{set::OrderedSet};
 use frame_support::pallet_prelude::*;
-use frame_support::traits::{Get, Imbalance, EstimateNextSessionRotation, TryCollect};
-use frame_support::storage::bounded_vec::BoundedVec;
+use frame_support::traits::{Get, Imbalance, EstimateNextSessionRotation};
 use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
 use parity_scale_codec::{Decode, Encode};
@@ -80,6 +79,19 @@ use sp_staking::SessionIndex;
 
 pub use pallet::*;
 
+trait FromInfiniteZeros{
+	type Output;
+	fn from_zeros() -> Self::Output;
+}
+
+impl<D: Decode> FromInfiniteZeros for D{
+	type Output = D;
+	fn from_zeros() -> Self::Output {
+		D::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes()).unwrap()
+	}
+}
+
+
 #[pallet]
 pub mod pallet {
 	pub use super::*;
@@ -87,6 +99,7 @@ pub mod pallet {
 
 	/// Pallet for parachain staking
 	#[pallet::pallet]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
 
 	#[derive(Eq, PartialEq, Clone, Encode, Decode, RuntimeDebug, TypeInfo,)]
@@ -95,25 +108,23 @@ pub mod pallet {
 		Liquidity(TokenId),
 	}
 
-	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-	pub struct Bond<AccountId: MaxEncodedLen> {
+	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo,)]
+	pub struct Bond<AccountId> {
 		pub owner: AccountId,
 		pub amount: Balance,
 		pub liquidity_token: TokenId
 	}
 
-	impl<A: Decode + MaxEncodedLen> Default for Bond<A> {
-		fn default() -> Bond<A> {
-			Bond {
-				owner: A::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes())
-					.expect("infinite length input; no invalid inputs for type; qed"),
-				amount: Default::default(),
-				liquidity_token: Default::default()
+	impl<AccountId: Decode> Default for Bond<AccountId> {
+		fn default() -> Self {
+			Self {
+				owner: AccountId::from_zeros(),
+				..Default::default()
 			}
 		}
 	}
 
-	impl<A: MaxEncodedLen> Bond<A> {
+	impl<A> Bond<A> {
 		fn from_owner(owner: A) -> Self {
 			Bond {
 				owner,
@@ -123,27 +134,27 @@ pub mod pallet {
 		}
 	}
 
-	impl<AccountId: Ord + MaxEncodedLen> Eq for Bond<AccountId> {}
+	impl<AccountId: Ord> Eq for Bond<AccountId> {}
 
-	impl<AccountId: Ord + MaxEncodedLen> Ord for Bond<AccountId> {
+	impl<AccountId: Ord> Ord for Bond<AccountId> {
 		fn cmp(&self, other: &Self) -> Ordering {
 			self.owner.cmp(&other.owner)
 		}
 	}
 
-	impl<AccountId: Ord + MaxEncodedLen> PartialOrd for Bond<AccountId> {
+	impl<AccountId: Ord> PartialOrd for Bond<AccountId> {
 		fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
 			Some(self.cmp(other))
 		}
 	}
 
-	impl<AccountId: Ord + MaxEncodedLen> PartialEq for Bond<AccountId> {
+	impl<AccountId: Ord> PartialEq for Bond<AccountId> {
 		fn eq(&self, other: &Self) -> bool {
 			self.owner == other.owner
 		}
 	}
 
-	#[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// The activity status of the collator
 	pub enum CollatorStatus {
 		/// Committed to be online and producing valid blocks (not equivocating)
@@ -160,34 +171,32 @@ pub mod pallet {
 		}
 	}
 
-	#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Snapshot of collator state at the start of the round for which they are selected
-	pub struct CollatorSnapshot<AccountId: MaxEncodedLen> {
+	pub struct CollatorSnapshot<AccountId> {
 		pub bond: Balance,
-		pub delegations: BoundedVec<Bond<AccountId>, DummyMaxSize>,
+		pub delegations: Vec<Bond<AccountId>>,
 		pub total: Balance,
 		pub liquidity_token: TokenId,
 	}
 
-	impl<A: MaxEncodedLen> Default for CollatorSnapshot<A> {
-		fn default() -> Self {
-			CollatorSnapshot::<A> {
-				bond: Default::default(),
+	impl<AccountId> Default for CollatorSnapshot<AccountId> {
+		fn default() -> CollatorSnapshot<AccountId> {
+			Self {
 				delegations: Default::default(),
-				total: Default::default(),
-				liquidity_token: Default::default(),
+				..Default::default()
 			}
 		}
 	}
 
-	#[derive(PartialEq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(PartialEq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Changes allowed by an active collator candidate to their self bond
 	pub enum CandidateBondChange {
 		Increase,
 		Decrease,
 	}
 
-	#[derive(PartialEq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(PartialEq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Request scheduled to change the collator candidate self-bond
 	pub struct CandidateBondRequest {
 		pub amount: Balance,
@@ -195,9 +204,9 @@ pub mod pallet {
 		pub when_executable: RoundIndex,
 	}
 	
-	#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Collator candidate state with self bond + delegations
-	pub struct CollatorCandidate<AccountId: MaxEncodedLen> {
+	pub struct CollatorCandidate<AccountId> {
 		/// The account of this collator
 		pub id: AccountId,
 		/// This collator's self stake.
@@ -207,9 +216,9 @@ pub mod pallet {
 		/// Set of all delegator AccountIds (to prevent >1 delegation per AccountId)
 		pub delegators: OrderedSet<AccountId>,
 		/// Top T::MaxDelegatorsPerCollator::get() delegations, ordered greatest to least
-		pub top_delegations: BoundedVec<Bond<AccountId>, DummyMaxSize>,
+		pub top_delegations: Vec<Bond<AccountId>>,
 		/// Bottom delegations (unbounded), ordered least to greatest
-		pub bottom_delegations: BoundedVec<Bond<AccountId>, DummyMaxSize>,
+		pub bottom_delegations: Vec<Bond<AccountId>>,
 		/// Sum of top delegations + self.bond
 		pub total_counted: Balance,
 		/// Sum of all delegations + self.bond = (total_counted + uncounted)
@@ -229,7 +238,7 @@ pub mod pallet {
 	}
 
 	impl<
-			A: Ord + Clone + sp_std::fmt::Debug + MaxEncodedLen,
+			A: Ord + Clone + sp_std::fmt::Debug,
 		> CollatorCandidate<A>
 	{
 		pub fn new(id: A, bond: Balance, liquidity_token: TokenId) -> Self {
@@ -238,8 +247,8 @@ pub mod pallet {
 				bond,
 				liquidity_token,
 				delegators: OrderedSet::new(),
-				top_delegations: Default::default(),
-				bottom_delegations: Default::default(),
+				top_delegations: Vec::new(),
+				bottom_delegations: Vec::new(),
 				total_counted: bond,
 				total_backing: bond,
 				request: None,
@@ -389,9 +398,8 @@ pub mod pallet {
 				.top_delegations
 				.binary_search_by(|x| delegation.amount.cmp(&x.amount))
 			{
-				//TODO handle errors
-				Ok(i) => self.top_delegations.try_insert(i, delegation).unwrap(),
-				Err(i) => self.top_delegations.try_insert(i, delegation).unwrap(),
+				Ok(i) => self.top_delegations.insert(i, delegation),
+				Err(i) => self.top_delegations.insert(i, delegation),
 			}
 		}
 		/// Infallible sorted insertion
@@ -401,21 +409,18 @@ pub mod pallet {
 				.bottom_delegations
 				.binary_search_by(|x| x.amount.cmp(&delegation.amount))
 			{
-				//TODO handle errors
-				Ok(i) => self.bottom_delegations.try_insert(i, delegation).unwrap(),
-				Err(i) => self.bottom_delegations.try_insert(i, delegation).unwrap(),
+				Ok(i) => self.bottom_delegations.insert(i, delegation),
+				Err(i) => self.bottom_delegations.insert(i, delegation),
 			}
 		}
 		/// Sort top delegations from greatest to least
 		pub fn sort_top_delegations(&mut self) {
 			self.top_delegations
-				.as_mut()
 				.sort_unstable_by(|a, b| b.amount.cmp(&a.amount));
 		}
 		/// Sort bottom delegations from least to greatest
 		pub fn sort_bottom_delegations(&mut self) {
 			self.bottom_delegations
-				.as_mut()
 				.sort_unstable_by(|a, b| a.amount.cmp(&b.amount));
 		}
 		/// Bond account and add delegation. If successful, the return value indicates whether the
@@ -454,8 +459,7 @@ pub mod pallet {
 					})
 				} else {
 					// >required push to previously popped last delegation into top_delegations
-					// TODO handle error
-					self.top_delegations.try_push(last_delegation_in_top).unwrap();
+					self.top_delegations.push(last_delegation_in_top);
 					self.add_bottom_delegation(Bond { owner: acc, amount, liquidity_token: self.liquidity_token });
 					Ok(DelegatorAdded::AddedToBottom)
 				}
@@ -483,7 +487,7 @@ pub mod pallet {
 						None
 					}
 				})
-				.collect::<Vec<_>>().into_iter().try_collect().unwrap();
+				.collect();
 			// item removed from the top => highest bottom is popped from bottom and pushed to top
 			if let Some(amount) = delegation_amt {
 				// last element has largest amount as per ordering
@@ -510,7 +514,7 @@ pub mod pallet {
 						None
 					}
 				})
-				.collect::<Vec<_>>().into_iter().try_collect().unwrap();
+				.collect();
 			// if err, no item with account exists in top || bottom
 			let amount = delegation_amt.ok_or(Error::<T>::DelegatorDNEinTopNorBottom)?;
 			self.total_backing -= amount;
@@ -520,7 +524,7 @@ pub mod pallet {
 		/// Caller must verify before call that account is a delegator
 		fn increase_delegation(&mut self, delegator: A, more: Balance) -> bool {
 			let mut in_top = false;
-			for x in self.top_delegations.as_mut().iter_mut() {
+			for x in &mut self.top_delegations {
 				if x.owner == delegator {
 					x.amount += more;
 					self.total_counted += more;
@@ -541,7 +545,7 @@ pub mod pallet {
 				.pop()
 				.expect("any bottom delegations => must exist max top delegations");
 			let mut move_2_top = false;
-			for x in self.bottom_delegations.as_mut().iter_mut() {
+			for x in &mut self.bottom_delegations {
 				if x.owner == delegator {
 					x.amount += more;
 					self.total_backing += more;
@@ -558,8 +562,7 @@ pub mod pallet {
 				true
 			} else {
 				// >required push to reset top_delegations from earlier pop
-				// TODO: handle error
-				self.top_delegations.try_push(lowest_top).unwrap();
+				self.top_delegations.push(lowest_top);
 				self.sort_bottom_delegations();
 				false
 			}
@@ -568,7 +571,7 @@ pub mod pallet {
 		pub fn decrease_delegation(&mut self, delegator: A, less: Balance) -> bool {
 			let mut in_top = false;
 			let mut new_lowest_top: Option<Bond<A>> = None;
-			for x in self.top_delegations.as_mut().iter_mut() {
+			for x in &mut self.top_delegations {
 				if x.owner == delegator {
 					x.amount -= less;
 					// if there is at least 1 delegator in bottom delegators, compare it to check
@@ -579,8 +582,7 @@ pub mod pallet {
 							new_lowest_top = Some(highest_bottom);
 						} else {
 							// >required push to reset self.bottom_delegations
-							// TODO handle error
-							self.bottom_delegations.try_push(highest_bottom).unwrap();
+							self.bottom_delegations.push(highest_bottom);
 						}
 					}
 					in_top = true;
@@ -608,7 +610,7 @@ pub mod pallet {
 					return true;
 				}
 			}
-			for x in self.bottom_delegations.as_mut().iter_mut() {
+			for x in &mut self.bottom_delegations {
 				if x.owner == delegator {
 					x.amount -= less;
 					self.total_backing -= less;
@@ -633,7 +635,7 @@ pub mod pallet {
 		}
 	}
 
-	impl<A: Clone + MaxEncodedLen> From<CollatorCandidate<A>> for CollatorSnapshot<A> {
+	impl<A: Clone> From<CollatorCandidate<A>> for CollatorSnapshot<A> {
 		fn from(other: CollatorCandidate<A>) -> CollatorSnapshot<A> {
 			CollatorSnapshot {
 				bond: other.bond,
@@ -644,7 +646,7 @@ pub mod pallet {
 		}
 	}
 
-	#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Clone, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 	pub enum DelegatorStatus {
 		/// Active with no scheduled exit
 		Active,
@@ -652,9 +654,9 @@ pub mod pallet {
 		Leaving(RoundIndex),
 	}
 
-	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Delegator state
-	pub struct Delegator<AccountId: MaxEncodedLen> {
+	pub struct Delegator<AccountId> {
 		/// Delegator account
 		pub id: AccountId,
 		/// All current delegations
@@ -665,8 +667,17 @@ pub mod pallet {
 		pub status: DelegatorStatus,
 	}
 
+	impl<AccountId: Decode> Default for Delegator<AccountId> {
+		fn default() -> Self {
+			Self {
+				id: AccountId::from_zeros(),
+				..Default::default()
+			}
+		}
+	}
+
 	impl<
-			A: Ord + Clone + MaxEncodedLen,
+			A: Ord + Clone,
 		> Delegator<A>
 	{
 		pub fn new(id: A, collator: A, amount: Balance, liquidity_token: TokenId) -> Self {
@@ -682,7 +693,7 @@ pub mod pallet {
 			}
 		}
 		pub fn requests(&self) -> BTreeMap<A, DelegationRequest<A>> {
-			self.requests.requests.clone().into_inner()
+			self.requests.requests.clone()
 		}
 		pub fn is_active(&self) -> bool {
 			matches!(self.status, DelegatorStatus::Active)
@@ -884,7 +895,7 @@ pub mod pallet {
 				}
 				DelegationChange::Increase => {
 					// increase delegation
-					for x in self.delegations.0.as_mut().iter_mut() {
+					for x in &mut self.delegations.0 {
 						if x.owner == candidate {
 							x.amount += amount;
 							// update collator state delegation
@@ -916,7 +927,7 @@ pub mod pallet {
 				}
 				DelegationChange::Decrease => {
 					// decrease delegation
-					for x in self.delegations.0.as_mut().iter_mut() {
+					for x in &mut self.delegations.0 {
 						if x.owner == candidate {
 							if x.amount > amount.saturating_add(T::MinDelegation::get()) {
 								x.amount -= amount;
@@ -969,7 +980,7 @@ pub mod pallet {
 		}
 	}
 
-	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Changes requested by the delegator
 	/// - limit of 1 ongoing change per delegation
 	/// - no changes allowed if delegator is leaving
@@ -979,7 +990,7 @@ pub mod pallet {
 		Decrease,
 	}
 
-	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 	pub struct DelegationRequest<AccountId> {
 		pub collator: AccountId,
 		pub amount: Balance,
@@ -987,17 +998,17 @@ pub mod pallet {
 		pub action: DelegationChange,
 	}
 
-	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Pending requests to mutate delegations for each delegator
 	pub struct PendingDelegationRequests<AccountId> {
 		/// Map from collator -> Request (enforces at most 1 pending request per delegation)
-		pub requests: frame_support::storage::bounded_btree_map::BoundedBTreeMap<AccountId, DelegationRequest<AccountId>, DummyMaxSize>,
+		pub requests: BTreeMap<AccountId, DelegationRequest<AccountId>>,
 	}
 
 	impl<A: Ord> Default for PendingDelegationRequests<A> {
 		fn default() -> PendingDelegationRequests<A> {
 			PendingDelegationRequests {
-				requests: Default::default()
+				requests: BTreeMap::new(),
 			}
 		}
 	}
@@ -1021,8 +1032,7 @@ pub mod pallet {
 				self.requests.get(&collator).is_none(),
 				Error::<T>::PendingDelegationRequestAlreadyExists
 			);
-			// TODO handle error
-			self.requests.try_insert(
+			self.requests.insert(
 				collator.clone(),
 				DelegationRequest {
 					collator,
@@ -1030,8 +1040,7 @@ pub mod pallet {
 					when_executable,
 					action: DelegationChange::Increase,
 				},
-			).map_err(|_| Error::<T>::OutOfSpace)?;
-			// let mut state = <CandidateState<T>>::get(&collator).ok_or(Error::<T>::CandidateDNE)?;
+			);
 			Ok(())
 		}
 		/// Add bond less order to pending requests, only succeeds if returns true
@@ -1047,7 +1056,7 @@ pub mod pallet {
 				self.requests.get(&collator).is_none(),
 				Error::<T>::PendingDelegationRequestAlreadyExists
 			);
-			self.requests.try_insert(
+			self.requests.insert(
 				collator.clone(),
 				DelegationRequest {
 					collator,
@@ -1055,7 +1064,7 @@ pub mod pallet {
 					when_executable,
 					action: DelegationChange::Decrease,
 				},
-			).map_err(|_| Error::<T>::OutOfSpace)?;
+			);
 			Ok(())
 		}
 		/// Add revoke order to pending requests
@@ -1071,8 +1080,7 @@ pub mod pallet {
 				self.requests.get(&collator).is_none(),
 				Error::<T>::PendingDelegationRequestAlreadyExists
 			);
-			//TODO handle error
-			self.requests.try_insert(
+			self.requests.insert(
 				collator.clone(),
 				DelegationRequest {
 					collator,
@@ -1080,12 +1088,12 @@ pub mod pallet {
 					when_executable,
 					action: DelegationChange::Revoke,
 				},
-			).map_err(|_| Error::<T>::OutOfSpace)?;
+			);
 			Ok(())
 		}
 	}
 
-	#[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// The current round index and transition information
 	pub struct RoundInfo<BlockNumber> {
 		/// Current round index
@@ -1137,7 +1145,7 @@ pub mod pallet {
 		}
 	}
 
-	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Reserve information { account, percent_of_inflation }
 	pub struct ParachainBondConfig<AccountId> {
 		/// Account which receives funds intended for parachain bond
@@ -1145,11 +1153,12 @@ pub mod pallet {
 		/// Percent of inflation set aside for parachain bond account
 		pub percent: Percent,
 	}
-	impl<A: Default> Default for ParachainBondConfig<A> {
+
+	impl<A: Decode> Default for ParachainBondConfig<A> {
 		fn default() -> ParachainBondConfig<A> {
 			ParachainBondConfig {
-				account: A::default(),
-				percent: Percent::zero(),
+				account: A::from_zeros(),
+				percent: Default::default(),
 			}
 		}
 	}
@@ -1269,7 +1278,6 @@ pub mod pallet {
 		StakingLiquidityTokenNotListed,
 		TooLowCurrentStakingLiquidityTokensCount,
 		StakingLiquidityTokenAlreadyListed,
-		OutOfSpace,
 	}
 
 	#[pallet::event]
@@ -1375,20 +1383,11 @@ pub mod pallet {
 	/// The total candidates selected every round
 	type TotalSelected<T: Config> = StorageValue<_, u32, ValueQuery>;
 
-	#[pallet::type_value]
-	pub fn DefaultFoo<T: Config>() -> ParachainBondConfig<T::AccountId> { 
-			ParachainBondConfig {
-				account: T::DefaultParachainBondReserveAccount::get(),
-				percent: T::DefaultParachainBondReservePercent::get(),
-			}
-	}
-
-
 	#[pallet::storage]
 	#[pallet::getter(fn parachain_bond_info)]
 	/// Parachain bond config info { account, percent_of_inflation }
 	type ParachainBondInfo<T: Config> =
-		StorageValue<_, ParachainBondConfig<T::AccountId>, ValueQuery, DefaultFoo<T>>;
+		StorageValue<_, ParachainBondConfig<T::AccountId>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn round)]
@@ -1420,7 +1419,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn selected_candidates)]
 	/// The collator candidates selected for the current round
-	type SelectedCandidates<T: Config> = StorageValue<_, frame_support::storage::bounded_vec::BoundedVec<T::AccountId, DummyMaxSize>, ValueQuery>;
+	type SelectedCandidates<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn total)]
@@ -1479,17 +1478,12 @@ pub mod pallet {
 		ValueQuery,
 	>;
 
-	#[pallet::type_value]
-	pub fn DummyMaxSize() -> u32 { 
-		u32::MAX
-	}
-
 	#[pallet::storage]
 	#[pallet::getter(fn staking_liquidity_tokens)]
 	/// Points for each collator per round
 	pub type StakingLiquidityTokens<T: Config> = StorageValue<
 		_,
-		frame_support::storage::bounded_btree_map::BoundedBTreeMap<TokenId, Option<(Balance, Balance)>, DummyMaxSize>,
+		BTreeMap<TokenId, Option<(Balance, Balance)>>,
 		ValueQuery,
 	>;
 
@@ -2210,7 +2204,7 @@ pub mod pallet {
 					Error::<T>::TooLowCurrentStakingLiquidityTokensCount
 				);
 				ensure!(
-					matches!(staking_liquidity_tokens.try_insert(added_liquidity_token, None), Ok(None))  ,
+					staking_liquidity_tokens.insert(added_liquidity_token, None).is_none(),
 					Error::<T>::StakingLiquidityTokenAlreadyListed
 				);
 				
@@ -2422,16 +2416,13 @@ pub mod pallet {
 		}
 
 		pub fn staking_liquidity_tokens_snapshot() {
-			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
+			let mut staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
 
-			// TODO handle error
-			let result = staking_liquidity_tokens.try_mutate( |map| {
-				for (token, valuation) in map.iter_mut(){
-					*valuation = T::StakingLiquidityTokenValuator::get_pool_state((*token).into());
-				}
-			}).unwrap();
+			for (token, valuation) in staking_liquidity_tokens.iter_mut(){
+				*valuation = T::StakingLiquidityTokenValuator::get_pool_state((*token).into());
+			}
 
-			<StakingLiquidityTokens<T>>::put(result);
+			<StakingLiquidityTokens<T>>::put(staking_liquidity_tokens);
 		}
 
 		/// Best as in most cumulatively supported in terms of stake
@@ -2456,11 +2447,7 @@ pub mod pallet {
 			}
 
 			// insert canonical collator set
-			<SelectedCandidates<T>>::put(
-				BoundedVec::try_from(
-					collators.iter().cloned().map(|x| x.0).collect::<Vec<T::AccountId>>()
-				).unwrap()
-			);
+			<SelectedCandidates<T>>::put(collators.iter().cloned().map(|x| x.0).collect::<Vec<T::AccountId>>());
 			(collator_count, delegation_count, total_relevant_exposure, total_round_exposure)
 		}
 	}
@@ -2482,7 +2469,7 @@ pub mod pallet {
 
 	impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
 		fn new_session(_: SessionIndex) -> Option<Vec<T::AccountId>> {
-			Some(Self::selected_candidates().to_vec())
+			Some(Self::selected_candidates())
 		}
 		fn start_session(_: SessionIndex) {
 			let n = <frame_system::Pallet<T>>::block_number().saturating_add(One::one());

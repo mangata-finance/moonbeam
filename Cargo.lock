@@ -2888,26 +2888,6 @@ dependencies = [
 ]
 
 [[patch.unused]]
-name = "ethereum"
-version = "0.9.0"
-source = "git+https://github.com/purestake/ethereum?branch=joshy-scale-info#2b98173bd88c05bfeefad421d260101b9008497b"
-
-[[patch.unused]]
-name = "evm"
-version = "0.30.1"
-source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#e17436b550cbec33fcdf9d853ac29c0b04a281e2"
-
-[[patch.unused]]
-name = "evm-gasometer"
-version = "0.30.0"
-source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#e17436b550cbec33fcdf9d853ac29c0b04a281e2"
-
-[[patch.unused]]
-name = "evm-runtime"
-version = "0.30.0"
-source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#e17436b550cbec33fcdf9d853ac29c0b04a281e2"
-
-[[patch.unused]]
 name = "beefy-gadget"
 version = "4.0.0-dev"
 
@@ -3402,6 +3382,26 @@ version = "0.1.0"
 [[patch.unused]]
 name = "pallet-verifier"
 version = "0.1.1"
+
+[[patch.unused]]
+name = "ethereum"
+version = "0.9.0"
+source = "git+https://github.com/purestake/ethereum?branch=joshy-scale-info#2b98173bd88c05bfeefad421d260101b9008497b"
+
+[[patch.unused]]
+name = "evm"
+version = "0.30.1"
+source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#e17436b550cbec33fcdf9d853ac29c0b04a281e2"
+
+[[patch.unused]]
+name = "evm-gasometer"
+version = "0.30.0"
+source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#e17436b550cbec33fcdf9d853ac29c0b04a281e2"
+
+[[patch.unused]]
+name = "evm-runtime"
+version = "0.30.0"
+source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#e17436b550cbec33fcdf9d853ac29c0b04a281e2"
 
 [[patch.unused]]
 name = "beefy-gadget"
