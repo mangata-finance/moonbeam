@@ -79,6 +79,19 @@ use sp_staking::SessionIndex;
 
 pub use pallet::*;
 
+trait FromInfiniteZeros{
+	type Output;
+	fn from_zeros() -> Self::Output;
+}
+
+impl<D: Decode> FromInfiniteZeros for D{
+	type Output = D;
+	fn from_zeros() -> Self::Output {
+		D::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes()).unwrap()
+	}
+}
+
+
 #[pallet]
 pub mod pallet {
 	pub use super::*;
@@ -86,6 +99,7 @@ pub mod pallet {
 
 	/// Pallet for parachain staking
 	#[pallet::pallet]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
 
 	#[derive(Eq, PartialEq, Clone, Encode, Decode, RuntimeDebug, TypeInfo,)]
@@ -94,11 +108,21 @@ pub mod pallet {
 		Liquidity(TokenId),
 	}
 
-	#[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo,)]
+	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo,)]
 	pub struct Bond<AccountId> {
 		pub owner: AccountId,
 		pub amount: Balance,
 		pub liquidity_token: TokenId
+	}
+
+	impl<AccountId: Decode> Default for Bond<AccountId> {
+		fn default() -> Self {
+			Self {
+				owner: AccountId::from_zeros(),
+				amount: Default::default(),
+				liquidity_token: Default::default(),
+			}
+		}
 	}
 
 	impl<A> Bond<A> {
@@ -148,13 +172,24 @@ pub mod pallet {
 		}
 	}
 
-	#[derive(Default, Encode, Decode, RuntimeDebug, TypeInfo)]
+	#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Snapshot of collator state at the start of the round for which they are selected
 	pub struct CollatorSnapshot<AccountId> {
 		pub bond: Balance,
 		pub delegations: Vec<Bond<AccountId>>,
 		pub total: Balance,
 		pub liquidity_token: TokenId,
+	}
+
+	impl<AccountId> Default for CollatorSnapshot<AccountId> {
+		fn default() -> CollatorSnapshot<AccountId> {
+			Self {
+				delegations: Default::default(),
+				bond: Default::default(),
+				total: Default::default(),
+				liquidity_token: Default::default(),
+			}
+		}
 	}
 
 	#[derive(PartialEq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
@@ -622,6 +657,12 @@ pub mod pallet {
 		Leaving(RoundIndex),
 	}
 
+	impl Default for DelegatorStatus {
+		fn default() -> DelegatorStatus {
+			DelegatorStatus::Active
+		}
+	}
+
 	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Delegator state
 	pub struct Delegator<AccountId> {
@@ -635,8 +676,19 @@ pub mod pallet {
 		pub status: DelegatorStatus,
 	}
 
+	impl<AccountId: Decode + Ord> Default for Delegator<AccountId> {
+		fn default() -> Self {
+			Self {
+				id: AccountId::from_zeros(),
+				delegations: Default::default(),
+				requests: Default::default(),
+				status: Default::default(),
+			}
+		}
+	}
+
 	impl<
-			A: Ord + Clone + Default,
+			A: Ord + Clone,
 		> Delegator<A>
 	{
 		pub fn new(id: A, collator: A, amount: Balance, liquidity_token: TokenId) -> Self {
@@ -1112,11 +1164,12 @@ pub mod pallet {
 		/// Percent of inflation set aside for parachain bond account
 		pub percent: Percent,
 	}
-	impl<A: Default> Default for ParachainBondConfig<A> {
+
+	impl<A: Decode> Default for ParachainBondConfig<A> {
 		fn default() -> ParachainBondConfig<A> {
 			ParachainBondConfig {
-				account: A::default(),
-				percent: Percent::zero(),
+				account: A::from_zeros(),
+				percent: Default::default(),
 			}
 		}
 	}
@@ -1458,7 +1511,7 @@ pub mod pallet {
 			Self {
 				candidates: vec![],
 				delegations: vec![],
-				..Default::default()
+				inflation_config: Default::default(),
 			}
 		}
 	}
