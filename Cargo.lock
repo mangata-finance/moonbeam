@@ -2888,6 +2888,30 @@ dependencies = [
 ]
 
 [[patch.unused]]
+name = "artemis-asset"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-core"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-erc20-app"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-eth-app"
+version = "0.1.1"
+
+[[patch.unused]]
+name = "artemis-ethereum"
+version = "0.1.0"
+
+[[patch.unused]]
+name = "pallet-verifier"
+version = "0.1.1"
+
+[[patch.unused]]
 name = "beefy-gadget"
 version = "4.0.0-dev"
 
@@ -3358,30 +3382,6 @@ version = "0.10.0-dev"
 [[patch.unused]]
 name = "ver-api"
 version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "artemis-asset"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-core"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-erc20-app"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-eth-app"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "artemis-ethereum"
-version = "0.1.0"
-
-[[patch.unused]]
-name = "pallet-verifier"
-version = "0.1.1"
 
 [[patch.unused]]
 name = "ethereum"

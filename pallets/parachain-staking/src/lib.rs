@@ -119,7 +119,8 @@ pub mod pallet {
 		fn default() -> Self {
 			Self {
 				owner: AccountId::from_zeros(),
-				..Default::default()
+				amount: Default::default(),
+				liquidity_token: Default::default(),
 			}
 		}
 	}
@@ -184,7 +185,9 @@ pub mod pallet {
 		fn default() -> CollatorSnapshot<AccountId> {
 			Self {
 				delegations: Default::default(),
-				..Default::default()
+				bond: Default::default(),
+				total: Default::default(),
+				liquidity_token: Default::default(),
 			}
 		}
 	}
@@ -654,6 +657,12 @@ pub mod pallet {
 		Leaving(RoundIndex),
 	}
 
+	impl Default for DelegatorStatus {
+		fn default() -> DelegatorStatus {
+			DelegatorStatus::Active
+		}
+	}
+
 	#[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	/// Delegator state
 	pub struct Delegator<AccountId> {
@@ -667,11 +676,13 @@ pub mod pallet {
 		pub status: DelegatorStatus,
 	}
 
-	impl<AccountId: Decode> Default for Delegator<AccountId> {
+	impl<AccountId: Decode + Ord> Default for Delegator<AccountId> {
 		fn default() -> Self {
 			Self {
 				id: AccountId::from_zeros(),
-				..Default::default()
+				delegations: Default::default(),
+				requests: Default::default(),
+				status: Default::default(),
 			}
 		}
 	}
@@ -1500,7 +1511,7 @@ pub mod pallet {
 			Self {
 				candidates: vec![],
 				delegations: vec![],
-				..Default::default()
+				inflation_config: Default::default(),
 			}
 		}
 	}
