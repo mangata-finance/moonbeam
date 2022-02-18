@@ -2482,27 +2482,29 @@ pub mod pallet {
 		fn new_session(_: SessionIndex) -> Option<Vec<T::AccountId>> {
 			Some(Self::selected_candidates())
 		}
-		fn start_session(_: SessionIndex) {
-			let n = <frame_system::Pallet<T>>::block_number().saturating_add(One::one());
-			let mut round = <Round<T>>::get();
-			// mutate round
-			round.update(n);
-			// pay all stakers for T::RewardPaymentDelay rounds ago
-			Self::pay_stakers(round.current);
-			// select top collator candidates for next round
-			let (collator_count, _delegation_count, total_relevant_exposure, total_round_exposure) =
-				Self::select_top_candidates(round.current.saturating_add(One::one()));
-			// start next round
-			<Round<T>>::put(round);
-			// snapshot total stake
-			<Staked<T>>::insert(round.current.saturating_add(One::one()), total_round_exposure);
-			// <RelevantStaked<T>>::insert(round.current + One::one(), total_relevant_exposure);
-			Self::deposit_event(Event::NewRound(
-				round.first,
-				round.current,
-				collator_count,
-				total_relevant_exposure,
-			));
+		fn start_session(session_index: SessionIndex) {
+			if !session_index.is_zero() {
+				let n = <frame_system::Pallet<T>>::block_number().saturating_add(One::one());
+				let mut round = <Round<T>>::get();
+				// mutate round
+				round.update(n);
+				// pay all stakers for T::RewardPaymentDelay rounds ago
+				Self::pay_stakers(round.current);
+				// select top collator candidates for next round
+				let (collator_count, _delegation_count, total_relevant_exposure, total_round_exposure) =
+					Self::select_top_candidates(round.current.saturating_add(One::one()));
+				// start next round
+				<Round<T>>::put(round);
+				// snapshot total stake
+				<Staked<T>>::insert(round.current.saturating_add(One::one()), total_round_exposure);
+				// <RelevantStaked<T>>::insert(round.current + One::one(), total_relevant_exposure);
+				Self::deposit_event(Event::NewRound(
+					round.first,
+					round.current,
+					collator_count,
+					total_relevant_exposure,
+				));
+			}
 		}
 		fn end_session(_: SessionIndex) {
 			// ignore
