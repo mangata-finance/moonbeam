@@ -85,6 +85,8 @@ pub trait WeightInfo {
 	fn cancel_delegator_bond_less() -> Weight;
 	fn active_on_initialize(x: u32, y: u32) -> Weight;
 	fn passive_on_initialize() -> Weight;
+	fn add_staking_liquidity_token() -> Weight;
+	fn remove_staking_liquidity_token() -> Weight;
 }
 
 /// Weights for parachain_staking using the Substrate node and recommended hardware.
@@ -278,6 +280,13 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	fn passive_on_initialize() -> Weight {
 		(4_913_000 as Weight).saturating_add(T::DbWeight::get().reads(1 as Weight))
 	}
+	
+	fn add_staking_liquidity_token() -> Weight{
+		Default::default()
+	}
+	fn remove_staking_liquidity_token() -> Weight{
+		Default::default()
+	}
 }
 
 // For backwards compatibility and tests
@@ -470,5 +479,11 @@ impl WeightInfo for () {
 	}
 	fn passive_on_initialize() -> Weight {
 		(4_913_000 as Weight).saturating_add(RocksDbWeight::get().reads(1 as Weight))
+	}
+	fn add_staking_liquidity_token() -> Weight{
+		Default::default()
+	}
+	fn remove_staking_liquidity_token() -> Weight{
+		Default::default()
 	}
 }

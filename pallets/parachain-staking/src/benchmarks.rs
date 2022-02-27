@@ -14,6 +14,128 @@
 // You should have received a copy of the GNU General Public License
 // along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
+set_staking_expectations
+will be removed
+simple, no scaling
+
+set_inflation
+will be removed
+simple, no scaling
+
+set_parachain_bond_account
+will be removed
+simple, no scaling
+
+set_parachain_bond_reserve_percent
+will be removed
+simple, no scaling
+
+
+set_total_selected
+simple, no scaling
+
+set_collator_commission
+simple, no scaling
+
+set_blocks_per_round
+will be removed
+simple, no scaling
+
+join_candidates
+scales with candidate count due to ordered set insertion
+liquidity_token does not affect scaling
+
+schedule_leave_candidates
+scales with candidate count due to ordered set removal
+liquidity_token does not affect scaling
+
+execute_leave_candidates
+scales with candidate delegator count due to delegator unbonds
+scales with the number of delegations of the delegators that have delegated to the collator
+^ But this a parameter can be avoided (not that we can even effectively provide this as a parameter) by considering the MaxDelegationsPerDelegator bound, and filling all delegators to the collator (in question) to MaxDelegationsPerDelegator number of delegations
+liquidity_token does not affect scaling
+
+cancel_leave_candidates
+scales with candidate count due to ordered set insertion
+liquidity_token does not affect scaling
+
+go_offline
+scales with candidate count due to ordered set removal
+liquidity_token does not affect scaling
+
+go_online
+scales with candidate count due to ordered set insertion
+liquidity_token does not affect scaling
+
+schedule_candidate_bond_more
+does not scale
+
+schedule_candidate_bond_less
+does not scale
+
+execute_candidate_bond_request
+scales with candidate count due to ordered set change upon update_active
+liquidity_token does not affect scaling
+
+cancel_candidate_bond_request
+does not scale
+
+add_staking_liquidity_token
+potentially scales with liquidity_token_count
+
+remove_staking_liquidity_token
+potentially scales with liquidity_token_count
+
+delegate
+Worst Case Complexity is insertion into a full collator causing removal from top and add to bottom of existing delegation in collator
+^ Can we use max delegation bounds for these?
+candidate_delegation_count due to insert into candidate ordered bond list
+delegator delegation_count due to insert into delegator ordered bond list
+also depends on candidate_count due to update_active
+
+schedule_leave_delegators
+does not scale
+
+execute_leave_delegators
+Worst case when all collators have full top_delegations and a delegation from top_delegation has been removed
+^ Can we use max delegation bounds for these?
+scales with delegator delegations count
+scales with candidate count due to update_active
+scales with collator delegation count due to remove in rm_delegator and delegator suffle
+
+cancel_leave_delegators
+does not scale
+
+schedule_revoke_delegation
+Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
+However this can also be parameterized better by using the delegators current pending request count. 
+
+schedule_delegator_bond_more
+Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
+However this can also be parameterized better by using the delegators current pending request count. 
+
+schedule_delegator_bond_less
+Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
+However this can also be parameterized better by using the delegators current pending request count. 
+
+cancel_delegation_request
+Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
+However this can also be parameterized better by using the delegators current pending request count. 
+
+execute_delegation_request
+revoke :=
+scales with delegator delegation count to remove from delegations
+scales with candidates_delegation_count due to removal from delegators and shuffling delegators
+scales with candidate count due to update_active
+increase:=
+scales with delegator delegation count to iterate through them
+scales with candidates_delegation_count due to removal from delegators and shuffling delegators
+scales with candidate count due to update_active
+decrease:=
+scales with delegator delegation count to iterate through them
+scales with candidates_delegation_count due to removal from delegators and shuffling delegators
+scales with candidate count due to update_active
+
 #![cfg(feature = "runtime-benchmarks")]
 
 //! Benchmarking

@@ -1832,11 +1832,12 @@ pub mod pallet {
 			Self::deposit_event(Event::CandidateScheduledExit(now, collator, when));
 			Ok(().into())
 		}
-		#[pallet::weight(<T as Config>::WeightInfo::execute_leave_candidates())]
+		#[pallet::weight(<T as Config>::WeightInfo::execute_leave_candidates(*candidate_delegation_count))]
 		/// Execute leave candidates request
 		pub fn execute_leave_candidates(
 			origin: OriginFor<T>,
 			candidate: T::AccountId,
+			candidate_delegation_count: u32,
 		) -> DispatchResultWithPostInfo {
 			ensure_signed(origin)?;
 			let state = <CandidateState<T>>::get(&candidate).ok_or(Error::<T>::CandidateDNE)?;
@@ -2196,7 +2197,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::add_staking_liquidity_token())]
 		pub fn add_staking_liquidity_token(
 			origin: OriginFor<T>,
 			paired_or_liquidity_token: PairedOrLiquidityToken,
@@ -2224,7 +2225,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::remove_staking_liquidity_token())]
 		pub fn remove_staking_liquidity_token(
 			origin: OriginFor<T>,
 			paired_or_liquidity_token: PairedOrLiquidityToken,
