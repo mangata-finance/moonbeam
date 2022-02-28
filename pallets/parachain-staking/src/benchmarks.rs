@@ -87,8 +87,10 @@ remove_staking_liquidity_token
 potentially scales with liquidity_token_count
 
 delegate
+To keep it simple just use candidate_delegation_count = max delegation bound + i
+Will have to adjust the weighing function appropriately
 Worst Case Complexity is insertion into a full collator causing removal from top and add to bottom of existing delegation in collator
-^ Can we use max delegation bounds for these?
+^ Can we use max delegation bounds for these? No max delegation bounds applies only to top_delegations
 candidate_delegation_count due to insert into candidate ordered bond list
 delegator delegation_count due to insert into delegator ordered bond list
 also depends on candidate_count due to update_active
@@ -97,8 +99,10 @@ schedule_leave_delegators
 does not scale
 
 execute_leave_delegators
+To keep it simple just use candidate_delegation_count = max delegation bound + i
+Will have to adjust the weighing function appropriately
 Worst case when all collators have full top_delegations and a delegation from top_delegation has been removed
-^ Can we use max delegation bounds for these?
+^ Can we use max delegation bounds for these? No max delegation bounds applies only to top_delegations
 scales with delegator delegations count
 scales with candidate count due to update_active
 scales with collator delegation count due to remove in rm_delegator and delegator suffle
@@ -123,6 +127,9 @@ Since the requests are a btreemap keyed with candidate_id, this extrinsic scales
 However this can also be parameterized better by using the delegators current pending request count. 
 
 execute_delegation_request
+To keep it simple just use candidate_delegation_count = max delegation bound + i
+Will have to adjust the weighing function appropriately
+ALL SCALE WITH the delegators current pending request count.
 revoke :=
 scales with delegator delegation count to remove from delegations
 scales with candidates_delegation_count due to removal from delegators and shuffling delegators
@@ -135,6 +142,17 @@ decrease:=
 scales with delegator delegation count to iterate through them
 scales with candidates_delegation_count due to removal from delegators and shuffling delegators
 scales with candidate count due to update_active
+
+new_session
+is just one db read
+
+start_session
+TotalSelected - loops through each collator for pay_stakers 
+MaxDelegatorsPerCandidate - loops through each delegator of the candidate to increase reward.
+Worst case when each delegator involved in pay_Stakers is separate.
+Liquidity_tokens_count - for valuating each token
+candidate_count - compute_candidates processes the entire set of candidates
+
 
 #![cfg(feature = "runtime-benchmarks")]
 
