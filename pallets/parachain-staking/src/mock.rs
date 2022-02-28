@@ -16,24 +16,27 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{pallet, AwardedPts, Config, InflationInfo, Points, Range, Valuate, TokenId, Balance, DispatchError};
+use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Everything, GenesisBuild, OnFinalize, OnInitialize, Contains},
-	weights::Weight, PalletId
+	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize},
+	weights::Weight,
+	PalletId,
 };
-use sp_core::H256;
-use sp_io;
-use sp_runtime::{
-	testing::Header,
-	traits::{BlakeTwo256, IdentityLookup, AccountIdConversion},
-	Perbill, Percent, RuntimeDebug
-};
+use mangata_primitives::Amount;
+use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency, TransferDust};
+use orml_traits::parameter_type_with_key;
+use pallet_issuance::IssuanceInfo;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use orml_tokens::{TransferDust, MultiTokenCurrency, MultiTokenReservableCurrency};
-use orml_traits::parameter_type_with_key;
-use mangata_primitives::Amount;
+use sp_core::H256;
+use sp_io;
+use sp_runtime::traits::Zero;
+use sp_runtime::{
+	testing::Header,
+	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
+	Perbill, Percent, RuntimeDebug,
+};
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -52,6 +55,7 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Issuance: pallet_issuance::{Pallet, Storage, Config, Event<T>},
 	}
 );
 
@@ -88,6 +92,28 @@ impl frame_system::Config for Test {
 	type OnSetCode = ();
 }
 
+parameter_types! {
+	pub const HistoryLimit: u32 = 10u32;
+
+	pub const LiquidityMiningIssuanceVaultId: PalletId = PalletId(*b"py/lqmiv");
+	pub LiquidityMiningIssuanceVault: AccountId = LiquidityMiningIssuanceVaultId::get().into_account();
+	pub const StakingIssuanceVaultId: PalletId = PalletId(*b"py/stkiv");
+	pub StakingIssuanceVault: AccountId = StakingIssuanceVaultId::get().into_account();
+	pub const CrowdloanIssuanceVaultId: PalletId = PalletId(*b"py/crliv");
+	pub CrowdloanIssuanceVault: AccountId = CrowdloanIssuanceVaultId::get().into_account();
+}
+
+impl pallet_issuance::Config for Test {
+	type Event = Event;
+	type NativeCurrencyId = MgaTokenId;
+	type Tokens = orml_tokens::MultiTokenCurrencyAdapter<Test>;
+	type BlocksPerRound = BlocksPerRound;
+	type HistoryLimit = HistoryLimit;
+	type LiquidityMiningIssuanceVault = LiquidityMiningIssuanceVault;
+	type StakingIssuanceVault = StakingIssuanceVault;
+	type CrowdloanIssuanceVault = CrowdloanIssuanceVault;
+}
+
 parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: TokenId| -> Balance {
 		match currency_id {
@@ -108,7 +134,7 @@ parameter_types! {
 pub struct DustRemovalWhitelist;
 impl Contains<AccountId> for DustRemovalWhitelist {
 	fn contains(a: &AccountId) -> bool {
-		*a == TreasuryAccount::get() 
+		*a == TreasuryAccount::get()
 	}
 }
 
@@ -125,8 +151,7 @@ impl orml_tokens::Config for Test {
 }
 
 parameter_types! {
-	pub const MinBlocksPerRound: u32 = 3;
-	pub const DefaultBlocksPerRound: u32 = 5;
+	pub const BlocksPerRound: u32 = 5;
 	pub const LeaveCandidatesDelay: u32 = 2;
 	pub const CandidateBondDelay: u32 = 2;
 	pub const LeaveDelegatorsDelay: u32 = 2;
@@ -137,8 +162,6 @@ parameter_types! {
 	pub const MaxDelegatorsPerCandidate: u32 = 4;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
-	pub const DefaultParachainBondReserveAccount: AccountId = 0u64;
-	pub const DefaultParachainBondReservePercent: Percent = Percent::from_percent(30);
 	pub const MinCollatorStk: u128 = 10;
 	pub const MinDelegation: u128 = 3;
 }
@@ -147,8 +170,7 @@ impl Config for Test {
 	type Event = Event;
 	type Currency = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
-	type MinBlocksPerRound = MinBlocksPerRound;
-	type DefaultBlocksPerRound = DefaultBlocksPerRound;
+	type BlocksPerRound = BlocksPerRound;
 	type LeaveCandidatesDelay = LeaveCandidatesDelay;
 	type CandidateBondDelay = CandidateBondDelay;
 	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
@@ -159,19 +181,18 @@ impl Config for Test {
 	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
-	type DefaultParachainBondReserveAccount = DefaultParachainBondReserveAccount;
-	type DefaultParachainBondReservePercent = DefaultParachainBondReservePercent;
 	type MinCollatorStk = MinCollatorStk;
 	type MinCandidateStk = MinCollatorStk;
 	type MinDelegation = MinDelegation;
 	type NativeTokenId = MgaTokenId;
 	type StakingLiquidityTokenValuator = TestTokenValuator;
+	type Issuance = Issuance;
+	type StakingIssuanceVault = StakingIssuanceVault;
 	type WeightInfo = ();
 }
 
 #[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct TestTokenValuator{
-}
+pub struct TestTokenValuator {}
 
 impl Valuate for TestTokenValuator {
 	type Balance = Balance;
@@ -179,10 +200,10 @@ impl Valuate for TestTokenValuator {
 	type CurrencyId = TokenId;
 
 	fn get_liquidity_asset(
-        first_asset_id: Self::CurrencyId,
-        _second_asset_id: Self::CurrencyId,
-    ) -> Result<TokenId, DispatchError> {
-		Ok(first_asset_id/100)
+		first_asset_id: Self::CurrencyId,
+		_second_asset_id: Self::CurrencyId,
+	) -> Result<TokenId, DispatchError> {
+		Ok(first_asset_id / 100)
 	}
 
 	fn get_liquidity_token_mga_pool(
@@ -206,18 +227,18 @@ impl Valuate for TestTokenValuator {
 		unimplemented!("Not required in tests!")
 	}
 
-	fn get_pool_state(liquidity_token_id: Self::CurrencyId) -> Option<(Self::Balance, Self::Balance)> {
-
+	fn get_pool_state(
+		liquidity_token_id: Self::CurrencyId,
+	) -> Option<(Self::Balance, Self::Balance)> {
 		match liquidity_token_id {
-			1 => Some((1,1)),
-			2 => Some((2,1)),
-			3 => Some((5,1)),
-			4 => Some((1,1)),
-			5 => Some((1,2)),
-			6 => Some((1,5)),
+			1 => Some((1, 1)),
+			2 => Some((2, 1)),
+			3 => Some((5, 1)),
+			4 => Some((1, 1)),
+			5 => Some((1, 2)),
+			6 => Some((1, 5)),
 			_ => None,
 		}
-
 	}
 }
 
@@ -228,8 +249,6 @@ pub(crate) struct ExtBuilder {
 	collators: Vec<(AccountId, Balance, TokenId)>,
 	// [delegator, collator, delegation_amount]
 	delegations: Vec<(AccountId, AccountId, Balance)>,
-	// inflation config
-	inflation: InflationInfo<Balance>,
 }
 
 impl Default for ExtBuilder {
@@ -238,38 +257,31 @@ impl Default for ExtBuilder {
 			staking_tokens: vec![],
 			delegations: vec![],
 			collators: vec![],
-			inflation: InflationInfo {
-				expect: Range {
-					min: 700,
-					ideal: 700,
-					max: 700,
-				},
-				// not used
-				annual: Range {
-					min: Perbill::from_percent(50),
-					ideal: Perbill::from_percent(50),
-					max: Perbill::from_percent(50),
-				},
-				// unrealistically high parameterization, only for testing
-				round: Range {
-					min: Perbill::from_percent(5),
-					ideal: Perbill::from_percent(5),
-					max: Perbill::from_percent(5),
-				},
-			},
 		}
 	}
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_staking_tokens(mut self, staking_tokens: Vec<(AccountId, Balance, TokenId)>) -> Self {
+	pub(crate) fn with_staking_tokens(
+		mut self,
+		staking_tokens: Vec<(AccountId, Balance, TokenId)>,
+	) -> Self {
 		self.staking_tokens = staking_tokens;
 		self
 	}
 
-	pub(crate) fn with_default_staking_token(mut self, staking_tokens: Vec<(AccountId, Balance)>) -> Self {
+	pub(crate) fn with_default_staking_token(
+		mut self,
+		staking_tokens: Vec<(AccountId, Balance)>,
+	) -> Self {
 		let mut init_staking_token = vec![(999u64, 10u128, 0u32), (999u64, 100u128, 1u32)];
-		init_staking_token.append(&mut staking_tokens.iter().cloned().map(|(x, y)| (x, y, 1u32)).collect::<Vec<(u64, u128, u32)>>());
+		init_staking_token.append(
+			&mut staking_tokens
+				.iter()
+				.cloned()
+				.map(|(x, y)| (x, y, 1u32))
+				.collect::<Vec<(u64, u128, u32)>>(),
+		);
 		self.staking_tokens = init_staking_token;
 		self
 	}
@@ -279,8 +291,15 @@ impl ExtBuilder {
 		self
 	}
 
-	pub(crate) fn with_default_token_candidates(mut self, collators: Vec<(AccountId, Balance)>) -> Self {
-		self.collators = collators.iter().cloned().map(|(x, y)| (x, y, 1u32)).collect();
+	pub(crate) fn with_default_token_candidates(
+		mut self,
+		collators: Vec<(AccountId, Balance)>,
+	) -> Self {
+		self.collators = collators
+			.iter()
+			.cloned()
+			.map(|(x, y)| (x, y, 1u32))
+			.collect();
 		self
 	}
 
@@ -292,21 +311,20 @@ impl ExtBuilder {
 		self
 	}
 
-	#[allow(dead_code)]
-	pub(crate) fn with_inflation(mut self, inflation: InflationInfo<Balance>) -> Self {
-		self.inflation = inflation;
-		self
-	}
-
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-
 		let mut t = frame_system::GenesisConfig::default()
 			.build_storage::<Test>()
 			.expect("Frame system builds valid default genesis config");
 
 		orml_tokens::GenesisConfig::<Test> {
 			tokens_endowment: Default::default(),
-            created_tokens_for_staking: self.staking_tokens.iter().cloned().map(|(who, amount, token)| (who, token, amount)).collect(),
+			vesting_tokens: Default::default(),
+			created_tokens_for_staking: self
+				.staking_tokens
+				.iter()
+				.cloned()
+				.map(|(who, amount, token)| (who, token, amount))
+				.collect(),
 		}
 		.assimilate_storage(&mut t)
 		.expect("Tokens storage can be assimilated");
@@ -314,10 +332,24 @@ impl ExtBuilder {
 		stake::GenesisConfig::<Test> {
 			candidates: self.collators,
 			delegations: self.delegations,
-			inflation_config: self.inflation,
 		}
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");
+
+		GenesisBuild::<Test>::assimilate_storage(
+			&pallet_issuance::GenesisConfig {
+				issuance_config: IssuanceInfo {
+					cap: 4_000_000_000u128,
+					tge: 2_000_000_000u128,
+					linear_issuance_blocks: 13_140_000u32,
+					liquidity_mining_split: Perbill::from_parts(555555556),
+					staking_split: Perbill::from_parts(444444444),
+					crowdloan_allocation: 200_000_000u128,
+				},
+			},
+			&mut t,
+		)
+		.expect("pallet-issuance's storage can be assimilated");
 
 		let mut ext = sp_io::TestExternalities::new(t);
 		ext.execute_with(|| System::set_block_number(1));
@@ -334,8 +366,13 @@ pub(crate) fn roll_to(n: u64) {
 		System::on_initialize(System::block_number());
 		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
-		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number()){
-			<Stake as pallet_session::SessionManager<_>>::start_session(Default::default());
+		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number())
+		{
+			if System::block_number().is_zero() {
+				<Stake as pallet_session::SessionManager<_>>::start_session(Default::default());
+			} else {
+				<Stake as pallet_session::SessionManager<_>>::start_session(1);
+			}
 		}
 	}
 }
@@ -408,7 +445,7 @@ pub type StakeCurrency = <Test as pallet::Config>::Currency;
 fn geneses() {
 	ExtBuilder::default()
 		.with_staking_tokens(vec![
-			(999, 100,0),
+			(999, 100, 0),
 			(1, 1000, 1),
 			(2, 300, 2),
 			(3, 100, 1),
@@ -455,7 +492,7 @@ fn geneses() {
 		});
 	ExtBuilder::default()
 		.with_staking_tokens(vec![
-			(999, 100,0),
+			(999, 100, 0),
 			(1, 100, 1),
 			(2, 100, 2),
 			(3, 100, 1),
@@ -468,7 +505,13 @@ fn geneses() {
 			(9, 100, 2),
 			(10, 100, 1),
 		])
-		.with_candidates(vec![(1, 20, 1), (2, 20, 2), (3, 20, 1), (4, 20, 3), (5, 10, 3)])
+		.with_candidates(vec![
+			(1, 20, 1),
+			(2, 20, 2),
+			(3, 20, 1),
+			(4, 20, 3),
+			(5, 10, 3),
+		])
 		.with_delegations(vec![
 			(6, 1, 10),
 			(7, 1, 10),
