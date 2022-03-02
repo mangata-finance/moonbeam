@@ -75,6 +75,7 @@ use sp_runtime::{
 };
 use sp_staking::SessionIndex;
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
+use pallet_collective::GetMembers;
 
 pub use pallet::*;
 
@@ -1253,6 +1254,8 @@ pub mod pallet {
 		#[pallet::constant]
 		/// The account id that holds the liquidity mining issuance
 		type StakingIssuanceVault: Get<Self::AccountId>;
+		/// The module that provides the set of fallback accounts
+		type FallbackProvider: GetMembers<Self::AccountId>;
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 	}
@@ -2352,7 +2355,18 @@ pub mod pallet {
 
 	impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
 		fn new_session(_: SessionIndex) -> Option<Vec<T::AccountId>> {
-			Some(Self::selected_candidates())
+			let selected_canidates = Self::selected_candidates();
+			if !selected_canidates.is_empty(){
+				Some(selected_canidates)
+			} else {
+				let fallback_canidates = T::FallbackProvider::get_members();
+				if !fallback_canidates.is_empty(){
+					Some(fallback_canidates)
+				} else {
+					None
+				}
+			}
+			
 		}
 		fn start_session(session_index: SessionIndex) {
 			if !session_index.is_zero() {

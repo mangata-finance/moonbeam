@@ -23,339 +23,497 @@ evm-runtime = { git = "https://github.com/purestake/evm", branch = "moonbeam-pol
 [profile.release]
 panic = "unwind"
 
-[patch."https://github.com/mangata-finance/mangata-node"]
-pallet-xyk = { path = "../mangata-node/pallets/xyk" }
-mangata-primitives = { path = "../mangata-node/primitives/mangata" }
-pallet-assets-info = { path = "../mangata-node/pallets/assets-info" }
-pallet-issuance = { path = "../mangata-node/pallets/issuance" }
+# [patch."https://github.com/mangata-finance/mangata-node"]
+# pallet-xyk = { git = "https://github.com/mangata-finance//mangata-finance", branch = "develop" }
+# mangata-primitives = { git = "https://github.com/mangata-finance//mangata-finance", branch = "develop" }
+# pallet-assets-info = { git = "https://github.com/mangata-finance//mangata-finance", branch = "develop" }
+# pallet-issuance = { git = "https://github.com/mangata-finance//mangata-finance", branch = "develop" }
 
 [patch."https://github.com/mangata-finance/open-runtime-module-library"]
-orml-tokens = { path = "../open-runtime-module-library/tokens" }
-orml-traits = { path = "../open-runtime-module-library/traits" }
+orml-tokens = { git = "https://github.com/mangata-finance//open-runtime-module-library", branch = "mangata-dev" }
+orml-traits = { git = "https://github.com/mangata-finance//open-runtime-module-library", branch = "mangata-dev" }
 
-[patch."https://github.com/mangata-finance/moonbeam.git"]
-parachain-staking = { path = "../moonbeam/pallets/parachain-staking" }
-
-[patch."https://github.com/paritytech/substrate"]
-pallet-authorship = { path = "../substrate/frame/authorship" }
-pallet-bags-list = { path = "../substrate/frame/bags-list" }
-pallet-transaction-payment-rpc-runtime-api = { path = "../substrate/frame/transaction-payment/rpc/runtime-api" }
-pallet-transaction-payment-rpc = { path = "../substrate/frame/transaction-payment/rpc" }
-pallet-transaction-payment = { path = "../substrate/frame/transaction-payment" }
-frame-try-runtime = { path = "../substrate/frame/try-runtime" }
-frame-system-rpc-runtime-api = { path = "../substrate/frame/system/rpc/runtime-api" }
-frame-system = { path = "../substrate/frame/system" }
-pallet-beefy = { path = "../substrate/frame/beefy" }
-pallet-membership = { path = "../substrate/frame/membership" }
-frame-benchmarking = { path = "../substrate/frame/benchmarking" }
-pallet-identity = { path = "../substrate/frame/identity" }
-pallet-session = { path = "../substrate/frame/session" }
-pallet-aura = { path = "../substrate/frame/aura" }
-pallet-bounties = { path = "../substrate/frame/bounties" }
-pallet-balances = { path = "../substrate/frame/balances" }
-pallet-authority-discovery = { path = "../substrate/frame/authority-discovery" }
-pallet-tips = { path = "../substrate/frame/tips" }
-pallet-election-provider-multi-phase = { path = "../substrate/frame/election-provider-multi-phase" }
-pallet-beefy-mmr = { path = "../substrate/frame/beefy-mmr" }
-beefy-merkle-tree = { path = "../substrate/frame/beefy-mmr/primitives" }
-pallet-scheduler = { path = "../substrate/frame/scheduler" }
-pallet-multisig = { path = "../substrate/frame/multisig" }
-frame-executive = { path = "../substrate/frame/executive" }
-pallet-im-online = { path = "../substrate/frame/im-online" }
-pallet-treasury = { path = "../substrate/frame/treasury" }
-pallet-utility = { path = "../substrate/frame/utility" }
-pallet-sudo = { path = "../substrate/frame/sudo" }
-pallet-offences = { path = "../substrate/frame/offences" }
-pallet-democracy = { path = "../substrate/frame/democracy" }
-pallet-grandpa = { path = "../substrate/frame/grandpa" }
-frame-election-provider-support = { path = "../substrate/frame/election-provider-support" }
-pallet-collective = { path = "../substrate/frame/collective" }
-pallet-mmr-rpc = { path = "../substrate/frame/merkle-mountain-range/rpc" }
-pallet-mmr = { path = "../substrate/frame/merkle-mountain-range" }
-pallet-mmr-primitives = { path = "../substrate/frame/merkle-mountain-range/primitives" }
-frame-support = { path = "../substrate/frame/support" }
-frame-support-procedural-tools-derive = { path = "../substrate/frame/support/procedural/tools/derive" }
-frame-support-procedural-tools = { path = "../substrate/frame/support/procedural/tools" }
-frame-support-procedural = { path = "../substrate/frame/support/procedural" }
-pallet-nicks = { path = "../substrate/frame/nicks" }
-pallet-staking = { path = "../substrate/frame/staking" }
-pallet-staking-reward-curve = { path = "../substrate/frame/staking/reward-curve" }
-pallet-indices = { path = "../substrate/frame/indices" }
-pallet-babe = { path = "../substrate/frame/babe" }
-pallet-timestamp = { path = "../substrate/frame/timestamp" }
-pallet-elections-phragmen = { path = "../substrate/frame/elections-phragmen" }
-pallet-proxy = { path = "../substrate/frame/proxy" }
-pallet-vesting = { path = "../substrate/frame/vesting" }
-sc-informant = { path = "../substrate/client/informant" }
-sc-finality-grandpa-rpc = { path = "../substrate/client/finality-grandpa/rpc" }
-sc-finality-grandpa = { path = "../substrate/client/finality-grandpa" }
-beefy-gadget-rpc = { path = "../substrate/client/beefy/rpc" }
-beefy-gadget = { path = "../substrate/client/beefy" }
-sc-executor-wasmtime = { path = "../substrate/client/executor/wasmtime" }
-sc-executor-common = { path = "../substrate/client/executor/common" }
-sc-executor-wasmi = { path = "../substrate/client/executor/wasmi" }
-sc-executor = { path = "../substrate/client/executor" }
-sc-network-gossip = { path = "../substrate/client/network-gossip" }
-sc-transaction-pool-api = { path = "../substrate/client/transaction-pool/api" }
-sc-transaction-pool = { path = "../substrate/client/transaction-pool" }
-sc-tracing-proc-macro = { path = "../substrate/client/tracing/proc-macro" }
-sc-tracing = { path = "../substrate/client/tracing" }
-sc-client-db = { path = "../substrate/client/db" }
-sc-sync-state-rpc = { path = "../substrate/client/sync-state-rpc" }
-sc-network = { path = "../substrate/client/network" }
-sc-authority-discovery = { path = "../substrate/client/authority-discovery" }
-sc-utils = { path = "../substrate/client/utils" }
-sc-block-builder-ver = { path = "../substrate/client/block-builder-ver" }
-sc-keystore = { path = "../substrate/client/keystore" }
-sc-rpc-server = { path = "../substrate/client/rpc-servers" }
-sc-client-api = { path = "../substrate/client/api" }
-sc-rpc = { path = "../substrate/client/rpc" }
-sc-service = { path = "../substrate/client/service" }
-sc-basic-authorship-ver = { path = "../substrate/client/basic-authorship-ver" }
-sc-block-builder = { path = "../substrate/client/block-builder" }
-sc-rpc-api = { path = "../substrate/client/rpc-api" }
-sc-chain-spec-derive = { path = "../substrate/client/chain-spec/derive" }
-sc-chain-spec = { path = "../substrate/client/chain-spec" }
-sc-proposer-metrics = { path = "../substrate/client/proposer-metrics" }
-sc-peerset = { path = "../substrate/client/peerset" }
-sc-basic-authorship = { path = "../substrate/client/basic-authorship" }
-sc-offchain = { path = "../substrate/client/offchain" }
-sc-state-db = { path = "../substrate/client/state-db" }
-sc-allocator = { path = "../substrate/client/allocator" }
-sc-consensus = { path = "../substrate/client/consensus/common" }
-sc-consensus-aura = { path = "../substrate/client/consensus/aura" }
-sc-consensus-uncles = { path = "../substrate/client/consensus/uncles" }
-sc-consensus-epochs = { path = "../substrate/client/consensus/epochs" }
-sc-consensus-slots = { path = "../substrate/client/consensus/slots" }
-sc-consensus-babe-rpc = { path = "../substrate/client/consensus/babe/rpc" }
-sc-consensus-babe = { path = "../substrate/client/consensus/babe" }
-sc-cli = { path = "../substrate/client/cli" }
-sc-telemetry = { path = "../substrate/client/telemetry" }
-fork-tree = { path = "../substrate/utils/fork-tree" }
-substrate-wasm-builder = { path = "../substrate/utils/wasm-builder" }
-try-runtime-cli = { path = "../substrate/utils/frame/try-runtime/cli" }
-frame-benchmarking-cli = { path = "../substrate/utils/frame/benchmarking-cli" }
-substrate-frame-rpc-system = { path = "../substrate/utils/frame/rpc/system" }
-remote-externalities = { path = "../substrate/utils/frame/remote-externalities" }
-substrate-build-script-utils = { path = "../substrate/utils/build-script-utils" }
-substrate-prometheus-endpoint = { path = "../substrate/utils/prometheus" }
-substrate-test-client = { path = "../substrate/test-utils/client" }
-sp-panic-handler = { path = "../substrate/primitives/panic-handler" }
-sp-inherents = { path = "../substrate/primitives/inherents" }
-sp-authorship = { path = "../substrate/primitives/authorship" }
-sp-storage = { path = "../substrate/primitives/storage" }
-sp-std = { path = "../substrate/primitives/std" }
-sp-finality-grandpa = { path = "../substrate/primitives/finality-grandpa" }
-beefy-primitives = { path = "../substrate/primitives/beefy" }
-sp-version-proc-macro = { path = "../substrate/primitives/version/proc-macro" }
-sp-version = { path = "../substrate/primitives/version" }
-sp-transaction-pool = { path = "../substrate/primitives/transaction-pool" }
-sp-ver = { path = "../substrate/primitives/ver" }
-sp-tracing = { path = "../substrate/primitives/tracing" }
-sp-database = { path = "../substrate/primitives/database" }
-sp-debug-derive = { path = "../substrate/primitives/debug-derive" }
-sp-session = { path = "../substrate/primitives/session" }
-extrinsic-shuffler = { path = "../substrate/primitives/shuffler" }
-ver-api = { path = "../substrate/primitives/ver-api" }
-sp-core-hashing-proc-macro = { path = "../substrate/primitives/core/hashing/proc-macro" }
-sp-core-hashing = { path = "../substrate/primitives/core/hashing" }
-sp-core = { path = "../substrate/primitives/core" }
-sp-keyring = { path = "../substrate/primitives/keyring" }
-sp-authority-discovery = { path = "../substrate/primitives/authority-discovery" }
-sp-tasks = { path = "../substrate/primitives/tasks" }
-sp-runtime-interface-proc-macro = { path = "../substrate/primitives/runtime-interface/proc-macro" }
-sp-runtime-interface = { path = "../substrate/primitives/runtime-interface" }
-sp-arithmetic = { path = "../substrate/primitives/arithmetic" }
-sp-keystore = { path = "../substrate/primitives/keystore" }
-sp-api-proc-macro = { path = "../substrate/primitives/api/proc-macro" }
-sp-api = { path = "../substrate/primitives/api" }
-sp-rpc = { path = "../substrate/primitives/rpc" }
-sp-maybe-compressed-blob = { path = "../substrate/primitives/maybe-compressed-blob" }
-sp-transaction-storage-proof = { path = "../substrate/primitives/transaction-storage-proof" }
-sp-state-machine = { path = "../substrate/primitives/state-machine" }
-sp-block-builder = { path = "../substrate/primitives/block-builder" }
-sp-wasm-interface = { path = "../substrate/primitives/wasm-interface" }
-sp-npos-elections = { path = "../substrate/primitives/npos-elections" }
-sp-npos-elections-solution-type = { path = "../substrate/primitives/npos-elections/solution-type" }
-sp-application-crypto = { path = "../substrate/primitives/application-crypto" }
-sp-serializer = { path = "../substrate/primitives/serializer" }
-sp-offchain = { path = "../substrate/primitives/offchain" }
-sp-staking = { path = "../substrate/primitives/staking" }
-sp-trie = { path = "../substrate/primitives/trie" }
-sp-blockchain = { path = "../substrate/primitives/blockchain" }
-sp-externalities = { path = "../substrate/primitives/externalities" }
-sp-consensus = { path = "../substrate/primitives/consensus/common" }
-sp-consensus-aura = { path = "../substrate/primitives/consensus/aura" }
-sp-consensus-slots = { path = "../substrate/primitives/consensus/slots" }
-sp-consensus-vrf = { path = "../substrate/primitives/consensus/vrf" }
-sp-consensus-babe = { path = "../substrate/primitives/consensus/babe" }
-sp-timestamp = { path = "../substrate/primitives/timestamp" }
-sp-runtime = { path = "../substrate/primitives/runtime" }
-sp-io = { path = "../substrate/primitives/io" }
-
-
+# patch generated by ./scripts/dev_manifest.sh
 [patch."https://github.com/mangata-finance/substrate"]
-pallet-authorship = { path = "../substrate/frame/authorship" }
-pallet-bags-list = { path = "../substrate/frame/bags-list" }
-pallet-transaction-payment-rpc-runtime-api = { path = "../substrate/frame/transaction-payment/rpc/runtime-api" }
-pallet-transaction-payment-rpc = { path = "../substrate/frame/transaction-payment/rpc" }
-pallet-transaction-payment = { path = "../substrate/frame/transaction-payment" }
-frame-try-runtime = { path = "../substrate/frame/try-runtime" }
-frame-system-rpc-runtime-api = { path = "../substrate/frame/system/rpc/runtime-api" }
-frame-system = { path = "../substrate/frame/system" }
-pallet-beefy = { path = "../substrate/frame/beefy" }
-pallet-membership = { path = "../substrate/frame/membership" }
-frame-benchmarking = { path = "../substrate/frame/benchmarking" }
-pallet-identity = { path = "../substrate/frame/identity" }
-pallet-session = { path = "../substrate/frame/session" }
-pallet-aura = { path = "../substrate/frame/aura" }
-pallet-bounties = { path = "../substrate/frame/bounties" }
-pallet-balances = { path = "../substrate/frame/balances" }
-pallet-authority-discovery = { path = "../substrate/frame/authority-discovery" }
-pallet-tips = { path = "../substrate/frame/tips" }
-pallet-election-provider-multi-phase = { path = "../substrate/frame/election-provider-multi-phase" }
-pallet-beefy-mmr = { path = "../substrate/frame/beefy-mmr" }
-beefy-merkle-tree = { path = "../substrate/frame/beefy-mmr/primitives" }
-pallet-scheduler = { path = "../substrate/frame/scheduler" }
-pallet-multisig = { path = "../substrate/frame/multisig" }
-frame-executive = { path = "../substrate/frame/executive" }
-pallet-im-online = { path = "../substrate/frame/im-online" }
-pallet-treasury = { path = "../substrate/frame/treasury" }
-pallet-utility = { path = "../substrate/frame/utility" }
-pallet-sudo = { path = "../substrate/frame/sudo" }
-pallet-offences = { path = "../substrate/frame/offences" }
-pallet-democracy = { path = "../substrate/frame/democracy" }
-pallet-grandpa = { path = "../substrate/frame/grandpa" }
-frame-election-provider-support = { path = "../substrate/frame/election-provider-support" }
-pallet-collective = { path = "../substrate/frame/collective" }
-pallet-mmr-rpc = { path = "../substrate/frame/merkle-mountain-range/rpc" }
-pallet-mmr = { path = "../substrate/frame/merkle-mountain-range" }
-pallet-mmr-primitives = { path = "../substrate/frame/merkle-mountain-range/primitives" }
-frame-support = { path = "../substrate/frame/support" }
-frame-support-procedural-tools-derive = { path = "../substrate/frame/support/procedural/tools/derive" }
-frame-support-procedural-tools = { path = "../substrate/frame/support/procedural/tools" }
-frame-support-procedural = { path = "../substrate/frame/support/procedural" }
-pallet-nicks = { path = "../substrate/frame/nicks" }
-pallet-staking = { path = "../substrate/frame/staking" }
-pallet-staking-reward-curve = { path = "../substrate/frame/staking/reward-curve" }
-pallet-indices = { path = "../substrate/frame/indices" }
-pallet-babe = { path = "../substrate/frame/babe" }
-pallet-timestamp = { path = "../substrate/frame/timestamp" }
-pallet-elections-phragmen = { path = "../substrate/frame/elections-phragmen" }
-pallet-proxy = { path = "../substrate/frame/proxy" }
-pallet-vesting = { path = "../substrate/frame/vesting" }
-sc-informant = { path = "../substrate/client/informant" }
-sc-finality-grandpa-rpc = { path = "../substrate/client/finality-grandpa/rpc" }
-sc-finality-grandpa = { path = "../substrate/client/finality-grandpa" }
-beefy-gadget-rpc = { path = "../substrate/client/beefy/rpc" }
-beefy-gadget = { path = "../substrate/client/beefy" }
-sc-executor-wasmtime = { path = "../substrate/client/executor/wasmtime" }
-sc-executor-common = { path = "../substrate/client/executor/common" }
-sc-executor-wasmi = { path = "../substrate/client/executor/wasmi" }
-sc-executor = { path = "../substrate/client/executor" }
-sc-network-gossip = { path = "../substrate/client/network-gossip" }
-sc-transaction-pool-api = { path = "../substrate/client/transaction-pool/api" }
-sc-transaction-pool = { path = "../substrate/client/transaction-pool" }
-sc-tracing-proc-macro = { path = "../substrate/client/tracing/proc-macro" }
-sc-tracing = { path = "../substrate/client/tracing" }
-sc-client-db = { path = "../substrate/client/db" }
-sc-sync-state-rpc = { path = "../substrate/client/sync-state-rpc" }
-sc-network = { path = "../substrate/client/network" }
-sc-authority-discovery = { path = "../substrate/client/authority-discovery" }
-sc-utils = { path = "../substrate/client/utils" }
-sc-block-builder-ver = { path = "../substrate/client/block-builder-ver" }
-sc-keystore = { path = "../substrate/client/keystore" }
-sc-rpc-server = { path = "../substrate/client/rpc-servers" }
-sc-client-api = { path = "../substrate/client/api" }
-sc-rpc = { path = "../substrate/client/rpc" }
-sc-service = { path = "../substrate/client/service" }
-sc-basic-authorship-ver = { path = "../substrate/client/basic-authorship-ver" }
-sc-block-builder = { path = "../substrate/client/block-builder" }
-sc-rpc-api = { path = "../substrate/client/rpc-api" }
-sc-chain-spec-derive = { path = "../substrate/client/chain-spec/derive" }
-sc-chain-spec = { path = "../substrate/client/chain-spec" }
-sc-proposer-metrics = { path = "../substrate/client/proposer-metrics" }
-sc-peerset = { path = "../substrate/client/peerset" }
-sc-basic-authorship = { path = "../substrate/client/basic-authorship" }
-sc-offchain = { path = "../substrate/client/offchain" }
-sc-state-db = { path = "../substrate/client/state-db" }
-sc-allocator = { path = "../substrate/client/allocator" }
-sc-consensus = { path = "../substrate/client/consensus/common" }
-sc-consensus-aura = { path = "../substrate/client/consensus/aura" }
-sc-consensus-uncles = { path = "../substrate/client/consensus/uncles" }
-sc-consensus-epochs = { path = "../substrate/client/consensus/epochs" }
-sc-consensus-slots = { path = "../substrate/client/consensus/slots" }
-sc-consensus-babe-rpc = { path = "../substrate/client/consensus/babe/rpc" }
-sc-consensus-babe = { path = "../substrate/client/consensus/babe" }
-sc-cli = { path = "../substrate/client/cli" }
-sc-telemetry = { path = "../substrate/client/telemetry" }
-fork-tree = { path = "../substrate/utils/fork-tree" }
-substrate-wasm-builder = { path = "../substrate/utils/wasm-builder" }
-try-runtime-cli = { path = "../substrate/utils/frame/try-runtime/cli" }
-frame-benchmarking-cli = { path = "../substrate/utils/frame/benchmarking-cli" }
-substrate-frame-rpc-system = { path = "../substrate/utils/frame/rpc/system" }
-remote-externalities = { path = "../substrate/utils/frame/remote-externalities" }
-substrate-build-script-utils = { path = "../substrate/utils/build-script-utils" }
-substrate-prometheus-endpoint = { path = "../substrate/utils/prometheus" }
-substrate-test-client = { path = "../substrate/test-utils/client" }
-sp-panic-handler = { path = "../substrate/primitives/panic-handler" }
-sp-inherents = { path = "../substrate/primitives/inherents" }
-sp-authorship = { path = "../substrate/primitives/authorship" }
-sp-storage = { path = "../substrate/primitives/storage" }
-sp-std = { path = "../substrate/primitives/std" }
-sp-finality-grandpa = { path = "../substrate/primitives/finality-grandpa" }
-beefy-primitives = { path = "../substrate/primitives/beefy" }
-sp-version-proc-macro = { path = "../substrate/primitives/version/proc-macro" }
-sp-version = { path = "../substrate/primitives/version" }
-sp-transaction-pool = { path = "../substrate/primitives/transaction-pool" }
-sp-ver = { path = "../substrate/primitives/ver" }
-sp-tracing = { path = "../substrate/primitives/tracing" }
-sp-database = { path = "../substrate/primitives/database" }
-sp-debug-derive = { path = "../substrate/primitives/debug-derive" }
-sp-session = { path = "../substrate/primitives/session" }
-extrinsic-shuffler = { path = "../substrate/primitives/shuffler" }
-ver-api = { path = "../substrate/primitives/ver-api" }
-sp-core-hashing-proc-macro = { path = "../substrate/primitives/core/hashing/proc-macro" }
-sp-core-hashing = { path = "../substrate/primitives/core/hashing" }
-sp-core = { path = "../substrate/primitives/core" }
-sp-keyring = { path = "../substrate/primitives/keyring" }
-sp-authority-discovery = { path = "../substrate/primitives/authority-discovery" }
-sp-tasks = { path = "../substrate/primitives/tasks" }
-sp-runtime-interface-proc-macro = { path = "../substrate/primitives/runtime-interface/proc-macro" }
-sp-runtime-interface = { path = "../substrate/primitives/runtime-interface" }
-sp-arithmetic = { path = "../substrate/primitives/arithmetic" }
-sp-keystore = { path = "../substrate/primitives/keystore" }
-sp-api-proc-macro = { path = "../substrate/primitives/api/proc-macro" }
-sp-api = { path = "../substrate/primitives/api" }
-sp-rpc = { path = "../substrate/primitives/rpc" }
-sp-maybe-compressed-blob = { path = "../substrate/primitives/maybe-compressed-blob" }
-sp-transaction-storage-proof = { path = "../substrate/primitives/transaction-storage-proof" }
-sp-state-machine = { path = "../substrate/primitives/state-machine" }
-sp-block-builder = { path = "../substrate/primitives/block-builder" }
-sp-wasm-interface = { path = "../substrate/primitives/wasm-interface" }
-sp-npos-elections = { path = "../substrate/primitives/npos-elections" }
-sp-npos-elections-solution-type = { path = "../substrate/primitives/npos-elections/solution-type" }
-sp-application-crypto = { path = "../substrate/primitives/application-crypto" }
-sp-serializer = { path = "../substrate/primitives/serializer" }
-sp-offchain = { path = "../substrate/primitives/offchain" }
-sp-staking = { path = "../substrate/primitives/staking" }
-sp-trie = { path = "../substrate/primitives/trie" }
-sp-blockchain = { path = "../substrate/primitives/blockchain" }
-sp-externalities = { path = "../substrate/primitives/externalities" }
-sp-consensus = { path = "../substrate/primitives/consensus/common" }
-sp-consensus-aura = { path = "../substrate/primitives/consensus/aura" }
-sp-consensus-slots = { path = "../substrate/primitives/consensus/slots" }
-sp-consensus-vrf = { path = "../substrate/primitives/consensus/vrf" }
-sp-consensus-babe = { path = "../substrate/primitives/consensus/babe" }
-sp-timestamp = { path = "../substrate/primitives/timestamp" }
-sp-runtime = { path = "../substrate/primitives/runtime" }
-sp-io = { path = "../substrate/primitives/io" }
+pallet-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-bags-list = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-try-runtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-system-rpc-runtime-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-system = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-beefy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-membership = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-benchmarking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-identity = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-session = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-bounties = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-balances = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-tips = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-election-provider-multi-phase = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-beefy-mmr = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-merkle-tree = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-scheduler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-multisig = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-executive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-im-online = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-treasury = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-utility = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-sudo = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-offences = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-democracy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-election-provider-support = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-collective = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr-primitives = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural-tools-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural-tools = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-nicks = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-staking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-staking-reward-curve = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-indices = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-timestamp = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-elections-phragmen = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-proxy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-vesting = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-informant = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-finality-grandpa-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-finality-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-gadget-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-gadget = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-wasmtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-common = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-wasmi = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-network-gossip = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-transaction-pool-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-transaction-pool = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-tracing-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-tracing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-client-db = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-sync-state-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-network = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-utils = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-block-builder-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-keystore = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc-server = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-client-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-service = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-basic-authorship-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-block-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-chain-spec-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-chain-spec = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-proposer-metrics = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-peerset = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-basic-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-offchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-state-db = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-allocator = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-uncles = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-epochs = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-slots = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-babe-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-telemetry = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+fork-tree = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-wasm-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+try-runtime-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-benchmarking-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-frame-rpc-system = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+remote-externalities = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-build-script-utils = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-prometheus-endpoint = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-test-client = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-panic-handler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-inherents = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-storage = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-std = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-finality-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-primitives = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-version-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-version = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-transaction-pool = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-tracing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-database = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-debug-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-session = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+extrinsic-shuffler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+ver-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core-hashing-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core-hashing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-keyring = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-tasks = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime-interface-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime-interface = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-arithmetic = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-keystore = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-api-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-maybe-compressed-blob = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-transaction-storage-proof = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-state-machine = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-block-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-wasm-interface = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-npos-elections = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-npos-elections-solution-type = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-application-crypto = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-serializer = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-offchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-staking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-trie = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-blockchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-externalities = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-slots = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-vrf = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-timestamp = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-io = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+
+# patch generated by ./scripts/dev_manifest.sh
+[patch."https://github.com/purestake/substrate"]
+pallet-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-bags-list = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-try-runtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-system-rpc-runtime-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-system = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-beefy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-membership = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-benchmarking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-identity = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-session = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-bounties = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-balances = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-tips = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-election-provider-multi-phase = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-beefy-mmr = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-merkle-tree = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-scheduler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-multisig = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-executive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-im-online = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-treasury = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-utility = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-sudo = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-offences = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-democracy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-election-provider-support = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-collective = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr-primitives = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural-tools-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural-tools = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-nicks = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-staking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-staking-reward-curve = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-indices = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-timestamp = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-elections-phragmen = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-proxy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-vesting = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-informant = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-finality-grandpa-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-finality-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-gadget-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-gadget = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-wasmtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-common = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-wasmi = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-network-gossip = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-transaction-pool-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-transaction-pool = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-tracing-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-tracing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-client-db = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-sync-state-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-network = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-utils = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-block-builder-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-keystore = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc-server = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-client-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-service = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-basic-authorship-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-block-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-chain-spec-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-chain-spec = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-proposer-metrics = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-peerset = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-basic-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-offchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-state-db = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-allocator = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-uncles = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-epochs = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-slots = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-babe-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-telemetry = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+fork-tree = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-wasm-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+try-runtime-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-benchmarking-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-frame-rpc-system = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+remote-externalities = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-build-script-utils = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-prometheus-endpoint = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-test-client = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-panic-handler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-inherents = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-storage = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-std = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-finality-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-primitives = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-version-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-version = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-transaction-pool = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-tracing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-database = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-debug-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-session = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+extrinsic-shuffler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+ver-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core-hashing-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core-hashing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-keyring = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-tasks = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime-interface-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime-interface = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-arithmetic = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-keystore = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-api-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-maybe-compressed-blob = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-transaction-storage-proof = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-state-machine = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-block-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-wasm-interface = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-npos-elections = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-npos-elections-solution-type = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-application-crypto = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-serializer = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-offchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-staking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-trie = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-blockchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-externalities = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-slots = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-vrf = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-timestamp = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-io = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
 
 
+# patch generated by ./scripts/dev_manifest.sh
+[patch."https://github.com/paritytech/substrate"]
+pallet-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-bags-list = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-transaction-payment = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-try-runtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-system-rpc-runtime-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-system = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-beefy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-membership = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-benchmarking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-identity = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-session = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-bounties = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-balances = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-tips = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-election-provider-multi-phase = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-beefy-mmr = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-merkle-tree = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-scheduler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-multisig = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-executive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-im-online = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-treasury = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-utility = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-sudo = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-offences = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-democracy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-election-provider-support = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-collective = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-mmr-primitives = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural-tools-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural-tools = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-support-procedural = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-nicks = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-staking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-staking-reward-curve = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-indices = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-timestamp = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-elections-phragmen = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-proxy = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+pallet-vesting = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-informant = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-finality-grandpa-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-finality-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-gadget-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-gadget = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-wasmtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-common = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor-wasmi = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-executor = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-network-gossip = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-transaction-pool-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-transaction-pool = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-tracing-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-tracing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-client-db = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-sync-state-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-network = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-utils = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-block-builder-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-keystore = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc-server = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-client-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-service = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-basic-authorship-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-block-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-rpc-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-chain-spec-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-chain-spec = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-proposer-metrics = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-peerset = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-basic-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-offchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-state-db = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-allocator = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-uncles = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-epochs = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-slots = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-babe-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-consensus-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sc-telemetry = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+fork-tree = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-wasm-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+try-runtime-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+frame-benchmarking-cli = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-frame-rpc-system = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+remote-externalities = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-build-script-utils = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-prometheus-endpoint = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+substrate-test-client = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-panic-handler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-inherents = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-authorship = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-storage = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-std = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-finality-grandpa = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+beefy-primitives = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-version-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-version = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-transaction-pool = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-ver = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-tracing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-database = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-debug-derive = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-session = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+extrinsic-shuffler = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+ver-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core-hashing-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core-hashing = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-core = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-keyring = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-authority-discovery = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-tasks = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime-interface-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime-interface = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-arithmetic = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-keystore = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-api-proc-macro = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-api = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-rpc = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-maybe-compressed-blob = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-transaction-storage-proof = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-state-machine = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-block-builder = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-wasm-interface = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-npos-elections = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-npos-elections-solution-type = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-application-crypto = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-serializer = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-offchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-staking = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-trie = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-blockchain = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-externalities = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-aura = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-slots = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-vrf = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-consensus-babe = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-timestamp = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-runtime = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+sp-io = { git = "https://github.com/mangata-finance//substrate", branch = "feature/council-as-staking-fallback" }
+
+# patch generated by ./scripts/dev_manifest.sh
 [patch."https://github.com/mangata-finance/snowbridge"]
-artemis-core = { path = "../snowbridge/parachain/primitives/core" }
-artemis-ethereum = { path = "../snowbridge/parachain/primitives/ethereum" }
-pallet-verifier = { path = "../snowbridge/parachain/pallets/verifier" }
-artemis-erc20-app = { path = "../snowbridge/parachain/pallets/erc20-app" }
-artemis-eth-app = { path = "../snowbridge/parachain/pallets/eth-app" }
-artemis-asset = { path = "../snowbridge/parachain/pallets/asset" }
+artemis-asset = { git = "https://github.com/mangata-finance//snowbridge", branch = "mangata-dev" }
+artemis-erc20-app = { git = "https://github.com/mangata-finance//snowbridge", branch = "mangata-dev" }
+pallet-bridge = { git = "https://github.com/mangata-finance//snowbridge", branch = "mangata-dev" }
+artemis-eth-app = { git = "https://github.com/mangata-finance//snowbridge", branch = "mangata-dev" }
+pallet-verifier = { git = "https://github.com/mangata-finance//snowbridge", branch = "mangata-dev" }
+artemis-core = { git = "https://github.com/mangata-finance//snowbridge", branch = "mangata-dev" }
+artemis-ethereum = { git = "https://github.com/mangata-finance//snowbridge", branch = "mangata-dev" }

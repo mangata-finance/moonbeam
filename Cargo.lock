@@ -517,6 +517,7 @@ dependencies = [
 [[package]]
 name = "frame-benchmarking"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -549,6 +550,7 @@ dependencies = [
 [[package]]
 name = "frame-support"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "bitflags",
  "frame-metadata",
@@ -577,6 +579,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "Inflector",
  "frame-support-procedural-tools",
@@ -588,6 +591,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "frame-support-procedural-tools-derive",
  "proc-macro-crate",
@@ -599,6 +603,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools-derive"
 version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -608,6 +613,7 @@ dependencies = [
 [[package]]
 name = "frame-system"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "frame-support",
  "log",
@@ -1032,6 +1038,12 @@ dependencies = [
 [[package]]
 name = "mangata-primitives"
 version = "0.1.0"
+source = "git+https://github.com/mangata-finance/mangata-node?branch=develop#316744d0fb893f27bbfcce82675a1f4d9aebb433"
+
+[[package]]
+name = "mangata-primitives"
+version = "0.1.0"
+source = "git+https://github.com/mangata-finance/mangata-node?branch=mangata-dev-v4#7fa2c900c69b2f153a9b0e17990b5971c5d3e2ce"
 
 [[package]]
 name = "matchers"
@@ -1234,10 +1246,11 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 [[package]]
 name = "orml-tokens"
 version = "0.4.1-dev"
+source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#10b0682531d4701c20e47ca4d5983cb7abc9e3c6"
 dependencies = [
  "frame-support",
  "frame-system",
- "mangata-primitives",
+ "mangata-primitives 0.1.0 (git+https://github.com/mangata-finance/mangata-node?branch=mangata-dev-v4)",
  "orml-traits",
  "parity-scale-codec",
  "scale-info",
@@ -1249,6 +1262,7 @@ dependencies = [
 [[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
+source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#10b0682531d4701c20e47ca4d5983cb7abc9e3c6"
 dependencies = [
  "frame-support",
  "impl-trait-for-tuples",
@@ -1266,6 +1280,7 @@ dependencies = [
 [[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
+source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#10b0682531d4701c20e47ca4d5983cb7abc9e3c6"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -1279,10 +1294,11 @@ dependencies = [
 [[package]]
 name = "pallet-assets-info"
 version = "2.0.0"
+source = "git+https://github.com/mangata-finance/mangata-node?branch=develop#316744d0fb893f27bbfcce82675a1f4d9aebb433"
 dependencies = [
  "frame-support",
  "frame-system",
- "mangata-primitives",
+ "mangata-primitives 0.1.0 (git+https://github.com/mangata-finance/mangata-node?branch=develop)",
  "orml-tokens",
  "parity-scale-codec",
  "scale-info",
@@ -1293,6 +1309,7 @@ dependencies = [
 [[package]]
 name = "pallet-authorship"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1305,12 +1322,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-issuance"
-version = "2.0.0"
+name = "pallet-collective"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "frame-support",
  "frame-system",
- "mangata-primitives",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-issuance"
+version = "2.0.0"
+source = "git+https://github.com/mangata-finance/mangata-node?branch=develop#316744d0fb893f27bbfcce82675a1f4d9aebb433"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "mangata-primitives 0.1.0 (git+https://github.com/mangata-finance/mangata-node?branch=develop)",
  "orml-tokens",
  "parity-scale-codec",
  "scale-info",
@@ -1322,6 +1356,7 @@ dependencies = [
 [[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1342,6 +1377,7 @@ dependencies = [
 [[package]]
 name = "pallet-timestamp"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -1358,13 +1394,14 @@ dependencies = [
 [[package]]
 name = "pallet-xyk"
 version = "0.1.0"
+source = "git+https://github.com/mangata-finance/mangata-node?branch=develop#316744d0fb893f27bbfcce82675a1f4d9aebb433"
 dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
  "libm 0.2.1 (git+https://github.com/rust-lang/libm?rev=2f3fc968f43d345f9b449938d050a9ea46a04c83)",
  "log",
- "mangata-primitives",
+ "mangata-primitives 0.1.0 (git+https://github.com/mangata-finance/mangata-node?branch=develop)",
  "orml-tokens",
  "pallet-assets-info",
  "parity-scale-codec",
@@ -1385,11 +1422,12 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "mangata-primitives",
+ "mangata-primitives 0.1.0 (git+https://github.com/mangata-finance/mangata-node?branch=develop)",
  "orml-tokens",
  "orml-traits",
  "pallet-assets-info",
  "pallet-authorship",
+ "pallet-collective",
  "pallet-issuance",
  "pallet-session",
  "pallet-xyk",
@@ -1999,6 +2037,7 @@ checksum = "1ecab6c735a6bb4139c0caafd0cc3635748bbb3acf4550e8138122099251f309"
 [[package]]
 name = "sp-api"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "hash-db",
  "log",
@@ -2015,6 +2054,7 @@ dependencies = [
 [[package]]
 name = "sp-api-proc-macro"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "blake2-rfc",
  "proc-macro-crate",
@@ -2026,6 +2066,7 @@ dependencies = [
 [[package]]
 name = "sp-application-crypto"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -2038,6 +2079,7 @@ dependencies = [
 [[package]]
 name = "sp-arithmetic"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "integer-sqrt",
  "num-traits",
@@ -2052,6 +2094,7 @@ dependencies = [
 [[package]]
 name = "sp-authorship"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "async-trait",
  "parity-scale-codec",
@@ -2063,6 +2106,7 @@ dependencies = [
 [[package]]
 name = "sp-core"
 version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "base58",
  "bitflags",
@@ -2110,6 +2154,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "blake2-rfc",
  "byteorder",
@@ -2122,6 +2167,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing-proc-macro"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2132,6 +2178,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2141,6 +2188,7 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.10.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -2151,6 +2199,7 @@ dependencies = [
 [[package]]
 name = "sp-inherents"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "async-trait",
  "impl-trait-for-tuples",
@@ -2164,6 +2213,7 @@ dependencies = [
 [[package]]
 name = "sp-io"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "futures",
  "hash-db",
@@ -2187,6 +2237,7 @@ dependencies = [
 [[package]]
 name = "sp-keystore"
 version = "0.10.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "async-trait",
  "derive_more",
@@ -2202,6 +2253,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "backtrace",
  "lazy_static",
@@ -2211,6 +2263,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime"
 version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "either",
  "hash256-std-hasher",
@@ -2232,6 +2285,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface"
 version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
@@ -2248,6 +2302,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "Inflector",
  "proc-macro-crate",
@@ -2259,6 +2314,7 @@ dependencies = [
 [[package]]
 name = "sp-session"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -2272,6 +2328,7 @@ dependencies = [
 [[package]]
 name = "sp-staking"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -2282,6 +2339,7 @@ dependencies = [
 [[package]]
 name = "sp-state-machine"
 version = "0.10.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "hash-db",
  "log",
@@ -2304,10 +2362,12 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 
 [[package]]
 name = "sp-storage"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -2320,6 +2380,7 @@ dependencies = [
 [[package]]
 name = "sp-timestamp"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "async-trait",
  "futures-timer",
@@ -2335,6 +2396,7 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "parity-scale-codec",
  "sp-std",
@@ -2346,6 +2408,7 @@ dependencies = [
 [[package]]
 name = "sp-trie"
 version = "4.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "hash-db",
  "memory-db",
@@ -2360,6 +2423,7 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -2376,6 +2440,7 @@ dependencies = [
 [[package]]
 name = "sp-version-proc-macro"
 version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "parity-scale-codec",
  "proc-macro2",
@@ -2386,6 +2451,7 @@ dependencies = [
 [[package]]
 name = "sp-wasm-interface"
 version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
 dependencies = [
  "impl-trait-for-tuples",
  "log",
@@ -2904,28 +2970,1794 @@ dependencies = [
 ]
 
 [[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "extrinsic-shuffler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-executive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr-rpc"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "remote-externalities"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-basic-authorship-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-block-builder-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-block-builder"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-blockchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-database"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-npos-elections-solution-type"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-tasks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-ver"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "ver-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "extrinsic-shuffler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-executive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr-rpc"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "remote-externalities"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-basic-authorship-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-block-builder-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-block-builder"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-blockchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-database"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-npos-elections-solution-type"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-tasks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-ver"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "ver-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "beefy-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "extrinsic-shuffler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-executive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-mmr-rpc"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "remote-externalities"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-basic-authorship-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-block-builder-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-block-builder"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-blockchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-database"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-npos-elections-solution-type"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-tasks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "sp-ver"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
+name = "ver-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=feature/council-as-staking-fallback#ee7681bc82121127b0768d5f2b828883c7e9b6f8"
+
+[[patch.unused]]
 name = "artemis-asset"
 version = "0.1.1"
+source = "git+https://github.com/mangata-finance//snowbridge?branch=mangata-dev#75dbf4481fa21e183f851bfabb60cda388dc9e76"
 
 [[patch.unused]]
 name = "artemis-core"
 version = "0.1.1"
+source = "git+https://github.com/mangata-finance//snowbridge?branch=mangata-dev#75dbf4481fa21e183f851bfabb60cda388dc9e76"
 
 [[patch.unused]]
 name = "artemis-erc20-app"
 version = "0.1.1"
+source = "git+https://github.com/mangata-finance//snowbridge?branch=mangata-dev#75dbf4481fa21e183f851bfabb60cda388dc9e76"
 
 [[patch.unused]]
 name = "artemis-eth-app"
 version = "0.1.1"
+source = "git+https://github.com/mangata-finance//snowbridge?branch=mangata-dev#75dbf4481fa21e183f851bfabb60cda388dc9e76"
 
 [[patch.unused]]
 name = "artemis-ethereum"
 version = "0.1.0"
+source = "git+https://github.com/mangata-finance//snowbridge?branch=mangata-dev#75dbf4481fa21e183f851bfabb60cda388dc9e76"
+
+[[patch.unused]]
+name = "pallet-bridge"
+version = "0.1.1"
+source = "git+https://github.com/mangata-finance//snowbridge?branch=mangata-dev#75dbf4481fa21e183f851bfabb60cda388dc9e76"
 
 [[patch.unused]]
 name = "pallet-verifier"
 version = "0.1.1"
+source = "git+https://github.com/mangata-finance//snowbridge?branch=mangata-dev#75dbf4481fa21e183f851bfabb60cda388dc9e76"
 
 [[patch.unused]]
 name = "ethereum"
@@ -2946,947 +4778,3 @@ source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#
 name = "evm-runtime"
 version = "0.30.0"
 source = "git+https://github.com/purestake/evm?branch=moonbeam-polkadot-v0.9.11#e17436b550cbec33fcdf9d853ac29c0b04a281e2"
-
-[[patch.unused]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-merkle-tree"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "extrinsic-shuffler"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "fork-tree"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "frame-benchmarking-cli"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-election-provider-support"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-system-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-try-runtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "pallet-aura"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-babe"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bags-list"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-democracy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-election-provider-multi-phase"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-identity"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-im-online"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-indices"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-rpc"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-nicks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-proxy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-scheduler"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-sudo"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-treasury"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-utility"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-vesting"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "remote-externalities"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-allocator"
-version = "4.1.0-dev"
-
-[[patch.unused]]
-name = "sc-authority-discovery"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-basic-authorship"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-basic-authorship-ver"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-block-builder"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-block-builder-ver"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec-derive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-cli"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-client-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-epochs"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-informant"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-network"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-network-gossip"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-peerset"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-proposer-metrics"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-api"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-server"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-service"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-sync-state-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-telemetry"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing-proc-macro"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-utils"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-block-builder"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-blockchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-vrf"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-database"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-keyring"
-version = "4.1.0-dev"
-
-[[patch.unused]]
-name = "sp-maybe-compressed-blob"
-version = "4.1.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections-solution-type"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-serializer"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-tasks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-storage-proof"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-ver"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-build-script-utils"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "substrate-frame-rpc-system"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-prometheus-endpoint"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "substrate-test-client"
-version = "2.0.1"
-
-[[patch.unused]]
-name = "substrate-wasm-builder"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "try-runtime-cli"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "ver-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-merkle-tree"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "beefy-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "extrinsic-shuffler"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "fork-tree"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "frame-benchmarking-cli"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-election-provider-support"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-system-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "frame-try-runtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "pallet-aura"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-babe"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bags-list"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-democracy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-election-provider-multi-phase"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-identity"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-im-online"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-indices"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-primitives"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-mmr-rpc"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-nicks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-proxy"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-scheduler"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-sudo"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc-runtime-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-treasury"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-utility"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "pallet-vesting"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "remote-externalities"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-allocator"
-version = "4.1.0-dev"
-
-[[patch.unused]]
-name = "sc-authority-discovery"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-basic-authorship"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-basic-authorship-ver"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-block-builder"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-block-builder-ver"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-chain-spec-derive"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-cli"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-client-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-babe-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-epochs"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-finality-grandpa-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-informant"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-network"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-network-gossip"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-peerset"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-proposer-metrics"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-api"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-rpc-server"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-service"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-sync-state-rpc"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sc-telemetry"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-tracing-proc-macro"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-transaction-pool-api"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sc-utils"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-authority-discovery"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-block-builder"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-blockchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-babe"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-slots"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-consensus-vrf"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "sp-database"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-keyring"
-version = "4.1.0-dev"
-
-[[patch.unused]]
-name = "sp-maybe-compressed-blob"
-version = "4.1.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-npos-elections-solution-type"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-offchain"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-rpc"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-serializer"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-tasks"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-pool"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-transaction-storage-proof"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "sp-ver"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-build-script-utils"
-version = "3.0.0"
-
-[[patch.unused]]
-name = "substrate-frame-rpc-system"
-version = "4.0.0-dev"
-
-[[patch.unused]]
-name = "substrate-prometheus-endpoint"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "substrate-test-client"
-version = "2.0.1"
-
-[[patch.unused]]
-name = "substrate-wasm-builder"
-version = "5.0.0-dev"
-
-[[patch.unused]]
-name = "try-runtime-cli"
-version = "0.10.0-dev"
-
-[[patch.unused]]
-name = "ver-api"
-version = "4.0.0-dev"
