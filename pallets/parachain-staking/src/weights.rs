@@ -58,9 +58,9 @@ pub trait WeightInfo {
 	fn set_total_selected() -> Weight;
 	fn set_collator_commission() -> Weight;
 	fn set_blocks_per_round() -> Weight;
-	fn join_candidates(x: u32) -> Weight;
+	fn join_candidates(x: u32, y:u32) -> Weight;
 	fn schedule_leave_candidates(x: u32) -> Weight;
-	fn execute_leave_candidates() -> Weight;
+	fn execute_leave_candidates(x: u32) -> Weight;
 	fn cancel_leave_candidates(x: u32) -> Weight;
 	fn go_offline() -> Weight;
 	fn go_online() -> Weight;
@@ -85,8 +85,8 @@ pub trait WeightInfo {
 	fn cancel_delegator_bond_less() -> Weight;
 	fn active_on_initialize(x: u32, y: u32) -> Weight;
 	fn passive_on_initialize() -> Weight;
-	fn add_staking_liquidity_token() -> Weight;
-	fn remove_staking_liquidity_token() -> Weight;
+	fn add_staking_liquidity_token(x: u32) -> Weight;
+	fn remove_staking_liquidity_token(x: u32) -> Weight;
 }
 
 /// Weights for parachain_staking using the Substrate node and recommended hardware.
@@ -127,7 +127,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
-	fn join_candidates(x: u32) -> Weight {
+	fn join_candidates(x: u32, y :u32) -> Weight {
 		(84_807_000 as Weight)
 			// Standard Error: 1_000
 			.saturating_add((333_000 as Weight).saturating_mul(x as Weight))
@@ -141,7 +141,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(8 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
-	fn execute_leave_candidates() -> Weight {
+	fn execute_leave_candidates(x: u32) -> Weight {
 		(56_478_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(8 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
@@ -281,10 +281,10 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		(4_913_000 as Weight).saturating_add(T::DbWeight::get().reads(1 as Weight))
 	}
 	
-	fn add_staking_liquidity_token() -> Weight{
+	fn add_staking_liquidity_token(x: u32) -> Weight{
 		Default::default()
 	}
-	fn remove_staking_liquidity_token() -> Weight{
+	fn remove_staking_liquidity_token(x: u32) -> Weight{
 		Default::default()
 	}
 }
@@ -326,7 +326,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
 	}
-	fn join_candidates(x: u32) -> Weight {
+	fn join_candidates(x: u32, y: u32) -> Weight {
 		(84_807_000 as Weight)
 			// Standard Error: 1_000
 			.saturating_add((333_000 as Weight).saturating_mul(x as Weight))
@@ -340,7 +340,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(8 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
 	}
-	fn execute_leave_candidates() -> Weight {
+	fn execute_leave_candidates(x: u32) -> Weight {
 		(56_478_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(8 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
@@ -480,10 +480,10 @@ impl WeightInfo for () {
 	fn passive_on_initialize() -> Weight {
 		(4_913_000 as Weight).saturating_add(RocksDbWeight::get().reads(1 as Weight))
 	}
-	fn add_staking_liquidity_token() -> Weight{
+	fn add_staking_liquidity_token(x: u32) -> Weight{
 		Default::default()
 	}
-	fn remove_staking_liquidity_token() -> Weight{
+	fn remove_staking_liquidity_token(x: u32) -> Weight{
 		Default::default()
 	}
 }

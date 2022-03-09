@@ -45,8 +45,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// #[cfg(any(test, feature = "runtime-benchmarks"))]
-// mod benchmarks;
+#[cfg(any(test, feature = "runtime-benchmarks"))]
+mod benchmarks;
 mod inflation;
 #[cfg(test)]
 mod mock;
@@ -291,7 +291,7 @@ pub mod pallet {
 			);
 			let candidate_id: T::AccountId = self.id.clone().into();
 			ensure!(
-				<T::Currency as MultiTokenReservableCurrency<T::AccountId>>::can_reserve(self.liquidity_token.into(), &candidate_id, more.into()),
+				<<T as pallet::Config>::Currency as MultiTokenReservableCurrency<T::AccountId>>::can_reserve(self.liquidity_token.into(), &candidate_id, more.into()),
 				Error::<T>::InsufficientBalance
 			);
 			let when_executable = <Round<T>>::get().current + T::CandidateBondDelay::get();
@@ -344,7 +344,7 @@ pub mod pallet {
 			let caller: T::AccountId = self.id.clone().into();
 			let event = match request.change {
 				CandidateBondChange::Increase => {
-					T::Currency::reserve(self.liquidity_token.into(), &caller, request.amount.into())?;
+					<T as pallet::Config>::Currency::reserve(self.liquidity_token.into(), &caller, request.amount.into())?;
 					let new_total = <Total<T>>::get(self.liquidity_token).saturating_add(request.amount);
 					<Total<T>>::insert(self.liquidity_token, new_total);
 					self.bond += request.amount;
@@ -358,7 +358,7 @@ pub mod pallet {
 					)
 				}
 				CandidateBondChange::Decrease => {
-					T::Currency::unreserve(self.liquidity_token.into(), &caller, request.amount.into());
+					<T as pallet::Config>::Currency::unreserve(self.liquidity_token.into(), &caller, request.amount.into());
 					let new_total_staked = <Total<T>>::get(self.liquidity_token).saturating_sub(request.amount);
 					<Total<T>>::insert(self.liquidity_token, new_total_staked);
 					// Arithmetic assumptions are self.bond > less && self.bond - less > CollatorMinBond
@@ -792,7 +792,7 @@ pub mod pallet {
 				.ok_or(Error::<T>::DelegationDNE)?;
 			let delegator_id: T::AccountId = self.id.clone().into();
 			ensure!(
-				T::Currency::can_reserve((*liquidity_token).into(), &delegator_id, more.into()),
+				<T as pallet::Config>::Currency::can_reserve((*liquidity_token).into(), &delegator_id, more.into()),
 				Error::<T>::InsufficientBalance
 			);
 			let when = <Round<T>>::get().current + T::DelegationBondDelay::get();
@@ -912,7 +912,7 @@ pub mod pallet {
 							// update collator state delegation
 							let mut collator_state = <CandidateState<T>>::get(&candidate_id)
 								.ok_or(Error::<T>::CandidateDNE)?;
-							T::Currency::reserve(x.liquidity_token.into(), &self.id.clone().into(), balance_amt.into())?;
+							<T as pallet::Config>::Currency::reserve(x.liquidity_token.into(), &self.id.clone().into(), balance_amt.into())?;
 							let before = collator_state.total_counted;
 							let in_top = collator_state
 								.increase_delegation(self.id.clone().into(), balance_amt);
@@ -944,7 +944,7 @@ pub mod pallet {
 								x.amount -= amount;
 								let mut collator = <CandidateState<T>>::get(&candidate_id)
 									.ok_or(Error::<T>::CandidateDNE)?;
-								T::Currency::unreserve(x.liquidity_token.into(), &delegator_id, balance_amt.into());
+								<T as pallet::Config>::Currency::unreserve(x.liquidity_token.into(), &delegator_id, balance_amt.into());
 								let before = collator.total_counted;
 								// need to go into decrease_delegation
 								let in_top =
@@ -1177,9 +1177,15 @@ pub mod pallet {
 	pub(crate) type RoundIndex = u32;
 	type RewardPoint = u32;
 
+	#[cfg(feature = "runtime-benchmarks")]
+	pub trait StakingBenchmarkConfig: orml_tokens::Config + pallet_xyk::Config + pallet_session::Config{}
+
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	pub trait StakingBenchmarkConfig {}
+	
 	/// Configuration trait of this pallet.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + StakingBenchmarkConfig{
 		/// Overarching event type
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		/// The currency type
@@ -1521,7 +1527,9 @@ pub mod pallet {
 		fn build(&self) {
 			<InflationConfig<T>>::put(self.inflation_config.clone());
 			let mut liquidity_token_list: Vec<TokenId> = self.candidates.iter().cloned().map(|(_,_,l)| l).collect::<Vec<TokenId>>();
+			liquidity_token_list.sort();
 			liquidity_token_list.dedup();
+			let liquidity_token_count: u32 = liquidity_token_list.len().try_into().unwrap();
 			for (i, liquidity_token) in liquidity_token_list.iter().enumerate(){
 				if let Err(error) = <Pallet<T>>::add_staking_liquidity_token(
 					RawOrigin::Root.into(),
@@ -1535,7 +1543,7 @@ pub mod pallet {
 			// Initialize the candidates
 			for &(ref candidate, balance, liquidity_token) in &self.candidates {
 				assert!(
-					T::Currency::free_balance(liquidity_token.into(), candidate).into() >= balance,
+					<T as pallet::Config>::Currency::free_balance(liquidity_token.into(), candidate).into() >= balance,
 					"Account does not have enough balance to bond as a candidate."
 				);
 				candidate_count += 1u32;
@@ -1544,6 +1552,7 @@ pub mod pallet {
 					balance,
 					liquidity_token,
 					candidate_count,
+					liquidity_token_count
 				) {
 					log::warn!("Join candidates failed in genesis with error {:?}", error);
 				} else {
@@ -1557,7 +1566,7 @@ pub mod pallet {
 				let associated_collator = self.candidates.iter().find(|b| b.0 == *target);
 				let collator_liquidity_token = associated_collator.expect("Delegation to non-existant collator").2;
 				assert!(
-					T::Currency::free_balance(collator_liquidity_token.into(), delegator).into() >= balance,
+					<T as pallet::Config>::Currency::free_balance(collator_liquidity_token.into(), delegator).into() >= balance,
 					"Account does not have enough balance to place delegation."
 				);
 				let cd_count = if let Some(x) = col_delegator_count.get(target) {
@@ -1768,19 +1777,26 @@ pub mod pallet {
 			<InflationConfig<T>>::put(inflation_config);
 			Ok(().into())
 		}
-		#[pallet::weight(<T as Config>::WeightInfo::join_candidates(*candidate_count))]
+		#[pallet::weight(<T as Config>::WeightInfo::join_candidates(*candidate_count, *liquidity_token_count))]
 		/// Join the set of collator candidates
 		pub fn join_candidates(
 			origin: OriginFor<T>,
 			bond: Balance,
 			liquidity_token: TokenId,
 			candidate_count: u32,
+			liquidity_token_count: u32,
 		) -> DispatchResultWithPostInfo {
 			let acc = ensure_signed(origin)?;
 			ensure!(!Self::is_candidate(&acc), Error::<T>::CandidateExists);
 			ensure!(!Self::is_delegator(&acc), Error::<T>::DelegatorExists);
+			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
+
 			ensure!(
-				<StakingLiquidityTokens<T>>::get().contains_key(&liquidity_token),
+				liquidity_token_count as usize >= staking_liquidity_tokens.len(),
+				Error::<T>::TooLowCurrentStakingLiquidityTokensCount
+			);
+			ensure!(
+				staking_liquidity_tokens.contains_key(&liquidity_token),
 				Error::<T>::StakingLiquidityTokenNotListed
 			);
 			ensure!(
@@ -1801,7 +1817,7 @@ pub mod pallet {
 				}),
 				Error::<T>::CandidateExists
 			);
-			T::Currency::reserve(liquidity_token.into(), &acc, bond.into())?;
+			<T as pallet::Config>::Currency::reserve(liquidity_token.into(), &acc, bond.into())?;
 			let candidate = CollatorCandidate::new(acc.clone(), bond, liquidity_token);
 			<CandidateState<T>>::insert(&acc, candidate);
 			<CandidatePool<T>>::put(candidates);
@@ -1841,10 +1857,14 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			ensure_signed(origin)?;
 			let state = <CandidateState<T>>::get(&candidate).ok_or(Error::<T>::CandidateDNE)?;
+			ensure!(
+				state.delegators.0.len() <= candidate_delegation_count as usize,
+				Error::<T>::TooLowCandidateCountToLeaveCandidates
+			);
 			state.can_leave::<T>()?;
 			
 			let return_stake = |bond: Bond<T::AccountId>| {
-				T::Currency::unreserve(bond.liquidity_token.into(), &bond.owner, bond.amount.into());
+				<T as pallet::Config>::Currency::unreserve(bond.liquidity_token.into(), &bond.owner, bond.amount.into());
 				// remove delegation from delegator state
 				let mut delegator = DelegatorState::<T>::get(&bond.owner).expect(
 					"Collator state and delegator state are consistent. 
@@ -1855,6 +1875,7 @@ pub mod pallet {
 					if remaining_delegations.is_zero() {
 						<DelegatorState<T>>::remove(&bond.owner);
 					} else {
+						let _ = delegator.requests.requests.remove(&candidate);
 						<DelegatorState<T>>::insert(&bond.owner, delegator);
 					}
 				}
@@ -1868,7 +1889,7 @@ pub mod pallet {
 				return_stake(bond);
 			}
 			// return stake to collator
-			T::Currency::unreserve(state.liquidity_token.into(), &state.id, state.bond.into());
+			<T as pallet::Config>::Currency::unreserve(state.liquidity_token.into(), &state.id, state.bond.into());
 			<CandidateState<T>>::remove(&candidate);
 			let new_total_staked = <Total<T>>::get(state.liquidity_token).saturating_sub(state.total_backing);
 			<Total<T>>::insert(state.liquidity_token, new_total_staked);
@@ -2004,7 +2025,7 @@ pub mod pallet {
 		#[pallet::weight(
 			<T as Config>::WeightInfo::delegate(
 				*candidate_delegation_count,
-				*delegation_count
+				*delegation_count,
 			)
 		)]
 		/// If caller is not a delegator and not a collator, then join the set of delegators
@@ -2055,7 +2076,7 @@ pub mod pallet {
 				Error::<T>::TooLowCandidateDelegationCountToDelegate
 			);
 			let delegator_position = collator_state.add_delegation::<T>(acc.clone(), amount)?;
-			T::Currency::reserve(collator_state.liquidity_token.into(), &acc, amount.into())?;
+			<T as pallet::Config>::Currency::reserve(collator_state.liquidity_token.into(), &acc, amount.into())?;
 			if let DelegatorAdded::AddedToTop { new_total } = delegator_position {
 				if collator_state.is_active() {
 					// collator in candidate pool
@@ -2197,7 +2218,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(<T as Config>::WeightInfo::add_staking_liquidity_token())]
+		#[pallet::weight(<T as Config>::WeightInfo::add_staking_liquidity_token(*current_liquidity_tokens))]
 		pub fn add_staking_liquidity_token(
 			origin: OriginFor<T>,
 			paired_or_liquidity_token: PairedOrLiquidityToken,
@@ -2225,7 +2246,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(<T as Config>::WeightInfo::remove_staking_liquidity_token())]
+		#[pallet::weight(<T as Config>::WeightInfo::remove_staking_liquidity_token(*current_liquidity_tokens))]
 		pub fn remove_staking_liquidity_token(
 			origin: OriginFor<T>,
 			paired_or_liquidity_token: PairedOrLiquidityToken,
@@ -2295,7 +2316,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let mut state = <CandidateState<T>>::get(&collator).ok_or(Error::<T>::CandidateDNE)?;
 			let (total_changed, delegator_stake) = state.rm_delegator::<T>(delegator.clone())?;
-			T::Currency::unreserve(state.liquidity_token.into(), &delegator, delegator_stake.into());
+			<T as pallet::Config>::Currency::unreserve(state.liquidity_token.into(), &delegator, delegator_stake.into());
 			if state.is_active() && total_changed {
 				Self::update_active(collator.clone(), state.total_counted, state.liquidity_token);
 			}
@@ -2330,7 +2351,7 @@ pub mod pallet {
 			let bond_config = <ParachainBondInfo<T>>::get();
 			let parachain_bond_reserve = bond_config.percent * total_issuance;
 			let imb =
-				T::Currency::deposit_creating(T::NativeTokenId::get().into(), &bond_config.account, parachain_bond_reserve.into());
+				<T as pallet::Config>::Currency::deposit_creating(T::NativeTokenId::get().into(), &bond_config.account, parachain_bond_reserve.into());
 				
 			// update round issuance iff transfer succeeds
 			left_issuance -= imb.peek().into();
@@ -2340,7 +2361,7 @@ pub mod pallet {
 			));
 				
 			let mint = |amt: Balance, to: T::AccountId| {
-				let amount_transferred = T::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into());
+				let amount_transferred = <T as pallet::Config>::Currency::deposit_creating(T::NativeTokenId::get().into(), &to, amt.into());
 				Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred.peek().into()));
 			};
 			// only pay out rewards at the end to transfer only total amount due
