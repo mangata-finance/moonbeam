@@ -14,146 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
-// set_staking_expectations
-// will be removed
-// simple, no scaling
-
-// set_inflation
-// will be removed
-// simple, no scaling
-
-// set_parachain_bond_account
-// will be removed
-// simple, no scaling
-
-// set_parachain_bond_reserve_percent
-// will be removed
-// simple, no scaling
-
-
-// set_total_selected
-// simple, no scaling
-
-// set_collator_commission
-// simple, no scaling
-
-// set_blocks_per_round
-// will be removed
-// simple, no scaling
-
-// join_candidates
-// scales with candidate count due to ordered set insertion
-// scales with liquidity_token due to contain_key check
-
-// schedule_leave_candidates
-// scales with candidate count due to ordered set removal
-// liquidity_token does not affect scaling
-
-// execute_leave_candidates
-// scales with candidate delegator count due to delegator unbonds
-// scales with the number of delegations of the delegators that have delegated to the collator
-// ^ But this a parameter can be avoided (not that we can even effectively provide this as a parameter) by considering the MaxDelegationsPerDelegator bound, and filling all delegators to the collator (in question) to MaxDelegationsPerDelegator number of delegations
-// liquidity_token does not affect scaling
-
-// cancel_leave_candidates
-// scales with candidate count due to ordered set insertion
-// liquidity_token does not affect scaling
-
-// go_offline
-// scales with candidate count due to ordered set removal
-// liquidity_token does not affect scaling
-
-// go_online
-// scales with candidate count due to ordered set insertion
-// liquidity_token does not affect scaling
-
-// schedule_candidate_bond_more
-// does not scale
-
-// schedule_candidate_bond_less
-// does not scale
-
-// execute_candidate_bond_request
-// scales with candidate count due to ordered set change upon update_active
-// liquidity_token does not affect scaling
-
-// cancel_candidate_bond_request
-// does not scale
-
-// add_staking_liquidity_token
-// potentially scales with liquidity_token_count
-
-// remove_staking_liquidity_token
-// potentially scales with liquidity_token_count
-
-// delegate
-// To keep it simple just use candidate_delegation_count = max delegation bound + i
-// Will have to adjust the weighing function appropriately
-// Worst Case Complexity is insertion into a full collator causing removal from top and add to bottom of existing delegation in collator
-// ^ Can we use max delegation bounds for these? No max delegation bounds applies only to top_delegations
-// candidate_delegation_count due to insert into candidate ordered bond list
-// delegator delegation_count due to insert into delegator ordered bond list
-// also depends on candidate_count due to update_active
-
-// schedule_leave_delegators
-// does not scale
-
-// execute_leave_delegators
-// To keep it simple just use candidate_delegation_count = max delegation bound + i
-// Will have to adjust the weighing function appropriately
-// Worst case when all collators have full top_delegations and a delegation from top_delegation has been removed
-// ^ Can we use max delegation bounds for these? No max delegation bounds applies only to top_delegations
-// scales with delegator delegations count
-// scales with candidate count due to update_active
-// scales with collator delegation count due to remove in rm_delegator and delegator suffle
-
-// cancel_leave_delegators
-// does not scale
-
-// schedule_revoke_delegation
-// Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
-// However this can also be parameterized better by using the delegators current pending request count. 
-
-// schedule_delegator_bond_more
-// Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
-// However this can also be parameterized better by using the delegators current pending request count. 
-
-// schedule_delegator_bond_less
-// Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
-// However this can also be parameterized better by using the delegators current pending request count. 
-
-// cancel_delegation_request
-// Since the requests are a btreemap keyed with candidate_id, this extrinsic scales with number of candidates, as the worst case for request btree
-// However this can also be parameterized better by using the delegators current pending request count. 
-
-// execute_delegation_request
-// To keep it simple just use candidate_delegation_count = max delegation bound + i
-// Will have to adjust the weighing function appropriately
-// ALL SCALE WITH the delegators current pending request count.
-// revoke :=
-// scales with delegator delegation count to remove from delegations
-// scales with candidates_delegation_count due to removal from delegators and shuffling delegators
-// scales with candidate count due to update_active
-// increase:=
-// scales with delegator delegation count to iterate through them
-// scales with candidates_delegation_count due to removal from delegators and shuffling delegators
-// scales with candidate count due to update_active
-// decrease:=
-// scales with delegator delegation count to iterate through them
-// scales with candidates_delegation_count due to removal from delegators and shuffling delegators
-// scales with candidate count due to update_active
-
-// new_session
-// is just one db read
-
-// start_session
-// TotalSelected - loops through each collator for pay_stakers 
-// MaxDelegatorsPerCandidate - loops through each delegator of the candidate to increase reward.
-// Worst case when each delegator involved in pay_Stakers is separate.
-// Liquidity_tokens_count - for valuating each token
-// candidate_count - compute_candidates processes the entire set of candidates
-
-
 #![cfg(feature = "runtime-benchmarks")]
 
 //! Benchmarking
@@ -162,27 +22,16 @@
 // 	DelegationRequest, Pallet, Range,
 // };
 use crate::{*};
-use frame_benchmarking::{account, benchmarks, impl_benchmark_test_suite};
+use frame_benchmarking::{account, benchmarks};
 use frame_support::assert_ok;
-use frame_support::traits::{Currency, Get, OnFinalize, OnInitialize, ReservableCurrency, ExistenceRequirement};
+use frame_support::traits::{Get, ExistenceRequirement};
 use frame_system::RawOrigin;
 use sp_runtime::{Perbill, Percent};
-use sp_std::{collections::btree_map::BTreeMap, vec::Vec};
+use sp_std::{vec::Vec};
 use orml_tokens::MultiTokenCurrencyExtended;
 use orml_tokens::Pallet as Tokens;
 use pallet_authorship::EventHandler;
 use frame_benchmarking::BenchmarkParameter::y as bench_y;
-
-/// Minimum collator candidate stake
-fn min_candidate_stk<T: Config>() -> Balance {
-	<<T as Config>::MinCollatorStk as Get<Balance>>::get()
-}
-
-/// Minimum delegator stake
-fn min_delegator_stk<T: Config>() -> Balance {
-	<<T as Config>::MinDelegation as Get<Balance>>::get()
-}
-
 
 const DOLLAR: Balance = 1__000_000_000_000_000_000u128;
 const MGA_TOKEN_ID: TokenId = 0u32;
@@ -263,7 +112,7 @@ fn create_funded_delegator<T: Config>(
 	v: Option<Balance>,
 	collator_delegator_count: u32,
 ) -> Result<T::AccountId, &'static str> {
-	let (user, token_id, v) = create_funded_user::<T>(string, n, collator_token_id, v);
+	let (user, _, v) = create_funded_user::<T>(string, n, collator_token_id, v);
 	Pallet::<T>::delegate(
 		RawOrigin::Signed(user.clone()).into(),
 		collator,
@@ -316,7 +165,7 @@ pub(crate) fn roll_to_round_and_author<T: Config + pallet_session::Config>(n: u3
 
 	// Assumes round is atleast 3 blocks
 	// Roll to 2 blocks into the given round
-	for i in 0..2{
+	for _i in 0..2{
 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
@@ -391,7 +240,7 @@ benchmarks! {
 	// USER DISPATCHABLES
 
 	join_candidates {
-		let x in 3..1_000;
+		let x in 3..70;
 		let y in 3..100;
 		
 
@@ -400,7 +249,7 @@ benchmarks! {
 		// let token_0: TokenId = <orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::get_next_currency_id().into();
 
 		// Worst Case Complexity is search into a list so \exists full list before call
-		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
+		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(y > liquidity_token_count);
 		for i in liquidity_token_count..(y - 1u32){
 			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
@@ -417,7 +266,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), y - 1));
 
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 		assert!(x >= candidate_count);
 
 		// Worst Case Complexity is insertion into an ordered list so \exists full list before call
@@ -442,7 +291,7 @@ benchmarks! {
 	// This call schedules the collator's exit and removes them from the candidate pool
 	// -> it retains the self-bond and delegator bonds
 	schedule_leave_candidates {
-		let x in 3..1_000;
+		let x in 3..70;
 
 		let created_liquidity_token =
 			create_non_staking_liquidity_for_funding::<T>(None);
@@ -458,7 +307,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 		assert!(x >= candidate_count);
 
 		// Worst Case Complexity is insertion into an ordered list so \exists full list before call
@@ -483,8 +332,7 @@ benchmarks! {
 
 	execute_leave_candidates {
 		// x is total number of delegations for the candidate
-		let x in 2..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get()
-		* 2);
+		let x in 2..(<<T as Config>::MaxTotalDelegatorsPerCandidate as Get<u32>>::get());
 
 		let created_liquidity_token =
 			create_non_staking_liquidity_for_funding::<T>(None);
@@ -500,7 +348,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let candidate: T::AccountId = create_funded_collator::<T>(
 			"unique_caller",
@@ -532,25 +380,25 @@ benchmarks! {
 				None,
 				col_del_count,
 			)?;
-			assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &delegator, min_delegator_stk::<T>().into(), ExistenceRequirement::AllowDeath));
-			Pallet::<T>::delegate(
+			assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &delegator, (100*DOLLAR).into(), ExistenceRequirement::AllowDeath));
+			assert_ok!(Pallet::<T>::delegate(
 				RawOrigin::Signed(delegator.clone()).into(),
 				second_candidate.clone(),
-				min_delegator_stk::<T>(),
+				100*DOLLAR,
 				col_del_count,
 				1u32,
-			)?;
-			Pallet::<T>::schedule_revoke_delegation(
+			));
+			assert_ok!(Pallet::<T>::schedule_revoke_delegation(
 				RawOrigin::Signed(delegator.clone()).into(),
 				candidate.clone()
-			)?;
+			));
 			delegators.push(delegator);
 			col_del_count += 1u32;
 		}
-		Pallet::<T>::schedule_leave_candidates(
+		assert_ok!(Pallet::<T>::schedule_leave_candidates(
 			RawOrigin::Signed(candidate.clone()).into(),
 			candidate_count + 3u32
-		)?;
+		));
 		roll_to_round_and_author::<T>(2, Some(candidate.clone()));
 	}: _(RawOrigin::Signed(candidate.clone()), candidate.clone(), col_del_count)
 	verify {
@@ -562,7 +410,7 @@ benchmarks! {
 	}
 
 	cancel_leave_candidates {
-		let x in 3..1_000;
+		let x in 3..70;
 		let created_liquidity_token =
 			create_non_staking_liquidity_for_funding::<T>(None);
 
@@ -624,7 +472,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), liquidity_token_count));
 
 		liquidity_token_count = liquidity_token_count + 1u32;
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let caller: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -654,7 +502,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let caller: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -685,7 +533,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 	
 		let more = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
@@ -726,7 +574,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let less = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
@@ -765,7 +613,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let more = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
@@ -808,7 +656,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 		
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let less = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
@@ -848,7 +696,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 		
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let more = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
@@ -890,7 +738,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 		
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let less = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
@@ -933,7 +781,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		// Worst Case is full of delegations before calling `delegate`
 		let mut collators: Vec<T::AccountId> = Vec::new();
@@ -1004,7 +852,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1043,7 +891,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		// Worst Case is full of delegations before execute exit
 		let mut collators: Vec<T::AccountId> = Vec::new();
@@ -1098,7 +946,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1137,7 +985,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1183,7 +1031,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1232,7 +1080,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1281,7 +1129,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1332,7 +1180,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1384,7 +1232,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1435,7 +1283,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1485,7 +1333,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1540,7 +1388,7 @@ benchmarks! {
 
 		liquidity_token_count = liquidity_token_count + 1u32;
 
-		let mut candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let collator: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -1645,9 +1493,9 @@ benchmarks! {
 		// liquidity tokens
 		let x in 3..100;
 		// candidate_count
-		let y in 3..100;
+		let y in 3..70;
 		// MaxDelegatorsPerCandidate
-		let z in 3..20;
+		let z in 3..15;
 		// Total selected
 		let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(bench_y as u32);
 
@@ -1686,7 +1534,6 @@ benchmarks! {
 
 		let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
-		assert!(y >= 0u32);
 
 		for i in 0u32..y{
 			let seed = USER_SEED - i;
@@ -1748,7 +1595,7 @@ benchmarks! {
 			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
 			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
 			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-			if (Pallet::<T>::round().current == session_to_reach) {
+			if Pallet::<T>::round().current == session_to_reach {
 				for i in 0..2{
 					<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 					<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());

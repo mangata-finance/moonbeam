@@ -45,7 +45,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(any(test, feature = "runtime-benchmarks"))]
+#[cfg(feature = "runtime-benchmarks")]
 mod benchmarks;
 mod inflation;
 #[cfg(test)]
@@ -1219,6 +1219,12 @@ pub mod pallet {
 		/// Minimum number of selected candidates every round
 		#[pallet::constant]
 		type MinSelectedCandidates: Get<u32>;
+		/// Maximum collator candidates allowed
+		#[pallet::constant]
+		type MaxCollatorCandidates: Get<u32>;
+		/// Maximum delegators allowed per candidate
+		#[pallet::constant]
+		type MaxTotalDelegatorsPerCandidate: Get<u32>;
 		/// Maximum delegators counted per candidate
 		#[pallet::constant]
 		type MaxDelegatorsPerCandidate: Get<u32>;
@@ -1295,6 +1301,8 @@ pub mod pallet {
 		StakingLiquidityTokenNotListed,
 		TooLowCurrentStakingLiquidityTokensCount,
 		StakingLiquidityTokenAlreadyListed,
+		ExceedMaxCollatorCandidates,
+		ExceedMaxTotalDelegatorsPerCandidate
 	}
 
 	#[pallet::event]
@@ -1805,6 +1813,12 @@ pub mod pallet {
 			);
 			let mut candidates = <CandidatePool<T>>::get();
 			let old_count = candidates.0.len() as u32;
+			// This is a soft check
+			// Reinforced by similar check in go_online and cancel_leave_candidates
+			ensure!(
+				old_count < T::MaxCollatorCandidates::get(),
+				Error::<T>::ExceedMaxCollatorCandidates
+			);
 			ensure!(
 				candidate_count >= old_count,
 				Error::<T>::TooLowCandidateCountWeightHintJoinCandidates
@@ -1913,6 +1927,11 @@ pub mod pallet {
 			ensure!(state.is_leaving(), Error::<T>::CandidateNotLeaving);
 			state.go_online();
 			let mut candidates = <CandidatePool<T>>::get();
+			// Reinforcement for the soft check in join_candiates
+			ensure!(
+				candidates.0.len() < T::MaxCollatorCandidates::get() as usize,
+				Error::<T>::ExceedMaxCollatorCandidates
+			);
 			ensure!(
 				candidates.0.len() as u32 <= candidate_count,
 				Error::<T>::TooLowCandidateCountWeightHintCancelLeaveCandidates
@@ -1957,6 +1976,11 @@ pub mod pallet {
 			ensure!(!state.is_leaving(), Error::<T>::CannotGoOnlineIfLeaving);
 			state.go_online();
 			let mut candidates = <CandidatePool<T>>::get();
+			// Reinforcement for the soft check in join_candiates
+			ensure!(
+				candidates.0.len() < T::MaxCollatorCandidates::get() as usize,
+				Error::<T>::ExceedMaxCollatorCandidates
+			);
 			ensure!(
 				candidates.insert(Bond {
 					owner: collator.clone(),
@@ -2071,6 +2095,12 @@ pub mod pallet {
 				ensure!(!Self::is_candidate(&acc), Error::<T>::CandidateExists);
 				Delegator::new(acc.clone(), collator.clone(), amount, collator_state.liquidity_token)
 			};
+			// This check is hard
+			// There is no other way to add to a collators delegation count
+			ensure!(
+				collator_state.delegators.0.len() < T::MaxTotalDelegatorsPerCandidate::get() as usize,
+				Error::<T>::ExceedMaxTotalDelegatorsPerCandidate
+			);
 			ensure!(
 				candidate_delegation_count >= collator_state.delegators.0.len() as u32,
 				Error::<T>::TooLowCandidateDelegationCountToDelegate

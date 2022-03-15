@@ -14,11 +14,11 @@ members = [
 	# "runtime/moonriver",
 ]
 
-[patch.crates-io]
-ethereum = { git = "https://github.com/purestake/ethereum", branch = "joshy-scale-info" }
-evm = { git = "https://github.com/purestake/evm", branch = "moonbeam-polkadot-v0.9.11" }
-evm-gasometer = { git = "https://github.com/purestake/evm", branch = "moonbeam-polkadot-v0.9.11" }
-evm-runtime = { git = "https://github.com/purestake/evm", branch = "moonbeam-polkadot-v0.9.11" }
+# [patch.crates-io]
+# ethereum = { git = "https://github.com/purestake/ethereum", branch = "joshy-scale-info" }
+# evm = { git = "https://github.com/purestake/evm", branch = "moonbeam-polkadot-v0.9.11" }
+# evm-gasometer = { git = "https://github.com/purestake/evm", branch = "moonbeam-polkadot-v0.9.11" }
+# evm-runtime = { git = "https://github.com/purestake/evm", branch = "moonbeam-polkadot-v0.9.11" }
 
 [profile.release]
 panic = "unwind"
@@ -351,10 +351,10 @@ sp-runtime = { path = "../substrate/primitives/runtime" }
 sp-io = { path = "../substrate/primitives/io" }
 
 
-[patch."https://github.com/mangata-finance/snowbridge"]
-artemis-core = { path = "../snowbridge/parachain/primitives/core" }
-artemis-ethereum = { path = "../snowbridge/parachain/primitives/ethereum" }
-pallet-verifier = { path = "../snowbridge/parachain/pallets/verifier" }
-artemis-erc20-app = { path = "../snowbridge/parachain/pallets/erc20-app" }
-artemis-eth-app = { path = "../snowbridge/parachain/pallets/eth-app" }
-artemis-asset = { path = "../snowbridge/parachain/pallets/asset" }
+# [patch."https://github.com/mangata-finance/snowbridge"]
+# artemis-core = { path = "../snowbridge/parachain/primitives/core" }
+# artemis-ethereum = { path = "../snowbridge/parachain/primitives/ethereum" }
+# pallet-verifier = { path = "../snowbridge/parachain/pallets/verifier" }
+# artemis-erc20-app = { path = "../snowbridge/parachain/pallets/erc20-app" }
+# artemis-eth-app = { path = "../snowbridge/parachain/pallets/eth-app" }
+# artemis-asset = { path = "../snowbridge/parachain/pallets/asset" }
