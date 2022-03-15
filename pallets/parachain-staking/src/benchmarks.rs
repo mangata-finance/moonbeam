@@ -1548,6 +1548,8 @@ benchmarks! {
 			candidates.push(collator.clone());
 		}
 
+		assert_eq!(candidates.len(), y as usize);
+
 		// Now we will create `z*y` delegators each with `100*DOLLAR` created_liquidity_token tokens
 
 		let mut delegators: Vec<T::AccountId> = Vec::<T::AccountId>::new();
@@ -1560,18 +1562,27 @@ benchmarks! {
 			delegators.push(delegator.clone());
 		}
 
+		assert_eq!(delegators.len(), (z*y) as usize);
+
 		let mut targetted_collator_index: u32 = 0u32;
 		let mut delegated_to_collator_count: u32 = 0u32;
 
-		for delegator in delegators.clone(){
+		for (i, delegator) in delegators.clone().iter().enumerate(){
 
 			assert_ok!(Pallet::<T>::delegate(RawOrigin::Signed(
 				delegator.clone().clone()).into(),
-				candidates.get(targetted_collator_index as usize).unwrap().clone(),
+				// candidates.get(targetted_collator_index as usize).unwrap().clone(),
+				candidates[targetted_collator_index as usize].clone(),
 				100*DOLLAR,
 				delegated_to_collator_count,
 				0u32
 			));
+
+			assert_eq!(targetted_collator_index as usize, i/z as usize);
+
+			assert_eq!(Pallet::<T>::candidate_state(candidates[targetted_collator_index as usize].clone()).unwrap().delegators.0.len() , (delegated_to_collator_count + 1u32) as usize);
+			assert_eq!(Pallet::<T>::candidate_state(candidates[targetted_collator_index as usize].clone()).unwrap().top_delegations.len() , (delegated_to_collator_count + 1u32) as usize);
+			assert_eq!(Pallet::<T>::candidate_state(candidates[targetted_collator_index as usize].clone()).unwrap().bottom_delegations.len() ,  0usize);
 
 
 			delegated_to_collator_count = delegated_to_collator_count + 1u32;
@@ -1580,6 +1591,38 @@ benchmarks! {
 				delegated_to_collator_count = 0u32;
 			}
 		}
+
+		assert_eq!(targetted_collator_index, y);
+
+
+		// We would like to move on to the end of round 1
+		let session_to_reach = 4u32;
+
+		// Moves to the end of the round 0
+		// Infinite loop that breaks when should_end_session is true
+		while true {
+			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			if Pallet::<T>::round().current == session_to_reach {
+				for i in 0..2{
+					<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+					<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+					<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+					<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+				}
+				break;
+			}
+		}
+
+		let selected_candidates = Pallet::<T>::selected_candidates();
 
 		
 		// We would like to move on to the end of round 1
@@ -1613,22 +1656,22 @@ benchmarks! {
 		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 5u32);
 		assert_eq!(Pallet::<T>::round().current as u32, 5u32);
 
+		assert_eq!(selected_candidates.len(), w as usize);
+
 
 		let candidate_pool_state = Pallet::<T>::candidate_pool().0;
-
-		let mut current_selected_number: u32 = 0u32;
 
 		for (i, candidate_bond) in candidate_pool_state.into_iter().enumerate() {
 
 			if candidate_bond.liquidity_token == created_liquidity_token {
 				assert_eq!(candidate_bond.amount as u128, (z as u128 + 1u128)*100*DOLLAR);
 				
-				if current_selected_number < w {
-					Pallet::<T>::note_author(candidate_bond.owner.clone());
-					current_selected_number = current_selected_number + 1u32; 
-				}
 			}
 
+		}
+		
+		for candidate in selected_candidates.clone() {
+			Pallet::<T>::note_author(candidate.clone());
 		}
 
 		// We would like to move on to the end of round 1
