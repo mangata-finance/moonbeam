@@ -53,11 +53,9 @@ mod mock;
 mod set;
 #[cfg(test)]
 mod tests;
-pub mod weights;
 
 use frame_support::pallet;
 pub use inflation::{InflationInfo, Range};
-use weights::WeightInfo;
 pub use mangata_primitives::{Balance, TokenId};
 use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
 use pallet_xyk::Valuate;
@@ -78,6 +76,9 @@ use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 use sp_staking::SessionIndex;
 
 pub use pallet::*;
+
+pub mod weights;
+pub use weights::WeightInfo;
 
 trait FromInfiniteZeros{
 	type Output;
