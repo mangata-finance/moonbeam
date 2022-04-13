@@ -90,6 +90,7 @@ impl frame_system::Config for Test {
 	type BlockLength = ();
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 parameter_types! {
@@ -150,6 +151,8 @@ impl orml_tokens::Config for Test {
 	type DustRemovalWhitelist = DustRemovalWhitelist;
 }
 
+impl crate::StakingBenchmarkConfig for Test {}
+
 parameter_types! {
 	pub const BlocksPerRound: u32 = 5;
 	pub const LeaveCandidatesDelay: u32 = 2;
@@ -159,7 +162,9 @@ parameter_types! {
 	pub const DelegationBondDelay: u32 = 2;
 	pub const RewardPaymentDelay: u32 = 2;
 	pub const MinSelectedCandidates: u32 = 5;
+	pub const MaxCollatorCandidates: u32 = 10;
 	pub const MaxDelegatorsPerCandidate: u32 = 4;
+	pub const MaxTotalDelegatorsPerCandidate: u32 = 6;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
 	pub const MinCollatorStk: u128 = 10;
@@ -178,6 +183,8 @@ impl Config for Test {
 	type DelegationBondDelay = DelegationBondDelay;
 	type RewardPaymentDelay = RewardPaymentDelay;
 	type MinSelectedCandidates = MinSelectedCandidates;
+	type MaxCollatorCandidates = MaxCollatorCandidates;
+	type MaxTotalDelegatorsPerCandidate = MaxTotalDelegatorsPerCandidate;
 	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
