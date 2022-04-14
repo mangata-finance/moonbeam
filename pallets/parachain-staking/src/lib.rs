@@ -2205,7 +2205,7 @@ pub mod pallet {
 		fn pay_stakers(now: RoundIndex) {
 			// payout is now - duration rounds ago => now - duration > 0 else return early
 			let duration = T::RewardPaymentDelay::get();
-			if now <= duration {
+			if now < duration {
 				return;
 			}
 			let round_to_payout = now.saturating_sub(duration);
