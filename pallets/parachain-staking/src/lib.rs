@@ -57,7 +57,6 @@ use frame_support::pallet;
 pub use mangata_primitives::{Balance, TokenId};
 use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
 use pallet_xyk::Valuate;
-use weights::WeightInfo;
 
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
@@ -1602,7 +1601,7 @@ pub mod pallet {
 			Self::deposit_event(Event::CollatorCommissionSet(old, new));
 			Ok(().into())
 		}
-		#[pallet::weight(<T as Config>::WeightInfo::join_candidates(*candidate_count))]
+		#[pallet::weight(<T as Config>::WeightInfo::join_candidates(*candidate_count, *liquidity_token_count))]
 		/// Join the set of collator candidates
 		pub fn join_candidates(
 			origin: OriginFor<T>,
