@@ -19,24 +19,25 @@ use crate as stake;
 use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize},
+	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, VestingSchedule, Currency},
 	weights::Weight,
-	PalletId,
+	PalletId, assert_ok
 };
 use mangata_primitives::Amount;
 use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency, TransferDust};
 use orml_traits::parameter_type_with_key;
-use pallet_issuance::IssuanceInfo;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_core::H256;
+use sp_core::{H256};
 use sp_io;
 use sp_runtime::traits::Zero;
-use sp_runtime::{
+use sp_runtime::{DispatchResult,
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
 	Perbill, Percent, RuntimeDebug,
 };
+use sp_std::marker::PhantomData;
+use orml_tokens::MultiTokenCurrencyExtended;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -55,7 +56,7 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Issuance: pallet_issuance::{Pallet, Storage, Config, Event<T>},
+		Issuance: pallet_issuance::{Pallet, Storage, Event<T>},
 	}
 );
 
@@ -100,8 +101,15 @@ parameter_types! {
 	pub LiquidityMiningIssuanceVault: AccountId = LiquidityMiningIssuanceVaultId::get().into_account();
 	pub const StakingIssuanceVaultId: PalletId = PalletId(*b"py/stkiv");
 	pub StakingIssuanceVault: AccountId = StakingIssuanceVaultId::get().into_account();
-	pub const CrowdloanIssuanceVaultId: PalletId = PalletId(*b"py/crliv");
-	pub CrowdloanIssuanceVault: AccountId = CrowdloanIssuanceVaultId::get().into_account();
+
+	pub const TotalCrowdloanAllocation: Balance = 200_000_000;
+	pub const IssuanceCap: Balance = 4_000_000_000;
+	pub const LinearIssuanceBlocks: u32 = 13_140_000u32; // 5 years
+	pub const LiquidityMiningSplit: Perbill = Perbill::from_parts(555555556);
+	pub const StakingSplit: Perbill = Perbill::from_parts(444444444);
+	pub const ImmediateTGEReleasePercent: Percent = Percent::from_percent(20);
+	pub const TGEReleasePeriod: u32 = 5_256_000u32; // 2 years
+	pub const TGEReleaseBegin: u32 = 100_800u32; // Two weeks into chain start
 }
 
 impl pallet_issuance::Config for Test {
@@ -112,7 +120,53 @@ impl pallet_issuance::Config for Test {
 	type HistoryLimit = HistoryLimit;
 	type LiquidityMiningIssuanceVault = LiquidityMiningIssuanceVault;
 	type StakingIssuanceVault = StakingIssuanceVault;
-	type CrowdloanIssuanceVault = CrowdloanIssuanceVault;
+	type TotalCrowdloanAllocation = TotalCrowdloanAllocation;
+	type IssuanceCap = IssuanceCap;
+	type LinearIssuanceBlocks = LinearIssuanceBlocks;
+	type LiquidityMiningSplit = LiquidityMiningSplit;
+	type StakingSplit = StakingSplit;
+	type ImmediateTGEReleasePercent = ImmediateTGEReleasePercent;
+	type TGEReleasePeriod = TGEReleasePeriod;
+	type TGEReleaseBegin = TGEReleaseBegin;
+	type NativeTokenAdapter = orml_tokens::CurrencyAdapter<Test, MgaTokenId>;
+	type VestingProvider = TestVestingModule<AccountId, orml_tokens::CurrencyAdapter<Test, MgaTokenId>, u32>;
+}
+
+pub struct TestVestingModule<A, C: Currency<A>, B>(PhantomData<A>,PhantomData<C>,PhantomData<B>);
+impl<A, C: Currency<A>, B> VestingSchedule<A> for TestVestingModule<A, C, B>
+{
+	type Currency = C;
+	type Moment = B;
+
+	fn vesting_balance(_who: &A) -> Option<<C as Currency<A>>::Balance> {
+		None
+	}
+
+	fn add_vesting_schedule(
+		_who: &A,
+		_locked: <C as Currency<A>>::Balance,
+		_per_block: <C as Currency<A>>::Balance,
+		_starting_block: B,
+	) -> DispatchResult {
+		
+		Ok(())
+	}
+
+	// Ensure we can call `add_vesting_schedule` without error. This should always
+	// be called prior to `add_vesting_schedule`.
+	fn can_add_vesting_schedule(
+		_who: &A,
+		_locked: <C as Currency<A>>::Balance,
+		_per_block: <C as Currency<A>>::Balance,
+		_starting_block: B,
+	) -> DispatchResult {
+		Ok(())
+	}
+
+	/// Remove a vesting schedule for a given account.
+	fn remove_vesting_schedule(_who: &A, _schedule_index: u32) -> DispatchResult {
+		Ok(())
+	}
 }
 
 parameter_type_with_key! {
@@ -164,7 +218,7 @@ parameter_types! {
 	pub const MinSelectedCandidates: u32 = 5;
 	pub const MaxCollatorCandidates: u32 = 10;
 	pub const MaxDelegatorsPerCandidate: u32 = 4;
-	pub const MaxTotalDelegatorsPerCandidate: u32 = 6;
+	pub const MaxTotalDelegatorsPerCandidate: u32 = 10;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
 	pub const MinCollatorStk: u128 = 10;
@@ -326,7 +380,6 @@ impl ExtBuilder {
 
 		orml_tokens::GenesisConfig::<Test> {
 			tokens_endowment: Default::default(),
-			vesting_tokens: Default::default(),
 			created_tokens_for_staking: self
 				.staking_tokens
 				.iter()
@@ -344,23 +397,23 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.expect("Parachain Staking's storage can be assimilated");
 
-		GenesisBuild::<Test>::assimilate_storage(
-			&pallet_issuance::GenesisConfig {
-				issuance_config: IssuanceInfo {
-					cap: 4_000_000_000u128,
-					tge: 2_000_000_000u128,
-					linear_issuance_blocks: 13_140_000u32,
-					liquidity_mining_split: Perbill::from_parts(555555556),
-					staking_split: Perbill::from_parts(444444444),
-					crowdloan_allocation: 200_000_000u128,
-				},
-			},
-			&mut t,
-		)
-		.expect("pallet-issuance's storage can be assimilated");
-
 		let mut ext = sp_io::TestExternalities::new(t);
-		ext.execute_with(|| System::set_block_number(1));
+		ext.execute_with(|| {
+			System::set_block_number(1);
+			let current_issuance = StakeCurrency::total_issuance(1);
+			let target_tge = 2_000_000_000u128;
+			assert!(current_issuance < target_tge);
+			
+			if !StakeCurrency::exists(MGA_TOKEN_ID){
+				assert_ok!(StakeCurrency::create(&99999, 100));
+			}
+
+			assert_ok!(StakeCurrency::mint(MGA_TOKEN_ID, &99999, target_tge - current_issuance));
+			
+			assert_ok!(Issuance::finalize_tge(Origin::root()));
+			assert_ok!(Issuance::init_issuance_config(Origin::root()));
+			assert_ok!(Issuance::calculate_and_store_round_issuance(0u32));
+		});
 		ext
 	}
 }
@@ -468,7 +521,6 @@ fn geneses() {
 		.with_delegations(vec![(3, 1, 100), (4, 1, 100), (5, 2, 100), (6, 2, 100)])
 		.build()
 		.execute_with(|| {
-			assert!(System::events().is_empty());
 			// collators
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 500);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 500);
@@ -530,7 +582,6 @@ fn geneses() {
 		])
 		.build()
 		.execute_with(|| {
-			assert!(System::events().is_empty());
 			// collators
 			for x in [1, 3] {
 				assert!(Stake::is_candidate(&x));

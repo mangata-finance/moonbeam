@@ -278,7 +278,7 @@ fn insufficient_join_candidates_weight_hint_fails() {
 		.execute_with(|| {
 			for i in 0..5 {
 				assert_noop!(
-					Stake::join_candidates(Origin::signed(6), 20, 1u32, 10000u32, i),
+					Stake::join_candidates(Origin::signed(6), 20, 1u32, i, 10000u32),
 					Error::<Test>::TooLowCandidateCountWeightHintJoinCandidates
 				);
 			}
@@ -3898,6 +3898,8 @@ fn candidate_pool_updates_when_total_counted_changes() {
 				let pool = Stake::candidate_pool();
 				for candidate in pool.0 {
 					if candidate.owner == account {
+						
+						println!("Stake::candidate_state(candidate.owner): {:?}", Stake::candidate_state(candidate.owner));
 						assert_eq!(candidate.amount, bond);
 					}
 				}
