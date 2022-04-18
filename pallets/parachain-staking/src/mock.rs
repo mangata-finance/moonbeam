@@ -407,7 +407,7 @@ impl ExtBuilder {
 
 			let current_issuance = StakeCurrency::total_issuance(MGA_TOKEN_ID);
 			let target_tge = 2_000_000_000u128;
-			assert!(current_issuance < target_tge);
+			assert!(current_issuance <= target_tge);
 
 			assert_ok!(StakeCurrency::mint(MGA_TOKEN_ID, &99999, target_tge - current_issuance));
 			
