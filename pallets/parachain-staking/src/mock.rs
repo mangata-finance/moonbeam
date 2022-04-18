@@ -400,13 +400,14 @@ impl ExtBuilder {
 		let mut ext = sp_io::TestExternalities::new(t);
 		ext.execute_with(|| {
 			System::set_block_number(1);
-			let current_issuance = StakeCurrency::total_issuance(1);
-			let target_tge = 2_000_000_000u128;
-			assert!(current_issuance < target_tge);
-			
+
 			if !StakeCurrency::exists(MGA_TOKEN_ID){
 				assert_ok!(StakeCurrency::create(&99999, 100));
 			}
+
+			let current_issuance = StakeCurrency::total_issuance(MGA_TOKEN_ID);
+			let target_tge = 2_000_000_000u128;
+			assert!(current_issuance < target_tge);
 
 			assert_ok!(StakeCurrency::mint(MGA_TOKEN_ID, &99999, target_tge - current_issuance));
 			
