@@ -19,7 +19,7 @@ use crate as stake;
 use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, VestingSchedule, Currency},
+	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize},
 	weights::Weight,
 	PalletId, assert_ok
 };
@@ -38,6 +38,7 @@ use sp_runtime::{DispatchResult,
 };
 use sp_std::marker::PhantomData;
 use orml_tokens::MultiTokenCurrencyExtended;
+use pallet_vesting_mangata::MultiTokenVestingSchedule;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -128,25 +129,25 @@ impl pallet_issuance::Config for Test {
 	type ImmediateTGEReleasePercent = ImmediateTGEReleasePercent;
 	type TGEReleasePeriod = TGEReleasePeriod;
 	type TGEReleaseBegin = TGEReleaseBegin;
-	type NativeTokenAdapter = orml_tokens::CurrencyAdapter<Test, MgaTokenId>;
-	type VestingProvider = TestVestingModule<AccountId, orml_tokens::CurrencyAdapter<Test, MgaTokenId>, u32>;
+	type VestingProvider = TestVestingModule<AccountId, orml_tokens::MultiTokenCurrencyAdapter<Test>, BlockNumber>;
 }
 
-pub struct TestVestingModule<A, C: Currency<A>, B>(PhantomData<A>,PhantomData<C>,PhantomData<B>);
-impl<A, C: Currency<A>, B> VestingSchedule<A> for TestVestingModule<A, C, B>
+pub struct TestVestingModule<A, C: MultiTokenCurrency<A>, B>(PhantomData<A>,PhantomData<C>,PhantomData<B>);
+impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestingModule<A, C, B>
 {
 	type Currency = C;
 	type Moment = B;
 
-	fn vesting_balance(_who: &A) -> Option<<C as Currency<A>>::Balance> {
+	fn vesting_balance(_who: &A, _token_id: <C as MultiTokenCurrency<A>>::CurrencyId) -> Option<<C as MultiTokenCurrency<A>>::Balance> {
 		None
 	}
 
 	fn add_vesting_schedule(
 		_who: &A,
-		_locked: <C as Currency<A>>::Balance,
-		_per_block: <C as Currency<A>>::Balance,
+		_locked: <C as MultiTokenCurrency<A>>::Balance,
+		_per_block: <C as MultiTokenCurrency<A>>::Balance,
 		_starting_block: B,
+		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
 	) -> DispatchResult {
 		
 		Ok(())
@@ -156,15 +157,16 @@ impl<A, C: Currency<A>, B> VestingSchedule<A> for TestVestingModule<A, C, B>
 	// be called prior to `add_vesting_schedule`.
 	fn can_add_vesting_schedule(
 		_who: &A,
-		_locked: <C as Currency<A>>::Balance,
-		_per_block: <C as Currency<A>>::Balance,
+		_locked: <C as MultiTokenCurrency<A>>::Balance,
+		_per_block: <C as MultiTokenCurrency<A>>::Balance,
 		_starting_block: B,
+		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
 	) -> DispatchResult {
 		Ok(())
 	}
 
 	/// Remove a vesting schedule for a given account.
-	fn remove_vesting_schedule(_who: &A, _schedule_index: u32) -> DispatchResult {
+	fn remove_vesting_schedule(_who: &A, _token_id: <C as MultiTokenCurrency<A>>::CurrencyId, _schedule_index: u32) -> DispatchResult {
 		Ok(())
 	}
 }

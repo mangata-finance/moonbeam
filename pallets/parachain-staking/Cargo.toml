@@ -24,7 +24,6 @@ pallet-session = { git = "https://github.com/mangata-finance/substrate", default
 sp-runtime = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 sp-std = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
-substrate-fixed = { git = "https://github.com/encointer/substrate-fixed", default-features = false }
 pallet-collective = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 
 pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
@@ -39,7 +38,7 @@ orml-traits = { default-features = false, version = "0.4.1-dev", git = "https://
 pallet-assets-info = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
 sp-core = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 sp-io = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
-
+pallet-vesting-mangata = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 
 [features]
 default = ["std"]
