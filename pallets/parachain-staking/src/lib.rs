@@ -1175,7 +1175,7 @@ pub mod pallet {
 	type RewardPoint = u32;
 
 	#[cfg(feature = "runtime-benchmarks")]
-	pub trait StakingBenchmarkConfig: orml_tokens::Config + pallet_xyk::Config + pallet_session::Config{}
+	pub trait StakingBenchmarkConfig: orml_tokens::Config + pallet_xyk::Config + pallet_session::Config + pallet_issuance::Config{}
 
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	pub trait StakingBenchmarkConfig {}
@@ -1556,7 +1556,7 @@ pub mod pallet {
 			let (v_count, _, total_relevant_exposure) = <Pallet<T>>::select_top_candidates(1u32);
 			// Start Round 1 at Block 0
 			let round: RoundInfo<T::BlockNumber> =
-				RoundInfo::new(0u32, 0u32.into(), T::BlocksPerRound::get());
+				RoundInfo::new(0u32, 0u32.into(), <T as pallet::Config>::BlocksPerRound::get());
 			<Round<T>>::put(round);
 			// So that round 0 can be rewarded
 			for atstake in <AtStake<T>>::iter_prefix(1u32) {
@@ -2219,7 +2219,7 @@ pub mod pallet {
 			let mint = |amt: Balance, to: T::AccountId| {
 				let amount_transferred: Balance = <T as pallet::Config>::Currency::transfer(
 					T::NativeTokenId::get().into(),
-					&T::StakingIssuanceVault::get(),
+					&<T as pallet::Config>::StakingIssuanceVault::get(),
 					&to,
 					amt.into(),
 					ExistenceRequirement::AllowDeath,
