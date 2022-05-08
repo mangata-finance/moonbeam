@@ -90,31 +90,6 @@ pub trait WeightInfo {
 /// Weights for parachain_staking using the Mangata node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	// Storage: ParachainStaking InflationConfig (r:1 w:1)
-	fn set_staking_expectations() -> Weight {
-		(17_167_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
-	// Storage: ParachainStaking InflationConfig (r:1 w:1)
-	// Storage: ParachainStaking Round (r:1 w:0)
-	fn set_inflation() -> Weight {
-		(61_992_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
-	// Storage: ParachainStaking ParachainBondInfo (r:1 w:1)
-	fn set_parachain_bond_account() -> Weight {
-		(16_507_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
-	// Storage: ParachainStaking ParachainBondInfo (r:1 w:1)
-	fn set_parachain_bond_reserve_percent() -> Weight {
-		(15_923_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
 	// Storage: ParachainStaking TotalSelected (r:1 w:1)
 	fn set_total_selected() -> Weight {
 		(14_867_000 as Weight)
@@ -126,13 +101,6 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		(14_948_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
-	// Storage: ParachainStaking Round (r:1 w:1)
-	// Storage: ParachainStaking InflationConfig (r:1 w:1)
-	fn set_blocks_per_round() -> Weight {
-		(63_405_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
 	// Storage: ParachainStaking CandidateState (r:1 w:1)
 	// Storage: ParachainStaking DelegatorState (r:1 w:0)
@@ -429,26 +397,6 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
-	fn set_staking_expectations() -> Weight {
-		(17_167_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-	fn set_inflation() -> Weight {
-		(61_992_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-	fn set_parachain_bond_account() -> Weight {
-		(16_507_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-	fn set_parachain_bond_reserve_percent() -> Weight {
-		(15_923_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
 	fn set_total_selected() -> Weight {
 		(14_867_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
@@ -458,11 +406,6 @@ impl WeightInfo for () {
 		(14_948_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-	fn set_blocks_per_round() -> Weight {
-		(63_405_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
 	}
 	fn join_candidates(x: u32, y: u32, ) -> Weight {
 		(57_975_000 as Weight)
