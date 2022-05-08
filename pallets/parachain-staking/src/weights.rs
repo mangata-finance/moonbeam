@@ -54,13 +54,8 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for parachain_staking.
 pub trait WeightInfo {
-	fn set_staking_expectations() -> Weight;
-	fn set_inflation() -> Weight;
-	fn set_parachain_bond_account() -> Weight;
-	fn set_parachain_bond_reserve_percent() -> Weight;
 	fn set_total_selected() -> Weight;
 	fn set_collator_commission() -> Weight;
-	fn set_blocks_per_round() -> Weight;
 	fn join_candidates(x: u32, y: u32, ) -> Weight;
 	fn schedule_leave_candidates(x: u32, ) -> Weight;
 	fn execute_leave_candidates(x: u32, ) -> Weight;
