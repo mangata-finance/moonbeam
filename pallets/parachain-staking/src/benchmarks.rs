@@ -1327,7 +1327,7 @@ benchmarks! {
 		// liquidity tokens
 		let x in 3..100;
 		// candidate_count
-		let y in 3..45;
+		let y in 3..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32); // to account for the two candidates we start with
 		// MaxDelegatorsPerCandidate
 		let z in 3..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 		// Total selected
