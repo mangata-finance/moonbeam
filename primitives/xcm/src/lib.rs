@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2022 PureStake Inc.
 // This file is part of Moonbeam.
 
 // Moonbeam is free software: you can redistribute it and/or modify
@@ -19,8 +19,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-	traits::{Get, OriginTrait},
+	traits::{tokens::fungibles::Mutate, Get, OriginTrait},
 	weights::{constants::WEIGHT_PER_SECOND, Weight},
+};
+use sp_runtime::traits::{CheckedConversion, Zero};
+use sp_std::{borrow::Borrow, vec::Vec};
+use sp_std::{
+	convert::{TryFrom, TryInto},
+	marker::PhantomData,
 };
 use xcm::latest::{
 	AssetId as xcmAssetId, Error as XcmError, Fungibility,
@@ -29,15 +35,7 @@ use xcm::latest::{
 	MultiAsset, MultiLocation, NetworkId,
 };
 use xcm_builder::TakeRevenue;
-use xcm_executor::traits::FilterAssetLocation;
-use xcm_executor::traits::WeightTrader;
-
-use sp_runtime::traits::Zero;
-
-use sp_std::borrow::Borrow;
-use sp_std::{convert::TryInto, marker::PhantomData};
-
-use sp_std::vec::Vec;
+use xcm_executor::traits::{FilterAssetLocation, MatchesFungible, MatchesFungibles, WeightTrader};
 
 /// Converter struct implementing `AssetIdConversion` converting a numeric asset ID
 /// (must be `TryFrom/TryInto<u128>`) into a MultiLocation Value and Viceversa through
@@ -50,13 +48,16 @@ pub struct AsAssetType<AssetId, AssetType, AssetIdInfoGetter>(
 impl<AssetId, AssetType, AssetIdInfoGetter> xcm_executor::traits::Convert<MultiLocation, AssetId>
 	for AsAssetType<AssetId, AssetType, AssetIdInfoGetter>
 where
-	AssetId: From<AssetType> + Clone,
+	AssetId: Clone,
 	AssetType: From<MultiLocation> + Into<Option<MultiLocation>> + Clone,
 	AssetIdInfoGetter: AssetTypeGetter<AssetId, AssetType>,
 {
 	fn convert_ref(id: impl Borrow<MultiLocation>) -> Result<AssetId, ()> {
-		let asset_type: AssetType = id.borrow().clone().into();
-		Ok(AssetId::from(asset_type))
+		if let Some(asset_id) = AssetIdInfoGetter::get_asset_id(id.borrow().clone().into()) {
+			Ok(asset_id)
+		} else {
+			Err(())
+		}
 	}
 	fn reverse_ref(what: impl Borrow<AssetId>) -> Result<MultiLocation, ()> {
 		if let Some(asset_type) = AssetIdInfoGetter::get_asset_type(what.borrow().clone()) {
@@ -117,21 +118,19 @@ where
 // This takes the first fungible asset, and takes whatever UnitPerSecondGetter establishes
 // UnitsToWeightRatio trait, which needs to be implemented by AssetIdInfoGetter
 pub struct FirstAssetTrader<
-	AssetId: From<AssetType> + Clone,
 	AssetType: From<MultiLocation> + Clone,
-	AssetIdInfoGetter: UnitsToWeightRatio<AssetId>,
+	AssetIdInfoGetter: UnitsToWeightRatio<AssetType>,
 	R: TakeRevenue,
 >(
 	Weight,
 	Option<(MultiLocation, u128, u128)>,
-	PhantomData<(AssetId, AssetType, AssetIdInfoGetter, R)>,
+	PhantomData<(AssetType, AssetIdInfoGetter, R)>,
 );
 impl<
-		AssetId: From<AssetType> + Clone,
 		AssetType: From<MultiLocation> + Clone,
-		AssetIdInfoGetter: UnitsToWeightRatio<AssetId>,
+		AssetIdInfoGetter: UnitsToWeightRatio<AssetType>,
 		R: TakeRevenue,
-	> WeightTrader for FirstAssetTrader<AssetId, AssetType, AssetIdInfoGetter, R>
+	> WeightTrader for FirstAssetTrader<AssetType, AssetIdInfoGetter, R>
 {
 	fn new() -> Self {
 		FirstAssetTrader(0, None, PhantomData)
@@ -152,9 +151,24 @@ impl<
 		match (first_asset.id, first_asset.fun) {
 			(xcmAssetId::Concrete(id), Fungibility::Fungible(_)) => {
 				let asset_type: AssetType = id.clone().into();
-				let asset_id: AssetId = AssetId::from(asset_type);
-				if let Some(units_per_second) = AssetIdInfoGetter::get_units_per_second(asset_id) {
-					let amount = units_per_second * (weight as u128) / (WEIGHT_PER_SECOND as u128);
+				// Shortcut if we know the asset is not supported
+				// This involves the same db read per block, mitigating any attack based on
+				// non-supported assets
+				if !AssetIdInfoGetter::payment_is_supported(asset_type.clone()) {
+					return Err(XcmError::TooExpensive);
+				}
+				if let Some(units_per_second) = AssetIdInfoGetter::get_units_per_second(asset_type)
+				{
+					let amount = units_per_second.saturating_mul(weight as u128)
+						/ (WEIGHT_PER_SECOND as u128);
+
+					// We dont need to proceed if the amount is 0
+					// For cases (specially tests) where the asset is very cheap with respect
+					// to the weight needed
+					if amount.is_zero() {
+						return Ok(payment);
+					}
+
 					let required = MultiAsset {
 						fun: Fungibility::Fungible(amount),
 						id: xcmAssetId::Concrete(id.clone()),
@@ -217,64 +231,17 @@ impl<
 	}
 }
 
-// This defines how multiTraders should be implemented
-// The intention is to distinguish between non-self-reserve assets and the reserve asset
-pub struct MultiWeightTraders<NativeTrader, OtherTrader> {
-	native_trader: NativeTrader,
-	other_trader: OtherTrader,
-}
-impl<NativeTrader: WeightTrader, OtherTrader: WeightTrader> WeightTrader
-	for MultiWeightTraders<NativeTrader, OtherTrader>
+/// Deal with spent fees, deposit them as dictated by R
+impl<
+		AssetType: From<MultiLocation> + Clone,
+		AssetIdInfoGetter: UnitsToWeightRatio<AssetType>,
+		R: TakeRevenue,
+	> Drop for FirstAssetTrader<AssetType, AssetIdInfoGetter, R>
 {
-	fn new() -> Self {
-		Self {
-			native_trader: NativeTrader::new(),
-			other_trader: OtherTrader::new(),
+	fn drop(&mut self) {
+		if let Some((id, amount, _)) = self.1.clone() {
+			R::take_revenue((id, amount).into());
 		}
-	}
-	fn buy_weight(
-		&mut self,
-		weight: Weight,
-		payment: xcm_executor::Assets,
-	) -> Result<xcm_executor::Assets, XcmError> {
-		if let Ok(assets) = self.native_trader.buy_weight(weight, payment.clone()) {
-			return Ok(assets);
-		}
-
-		if let Ok(assets) = self.other_trader.buy_weight(weight, payment) {
-			return Ok(assets);
-		}
-
-		Err(XcmError::TooExpensive)
-	}
-	fn refund_weight(&mut self, weight: Weight) -> Option<MultiAsset> {
-		let native = self.native_trader.refund_weight(weight);
-		match native.clone() {
-			Some(MultiAsset {
-				fun: Fungibility::Fungible(amount),
-				id: xcmAssetId::Concrete(_id),
-			}) => {
-				if !amount.is_zero() {
-					return native;
-				}
-			}
-			_ => {}
-		}
-
-		let other = self.other_trader.refund_weight(weight);
-		match other {
-			Some(MultiAsset {
-				fun: Fungibility::Fungible(amount),
-				id: xcmAssetId::Concrete(_id),
-			}) => {
-				if !amount.is_zero() {
-					return native;
-				}
-			}
-			_ => {}
-		}
-
-		None
 	}
 }
 
@@ -315,17 +282,22 @@ impl FilterAssetLocation for MultiNativeAsset {
 	}
 }
 
-// Defines the trait to obtain a generic AssetType from a generic AssetId
+// Defines the trait to obtain a generic AssetType from a generic AssetId and viceversa
 pub trait AssetTypeGetter<AssetId, AssetType> {
-	// Get units per second from asset type
+	// Get asset type from assetId
 	fn get_asset_type(asset_id: AssetId) -> Option<AssetType>;
+
+	// Get assetId from assetType
+	fn get_asset_id(asset_type: AssetType) -> Option<AssetId>;
 }
 
-// Defines the trait to obtain the units per second of a give assetId for local execution
-// This parameter will be used to charge for fees upon assetId deposit
-pub trait UnitsToWeightRatio<AssetId> {
+// Defines the trait to obtain the units per second of a give asset_type for local execution
+// This parameter will be used to charge for fees upon asset_type deposit
+pub trait UnitsToWeightRatio<AssetType> {
+	// Whether payment in a particular asset_type is suppotrted
+	fn payment_is_supported(asset_type: AssetType) -> bool;
 	// Get units per second from asset type
-	fn get_units_per_second(asset_id: AssetId) -> Option<u128>;
+	fn get_units_per_second(asset_type: AssetType) -> Option<u128>;
 }
 
 // The utility calls that need to be implemented as part of
@@ -358,4 +330,51 @@ pub trait XcmTransact: UtilityEncodeCall {
 pub trait AccountIdToCurrencyId<Account, CurrencyId> {
 	// Get assetId from account
 	fn account_to_currency_id(account: Account) -> Option<CurrencyId>;
+}
+
+/// XCM fee depositor to which we implement the TakeRevenue trait
+/// It receives a fungibles::Mutate implemented argument, a matcher to convert MultiAsset into
+/// AssetId and amount, and the fee receiver account
+pub struct XcmFeesToAccount<Assets, Matcher, AccountId, ReceiverAccount>(
+	PhantomData<(Assets, Matcher, AccountId, ReceiverAccount)>,
+);
+impl<
+		Assets: Mutate<AccountId>,
+		Matcher: MatchesFungibles<Assets::AssetId, Assets::Balance>,
+		AccountId: Clone,
+		ReceiverAccount: Get<AccountId>,
+	> TakeRevenue for XcmFeesToAccount<Assets, Matcher, AccountId, ReceiverAccount>
+{
+	fn take_revenue(revenue: MultiAsset) {
+		match Matcher::matches_fungibles(&revenue) {
+			Ok((asset_id, amount)) => {
+				if !amount.is_zero() {
+					let ok = Assets::mint_into(asset_id, &ReceiverAccount::get(), amount).is_ok();
+					debug_assert!(ok, "`mint_into` cannot generally fail; qed");
+				}
+			}
+			Err(_) => log::debug!(
+				target: "xcm",
+				"take revenue failed matching fungible"
+			),
+		}
+	}
+}
+
+// Multi IsConcrete Implementation. Allows us to route both pre and post 0.9.16 anchoring versions
+// of our native token to the same currency
+// The incoming MultiAsset is matched against a Vec of multilocations and returned Some
+// if matches
+pub struct MultiIsConcrete<T>(PhantomData<T>);
+impl<T: Get<Vec<MultiLocation>>, B: TryFrom<u128>> MatchesFungible<B> for MultiIsConcrete<T> {
+	fn matches_fungible(a: &MultiAsset) -> Option<B> {
+		match (&a.id, &a.fun) {
+			(xcmAssetId::Concrete(ref id), Fungibility::Fungible(ref amount))
+				if T::get().contains(id) =>
+			{
+				CheckedConversion::checked_from(*amount)
+			}
+			_ => None,
+		}
+	}
 }

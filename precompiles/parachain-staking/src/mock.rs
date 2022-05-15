@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2022 PureStake Inc.
 // This file is part of Moonbeam.
 
 // Moonbeam is free software: you can redistribute it and/or modify
@@ -142,6 +142,7 @@ impl frame_system::Config for Runtime {
 	type BlockLength = ();
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 parameter_types! {
 	pub const ExistentialDeposit: u128 = 1;
@@ -168,29 +169,32 @@ pub struct TestPrecompiles<R>(PhantomData<R>);
 
 impl<R> PrecompileSet for TestPrecompiles<R>
 where
-	R::Call: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo + Decode,
-	<R::Call as Dispatchable>::Origin: From<Option<R::AccountId>>,
-	R: parachain_staking::Config + pallet_evm::Config,
-	R::AccountId: From<H160>,
-	BalanceOf<R>: EvmData,
-	R::Call: From<parachain_staking::Call<R>>,
+	ParachainStakingWrapper<R>: Precompile,
 {
 	fn execute(
+		&self,
 		address: H160,
 		input: &[u8],
 		target_gas: Option<u64>,
 		context: &Context,
-	) -> Option<Result<PrecompileOutput, ExitError>> {
+		is_static: bool,
+	) -> Option<EvmResult<PrecompileOutput>> {
 		match address {
 			a if a == precompile_address() => Some(ParachainStakingWrapper::<R>::execute(
-				input, target_gas, context,
+				input, target_gas, context, is_static,
 			)),
 			_ => None,
 		}
 	}
+
+	fn is_precompile(&self, address: H160) -> bool {
+		address == precompile_address()
+	}
 }
 
-pub type Precompiles = TestPrecompiles<Runtime>;
+parameter_types! {
+	pub PrecompilesValue: TestPrecompiles<Runtime> = TestPrecompiles(Default::default());
+}
 
 impl pallet_evm::Config for Runtime {
 	type FeeCalculator = ();
@@ -201,12 +205,14 @@ impl pallet_evm::Config for Runtime {
 	type Currency = Balances;
 	type Event = Event;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type Precompiles = Precompiles;
+	type PrecompilesType = TestPrecompiles<Runtime>;
+	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ();
 	type OnChargeTransaction = ();
 	type BlockGasLimit = ();
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
 	type FindAuthor = ();
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -223,13 +229,14 @@ parameter_types! {
 	pub const MinBlocksPerRound: u32 = 3;
 	pub const DefaultBlocksPerRound: u32 = 5;
 	pub const LeaveCandidatesDelay: u32 = 2;
-	pub const CandidateBondDelay: u32 = 2;
+	pub const CandidateBondLessDelay: u32 = 2;
 	pub const LeaveDelegatorsDelay: u32 = 2;
 	pub const RevokeDelegationDelay: u32 = 2;
-	pub const DelegationBondDelay: u32 = 2;
+	pub const DelegationBondLessDelay: u32 = 2;
 	pub const RewardPaymentDelay: u32 = 2;
 	pub const MinSelectedCandidates: u32 = 5;
-	pub const MaxDelegatorsPerCandidate: u32 = 4;
+	pub const MaxTopDelegationsPerCandidate: u32 = 4;
+	pub const MaxBottomDelegationsPerCandidate: u32 = 4;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
 	pub const DefaultParachainBondReservePercent: Percent = Percent::from_percent(30);
@@ -244,13 +251,14 @@ impl parachain_staking::Config for Runtime {
 	type MinBlocksPerRound = MinBlocksPerRound;
 	type DefaultBlocksPerRound = DefaultBlocksPerRound;
 	type LeaveCandidatesDelay = LeaveCandidatesDelay;
-	type CandidateBondDelay = CandidateBondDelay;
+	type CandidateBondLessDelay = CandidateBondLessDelay;
 	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
 	type RevokeDelegationDelay = RevokeDelegationDelay;
-	type DelegationBondDelay = DelegationBondDelay;
+	type DelegationBondLessDelay = DelegationBondLessDelay;
 	type RewardPaymentDelay = RewardPaymentDelay;
 	type MinSelectedCandidates = MinSelectedCandidates;
-	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
+	type MaxTopDelegationsPerCandidate = MaxTopDelegationsPerCandidate;
+	type MaxBottomDelegationsPerCandidate = MaxBottomDelegationsPerCandidate;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
 	type DefaultParachainBondReservePercent = DefaultParachainBondReservePercent;

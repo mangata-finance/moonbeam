@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2022 PureStake Inc.
 // This file is part of Moonbeam.
 
 // Moonbeam is free software: you can redistribute it and/or modify
@@ -36,10 +36,6 @@
 //! 4. Maintenance mode timeout. To avoid getting stuck in maintenance mode. It could automatically
 //! switch back to normal mode after a pre-decided number of blocks. Maybe there could be an
 //! extrinsic to extend the maintenance time.
-//!
-//! 5. Let the runtime developer configure which pallets' on_initialize and on_finalize hooks get
-//! called. This would allow to determine whether eg staking elections should still occur and
-//! democracy referenda still mature
 
 #![allow(non_camel_case_types)]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -49,19 +45,30 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+mod types;
+pub use types::*;
+
 use frame_support::pallet;
 
 pub use pallet::*;
 
 #[pallet]
 pub mod pallet {
-	use frame_support::pallet_prelude::*;
-	use frame_support::traits::{Contains, EnsureOrigin};
-	use frame_system::pallet_prelude::*;
+	#[cfg(feature = "xcm-support")]
+	use cumulus_primitives_core::{
+		relay_chain::BlockNumber as RelayBlockNumber, DmpMessageHandler, ParaId, XcmpMessageHandler,
+	};
+	#[cfg(feature = "xcm-support")]
+	use sp_std::vec::Vec;
 
+	use frame_support::pallet_prelude::*;
+	use frame_support::traits::{
+		Contains, EnsureOrigin, OffchainWorker, OnFinalize, OnIdle, OnInitialize, OnRuntimeUpgrade,
+	};
+	use frame_system::pallet_prelude::*;
 	/// Pallet for migrations
 	#[pallet::pallet]
-	#[pallet::generate_storage_info]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
 
 	/// Configuration trait of this pallet.
@@ -81,6 +88,34 @@ pub mod pallet {
 		/// able to return to normal mode. For example, if your MaintenanceOrigin is a council, make
 		/// sure that your councilors can still cast votes.
 		type MaintenanceOrigin: EnsureOrigin<Self::Origin>;
+		/// The DMP handler to be used in normal operating mode
+		#[cfg(feature = "xcm-support")]
+		type NormalDmpHandler: DmpMessageHandler;
+		/// The DMP handler to be used in maintenance mode
+		#[cfg(feature = "xcm-support")]
+		type MaintenanceDmpHandler: DmpMessageHandler;
+		/// The XCMP handler to be used in normal operating mode
+		#[cfg(feature = "xcm-support")]
+		type NormalXcmpHandler: XcmpMessageHandler;
+		/// The XCMP handler to be used in maintenance mode
+		#[cfg(feature = "xcm-support")]
+		type MaintenanceXcmpHandler: XcmpMessageHandler;
+		/// The executive hooks that will be used in normal operating mode
+		/// Important: Use AllPalletsReversedWithSystemFirst here if you dont want to modify the
+		/// hooks behaviour
+		type NormalExecutiveHooks: OnRuntimeUpgrade
+			+ OnInitialize<Self::BlockNumber>
+			+ OnIdle<Self::BlockNumber>
+			+ OnFinalize<Self::BlockNumber>
+			+ OffchainWorker<Self::BlockNumber>;
+		/// The executive hooks that will be used in maintenance mode
+		/// Important: Use AllPalletsReversedWithSystemFirst here if you dont want to modify the
+		/// hooks behaviour
+		type MaitenanceExecutiveHooks: OnRuntimeUpgrade
+			+ OnInitialize<Self::BlockNumber>
+			+ OnIdle<Self::BlockNumber>
+			+ OnFinalize<Self::BlockNumber>
+			+ OffchainWorker<Self::BlockNumber>;
 	}
 
 	#[pallet::event]
@@ -186,6 +221,33 @@ pub mod pallet {
 				T::MaintenanceCallFilter::contains(call)
 			} else {
 				T::NormalCallFilter::contains(call)
+			}
+		}
+	}
+	#[cfg(feature = "xcm-support")]
+	impl<T: Config> DmpMessageHandler for Pallet<T> {
+		fn handle_dmp_messages(
+			iter: impl Iterator<Item = (RelayBlockNumber, Vec<u8>)>,
+			limit: Weight,
+		) -> Weight {
+			if MaintenanceMode::<T>::get() {
+				T::MaintenanceDmpHandler::handle_dmp_messages(iter, limit)
+			} else {
+				T::NormalDmpHandler::handle_dmp_messages(iter, limit)
+			}
+		}
+	}
+
+	#[cfg(feature = "xcm-support")]
+	impl<T: Config> XcmpMessageHandler for Pallet<T> {
+		fn handle_xcmp_messages<'a, I: Iterator<Item = (ParaId, RelayBlockNumber, &'a [u8])>>(
+			iter: I,
+			limit: Weight,
+		) -> Weight {
+			if MaintenanceMode::<T>::get() {
+				T::MaintenanceXcmpHandler::handle_xcmp_messages(iter, limit)
+			} else {
+				T::NormalXcmpHandler::handle_xcmp_messages(iter, limit)
 			}
 		}
 	}

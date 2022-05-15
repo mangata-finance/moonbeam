@@ -278,8 +278,8 @@ pub mod pallet {
 			&mut self,
 			more: Balance,
 		) -> Result<RoundIndex, DispatchError>
-		where
-			T::AccountId: From<A>,
+			where
+				T::AccountId: From<A>,
 		{
 			// ensure no pending request
 			ensure!(
@@ -327,8 +327,8 @@ pub mod pallet {
 		/// Execute pending request to change the collator self bond
 		/// Returns the event to be emitted
 		pub fn execute_pending_request<T: Config>(&mut self) -> Result<Event<T>, DispatchError>
-		where
-			T::AccountId: From<A>,
+			where
+				T::AccountId: From<A>,
 		{
 			let request = self
 				.request
@@ -341,7 +341,7 @@ pub mod pallet {
 			let event = match request.change {
 				CandidateBondChange::Increase => {
 					self.bond = self.bond.checked_add(request.amount).ok_or(Error::<T>::MathError)?;
-					
+
 					self.total_counted = self.total_counted.checked_add(request.amount).ok_or(Error::<T>::MathError)?;
 					self.total_backing = self.total_backing.checked_add(request.amount).ok_or(Error::<T>::MathError)?;
 					<T as pallet::Config>::Currency::reserve(self.liquidity_token.into(), &caller, request.amount.into())?;
@@ -357,7 +357,7 @@ pub mod pallet {
 					// Arithmetic assumptions are self.bond > less && self.bond - less > CollatorMinBond
 					// (assumptions enforced by `schedule_bond_less`; if storage corrupts, must re-verify)
 					self.bond = self.bond.checked_sub(request.amount).ok_or(Error::<T>::MathError)?;
-					
+
 					self.total_counted = self.total_counted.checked_sub(request.amount).ok_or(Error::<T>::MathError)?;
 					self.total_backing = self.total_backing.checked_sub(request.amount).ok_or(Error::<T>::MathError)?;
 					<T as pallet::Config>::Currency::unreserve(self.liquidity_token.into(), &caller, request.amount.into());
@@ -384,8 +384,8 @@ pub mod pallet {
 		}
 		/// Cancel pending request to change the collator self bond
 		pub fn cancel_pending_request<T: Config>(&mut self) -> Result<Event<T>, DispatchError>
-		where
-			T::AccountId: From<A>,
+			where
+				T::AccountId: From<A>,
 		{
 			let request = self
 				.request
@@ -696,8 +696,8 @@ pub mod pallet {
 	}
 
 	impl<
-			A: Ord + Clone,
-		> Delegator<A>
+		A: Ord + Clone,
+	> Delegator<A>
 	{
 		pub fn new(id: A, collator: A, amount: Balance, liquidity_token: TokenId) -> Self {
 			Delegator {
@@ -789,8 +789,8 @@ pub mod pallet {
 			collator: A,
 			more: Balance,
 		) -> Result<RoundIndex, DispatchError>
-		where
-			T::AccountId: From<A>,
+			where
+				T::AccountId: From<A>,
 		{
 			let Bond {
 				liquidity_token, ..
@@ -815,8 +815,8 @@ pub mod pallet {
 			collator: A,
 			less: Balance,
 		) -> Result<RoundIndex, DispatchError>
-		where
-			Balance: Into<Balance> + From<Balance>,
+			where
+				Balance: Into<Balance> + From<Balance>,
 		{
 			// get delegation amount
 			let Bond { amount, .. } = self
@@ -838,8 +838,8 @@ pub mod pallet {
 			&mut self,
 			collator: A,
 		) -> Result<(RoundIndex, RoundIndex), DispatchError>
-		where
-			Balance: Into<Balance>,
+			where
+				Balance: Into<Balance>,
 		{
 			// get delegation amount
 			let Bond { amount, .. } = self
@@ -856,10 +856,10 @@ pub mod pallet {
 		}
 		/// Execute pending delegation change request
 		pub fn execute_pending_request<T: Config>(&mut self, candidate: A) -> DispatchResult
-		where
-			Balance: From<Balance> + Into<Balance>,
-			T::AccountId: From<A>,
-			Delegator<T::AccountId>: From<Delegator<A>>,
+			where
+				Balance: From<Balance> + Into<Balance>,
+				T::AccountId: From<A>,
+				Delegator<T::AccountId>: From<Delegator<A>>,
 		{
 			let now = <Round<T>>::get().current;
 			let DelegationRequest {
@@ -1126,16 +1126,16 @@ pub mod pallet {
 		pub length: u32,
 	}
 	impl<
-			B: Copy
-				+ sp_std::ops::Add<Output = B>
-				+ sp_std::ops::Sub<Output = B>
-				+ From<u32>
-				+ PartialOrd
-				+ One
-				+ Zero
-				+ Saturating
-				+ CheckedMul,
-		> RoundInfo<B>
+		B: Copy
+		+ sp_std::ops::Add<Output = B>
+		+ sp_std::ops::Sub<Output = B>
+		+ From<u32>
+		+ PartialOrd
+		+ One
+		+ Zero
+		+ Saturating
+		+ CheckedMul,
+	> RoundInfo<B>
 	{
 		pub fn new(current: RoundIndex, first: B, length: u32) -> RoundInfo<B> {
 			RoundInfo {
@@ -1155,16 +1155,16 @@ pub mod pallet {
 		}
 	}
 	impl<
-			B: Copy
-				+ sp_std::ops::Add<Output = B>
-				+ sp_std::ops::Sub<Output = B>
-				+ From<u32>
-				+ PartialOrd
-				+ One
-				+ Zero
-				+ Saturating
-				+ CheckedMul,
-		> Default for RoundInfo<B>
+		B: Copy
+		+ sp_std::ops::Add<Output = B>
+		+ sp_std::ops::Sub<Output = B>
+		+ From<u32>
+		+ PartialOrd
+		+ One
+		+ Zero
+		+ Saturating
+		+ CheckedMul,
+	> Default for RoundInfo<B>
 	{
 		fn default() -> RoundInfo<B> {
 			RoundInfo::new(0u32, Zero::zero(), 20u32)
@@ -1179,7 +1179,7 @@ pub mod pallet {
 
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	pub trait StakingBenchmarkConfig {}
-	
+
 	/// Configuration trait of this pallet.
 	#[pallet::config]
 	pub trait Config: frame_system::Config + StakingBenchmarkConfig{
@@ -1187,7 +1187,7 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		/// The currency type
 		type Currency: MultiTokenCurrency<Self::AccountId>
-			+ MultiTokenReservableCurrency<Self::AccountId>;
+		+ MultiTokenReservableCurrency<Self::AccountId>;
 		/// The origin for monetary governance
 		type MonetaryGovernanceOrigin: EnsureOrigin<Self::Origin>;
 		/// Default number of blocks per round at genesis
@@ -1389,13 +1389,13 @@ pub mod pallet {
 	#[pallet::getter(fn delegator_state)]
 	/// Get delegator state associated with an account if account is delegating else None
 	pub(crate) type DelegatorState<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, Delegator<T::AccountId>, OptionQuery>;
+	StorageMap<_, Twox64Concat, T::AccountId, Delegator<T::AccountId>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn candidate_state)]
 	/// Get collator candidate state associated with an account if account is a candidate else None
 	pub(crate) type CandidateState<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, CollatorCandidate<T::AccountId>, OptionQuery>;
+	StorageMap<_, Twox64Concat, T::AccountId, CollatorCandidate<T::AccountId>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn selected_candidates)]
@@ -1447,7 +1447,7 @@ pub mod pallet {
 	#[pallet::getter(fn staking_liquidity_tokens)]
 	/// Points for each collator per round
 	pub type StakingLiquidityTokens<T: Config> =
-		StorageValue<_, BTreeMap<TokenId, Option<(Balance, Balance)>>, ValueQuery>;
+	StorageValue<_, BTreeMap<TokenId, Option<(Balance, Balance)>>, ValueQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
@@ -1699,8 +1699,8 @@ pub mod pallet {
 				<T as pallet::Config>::Currency::unreserve(bond.liquidity_token.into(), &bond.owner, bond.amount.into());
 				// remove delegation from delegator state
 				let mut delegator = DelegatorState::<T>::get(&bond.owner).expect(
-					"Collator state and delegator state are consistent. 
-						Collator state has a record of this delegation. Therefore, 
+					"Collator state and delegator state are consistent.
+						Collator state has a record of this delegation. Therefore,
 						Delegator state also has a record. qed.",
 				);
 				if let Some(remaining_delegations) = delegator.rm_delegation(candidate.clone()) {
@@ -1866,10 +1866,10 @@ pub mod pallet {
 			Ok(().into())
 		}
 		#[pallet::weight(
-			<T as Config>::WeightInfo::delegate(
-				*candidate_delegation_count,
-				*delegation_count,
-			)
+		<T as Config>::WeightInfo::delegate(
+		*candidate_delegation_count,
+		*delegation_count,
+		)
 		)]
 		/// If caller is not a delegator and not a collator, then join the set of delegators
 		/// If caller is a delegator, then makes delegation to change their delegation state
@@ -1977,7 +1977,7 @@ pub mod pallet {
 			for bond in state.delegations.0 {
 				amount_unstaked = amount_unstaked.saturating_add(bond.amount);
 				if let Err(error) =
-					Self::delegator_leaves_collator(delegator.clone(), bond.owner.clone())
+				Self::delegator_leaves_collator(delegator.clone(), bond.owner.clone())
 				{
 					log::warn!(
 						"STORAGE CORRUPTED \nDelegator leaving collator failed with error: {:?}",
@@ -2224,8 +2224,8 @@ pub mod pallet {
 					amt.into(),
 					ExistenceRequirement::AllowDeath,
 				)
-				.map_or(Zero::zero(), |_| amt)
-				.into();
+					.map_or(Zero::zero(), |_| amt)
+					.into();
 				Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred));
 			};
 			// only pay out rewards at the end to transfer only total amount due
@@ -2285,7 +2285,7 @@ pub mod pallet {
 				.iter()
 				.filter_map(|x| {
 					if let Some(pool_ratio_option) =
-						staking_liquidity_tokens.get(&x.liquidity_token)
+					staking_liquidity_tokens.get(&x.liquidity_token)
 					{
 						if let Some(pool_ratio) = pool_ratio_option {
 							if !pool_ratio.1.is_zero() {
@@ -2390,7 +2390,7 @@ pub mod pallet {
 					None
 				}
 			}
-			
+
 		}
 		fn start_session(session_index: SessionIndex) {
 			if !session_index.is_zero() {

@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2022 PureStake Inc.
 // This file is part of Moonbeam.
 
 // Moonbeam is free software: you can redistribute it and/or modify
@@ -40,12 +40,12 @@ use xcm::latest::{
 	Junctions, MultiAsset, MultiLocation, NetworkId, Result as XcmResult, SendResult, SendXcm, Xcm,
 };
 
-use xcm_builder::{AllowUnpaidExecutionFrom, FixedWeightBounds};
+use xcm_builder::FixedWeightBounds;
 
 use scale_info::TypeInfo;
 use xcm_executor::{
 	traits::{InvertLocation, TransactAsset, WeightTrader},
-	Assets, XcmExecutor,
+	Assets,
 };
 
 pub type AccountId = TestAccount;
@@ -53,12 +53,12 @@ pub type Balance = u128;
 pub type BlockNumber = u64;
 pub const PRECOMPILE_ADDRESS: u64 = 1;
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
+type Block = frame_system::mocking::MockBlock<Runtime>;
 
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
-	pub enum Test where
+	pub enum Runtime where
 		Block = Block,
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
@@ -68,7 +68,6 @@ construct_runtime!(
 		Evm: pallet_evm::{Pallet, Call, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
 		XcmTransactor: xcm_transactor::{Pallet, Call, Storage, Event<T>},
-		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin},
 	}
 );
 
@@ -176,7 +175,7 @@ parameter_types! {
 	};
 }
 
-impl frame_system::Config for Test {
+impl frame_system::Config for Runtime {
 	type BaseCallFilter = Everything;
 	type DbWeight = MockDbWeight;
 	type Origin = Origin;
@@ -200,11 +199,12 @@ impl frame_system::Config for Test {
 	type BlockLength = ();
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 parameter_types! {
 	pub const ExistentialDeposit: u128 = 0;
 }
-impl pallet_balances::Config for Test {
+impl pallet_balances::Config for Runtime {
 	type MaxReserves = ();
 	type ReserveIdentifier = ();
 	type MaxLocks = ();
@@ -230,27 +230,26 @@ pub struct TestPrecompiles<R>(PhantomData<R>);
 
 impl<R> PrecompileSet for TestPrecompiles<R>
 where
-	R: xcm_transactor::Config,
-	R: pallet_evm::Config,
-	R::Call: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
-	R::Call: From<xcm_transactor::Call<R>>,
-	<R::Call as Dispatchable>::Origin: From<Option<R::AccountId>>,
-	TransactorOf<R>: TryFrom<u8>,
-	R::AccountId: Into<H160>,
-	R: AccountIdToCurrencyId<R::AccountId, CurrencyIdOf<R>>,
+	XcmTransactorWrapper<R>: Precompile,
 {
 	fn execute(
+		&self,
 		address: H160,
 		input: &[u8],
 		target_gas: Option<u64>,
 		context: &Context,
-	) -> Option<Result<PrecompileOutput, ExitError>> {
+		is_static: bool,
+	) -> Option<EvmResult<PrecompileOutput>> {
 		match address {
 			a if a == precompile_address() => Some(XcmTransactorWrapper::<R>::execute(
-				input, target_gas, context,
+				input, target_gas, context, is_static,
 			)),
 			_ => None,
 		}
+	}
+
+	fn is_precompile(&self, address: H160) -> bool {
+		address == precompile_address()
 	}
 }
 
@@ -258,7 +257,9 @@ pub fn precompile_address() -> H160 {
 	H160::from_low_u64_be(1)
 }
 
-pub type Precompiles = TestPrecompiles<Test>;
+parameter_types! {
+	pub const PrecompilesValue: TestPrecompiles<Runtime> = TestPrecompiles(PhantomData);
+}
 
 /// A mapping function that converts Ethereum gas to Substrate weight
 /// We are mocking this 1-1 to test db read charges too
@@ -272,7 +273,7 @@ impl GasWeightMapping for MockGasWeightMapping {
 	}
 }
 
-impl pallet_evm::Config for Test {
+impl pallet_evm::Config for Runtime {
 	type FeeCalculator = ();
 	type GasWeightMapping = MockGasWeightMapping;
 	type CallOrigin = EnsureAddressRoot<TestAccount>;
@@ -281,18 +282,20 @@ impl pallet_evm::Config for Test {
 	type Currency = Balances;
 	type Event = Event;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type Precompiles = Precompiles;
+	type PrecompilesValue = PrecompilesValue;
+	type PrecompilesType = TestPrecompiles<Self>;
 	type ChainId = ();
 	type OnChargeTransaction = ();
 	type BlockGasLimit = ();
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
 	type FindAuthor = ();
+	type WeightInfo = ();
 }
 
 parameter_types! {
 	pub const MinimumPeriod: u64 = 5;
 }
-impl pallet_timestamp::Config for Test {
+impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
@@ -318,8 +321,6 @@ impl SendXcm for DoNothingRouter {
 		Ok(())
 	}
 }
-
-pub type Barrier = AllowUnpaidExecutionFrom<Everything>;
 
 pub struct DummyAssetTransactor;
 impl TransactAsset for DummyAssetTransactor {
@@ -348,44 +349,12 @@ impl InvertLocation for InvertNothing {
 	fn invert_location(_: &MultiLocation) -> sp_std::result::Result<MultiLocation, ()> {
 		Ok(MultiLocation::here())
 	}
+
+	fn ancestry() -> MultiLocation {
+		MultiLocation::here()
+	}
 }
 
-impl pallet_xcm::Config for Test {
-	// The config types here are entirely configurable, since the only one that is sorely needed
-	// is `XcmExecutor`, which will be used in unit tests located in xcm-executor.
-	type Event = Event;
-	type ExecuteXcmOrigin = ConvertOriginToLocal;
-	type LocationInverter = InvertNothing;
-	type SendXcmOrigin = ConvertOriginToLocal;
-	type Weigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, Call, MaxInstructions>;
-	type XcmRouter = DoNothingRouter;
-	type XcmExecuteFilter = frame_support::traits::Everything;
-	type XcmExecutor = xcm_executor::XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = frame_support::traits::Everything;
-	type XcmReserveTransferFilter = frame_support::traits::Everything;
-	type Origin = Origin;
-	type Call = Call;
-	const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
-	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
-}
-
-pub struct XcmConfig;
-impl xcm_executor::Config for XcmConfig {
-	type Call = Call;
-	type XcmSender = DoNothingRouter;
-	type AssetTransactor = DummyAssetTransactor;
-	type OriginConverter = pallet_xcm::XcmPassthrough<Origin>;
-	type IsReserve = ();
-	type IsTeleporter = ();
-	type LocationInverter = InvertNothing;
-	type Barrier = Barrier;
-	type Weigher = FixedWeightBounds<BaseXcmWeight, Call, MaxInstructions>;
-	type Trader = DummyWeightTrader;
-	type ResponseHandler = ();
-	type SubscriptionService = ();
-	type AssetTrap = PolkadotXcm;
-	type AssetClaims = PolkadotXcm;
-}
 #[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, scale_info::TypeInfo)]
 pub enum CurrencyId {
 	SelfReserve,
@@ -404,12 +373,12 @@ parameter_types! {
 		1,
 		Junctions::X2(
 			Parachain(ParachainId::get().into()),
-			PalletInstance(<Test as frame_system::Config>::PalletInfo::index::<Balances>().unwrap() as u8)
+			PalletInstance(<Runtime as frame_system::Config>::PalletInfo::index::<Balances>().unwrap() as u8)
 		)).into();
 	pub MaxInstructions: u32 = 100;
 }
 
-impl xcm_transactor::Config for Test {
+impl xcm_transactor::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type Transactor = MockTransactors;
@@ -418,12 +387,13 @@ impl xcm_transactor::Config for Test {
 	type CurrencyId = CurrencyId;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type CurrencyIdToMultiLocation = CurrencyIdToMultiLocation;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type SelfLocation = SelfLocation;
 	type Weigher = FixedWeightBounds<BaseXcmWeight, Call, MaxInstructions>;
 	type LocationInverter = InvertNothing;
 	type BaseXcmWeight = BaseXcmWeight;
 	type XcmSender = DoNothingRouter;
+	type AssetTransactor = DummyAssetTransactor;
+	type WeightInfo = ();
 }
 
 // We need to use the encoding from the relay mock runtime
@@ -490,7 +460,7 @@ impl Into<Option<CurrencyId>> for TestAccount {
 }
 
 // Implement the trait, where we convert AccountId to AssetID
-impl AccountIdToCurrencyId<AccountId, CurrencyId> for Test {
+impl AccountIdToCurrencyId<AccountId, CurrencyId> for Runtime {
 	/// The way to convert an account to assetId is by ensuring that the prefix is 0XFFFFFFFF
 	/// and by taking the lowest 128 bits as the assetId
 	fn account_to_currency_id(account: AccountId) -> Option<CurrencyId> {
@@ -544,10 +514,10 @@ impl ExtBuilder {
 	}
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::default()
-			.build_storage::<Test>()
+			.build_storage::<Runtime>()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<Test> {
+		pallet_balances::GenesisConfig::<Runtime> {
 			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)

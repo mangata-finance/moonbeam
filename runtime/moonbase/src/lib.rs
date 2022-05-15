@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2022 PureStake Inc.
 // This file is part of Moonbeam.
 
 // Moonbeam is free software: you can redistribute it and/or modify
@@ -32,17 +32,20 @@ use cumulus_pallet_parachain_system::RelaychainBlockNumberProvider;
 use fp_rpc::TransactionStatus;
 use pallet_evm_precompile_assets_erc20::AccountIdAssetIdConversion;
 
+use account::AccountId20;
 use sp_runtime::traits::Hash as THash;
 
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		Contains, Everything, Get, Imbalance, InstanceFilter, Nothing, OnUnbalanced,
-		PalletInfo as PalletInfoTrait,
+		Contains, Currency as CurrencyT, EnsureOneOf, EqualPrivilegeOnly, Everything, FindAuthor,
+		Get, Imbalance, InstanceFilter, Nothing, OffchainWorker, OnFinalize, OnIdle, OnInitialize,
+		OnRuntimeUpgrade, OnUnbalanced, PalletInfoAccess,
 	},
 	weights::{
 		constants::{RocksDbWeight, WEIGHT_PER_SECOND},
-		DispatchClass, GetDispatchInfo, IdentityFee, Weight,
+		DispatchClass, GetDispatchInfo, IdentityFee, Weight, WeightToFeeCoefficient,
+		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
 	PalletId,
 };
@@ -51,14 +54,14 @@ use xcm_builder::{
 	AccountKey20Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
 	AllowTopLevelPaidExecutionFrom, ConvertedConcreteAssetId,
 	CurrencyAdapter as XcmCurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds, FungiblesAdapter,
-	IsConcrete, LocationInverter, ParentAsSuperuser, ParentIsDefault, RelayChainAsNative,
+	LocationInverter, ParentAsSuperuser, ParentIsPreset, RelayChainAsNative,
 	SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountKey20AsNative,
 	SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
 };
 
 use xcm_executor::traits::JustTry;
 
-use frame_system::{EnsureOneOf, EnsureRoot, EnsureSigned};
+use frame_system::{EnsureRoot, EnsureSigned};
 pub use moonbeam_core_primitives::{
 	AccountId, AccountIndex, Address, AssetId, Balance, BlockNumber, DigestItem, Hash, Header,
 	Index, Signature,
@@ -70,8 +73,8 @@ use pallet_ethereum::Transaction as EthereumTransaction;
 #[cfg(feature = "std")]
 pub use pallet_evm::GenesisAccount;
 use pallet_evm::{
-	Account as EVMAccount, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, GasWeightMapping,
-	IdentityAddressMapping, Runner,
+	Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressNever, EnsureAddressRoot,
+	FeeCalculator, GasWeightMapping, OnChargeEVMTransaction as OnChargeEVMTransactionT, Runner,
 };
 use pallet_transaction_payment::{CurrencyAdapter, Multiplier, TargetedFeeAdjustment};
 pub use parachain_staking::{InflationInfo, Range};
@@ -85,7 +88,7 @@ use sp_runtime::{
 	transaction_validity::{
 		InvalidTransaction, TransactionSource, TransactionValidity, TransactionValidityError,
 	},
-	AccountId32, ApplyExtrinsicResult, FixedPointNumber, Perbill, Percent, Permill, Perquintill,
+	ApplyExtrinsicResult, FixedPointNumber, Perbill, Percent, Permill, Perquintill,
 	SaturatedConversion,
 };
 use sp_std::{
@@ -95,16 +98,18 @@ use sp_std::{
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use xcm::v1::{
-	BodyId,
-	Junction::{PalletInstance, Parachain},
-	Junctions, MultiLocation, NetworkId,
-};
+use xcm::latest::prelude::*;
 
 use nimbus_primitives::{CanAuthor, NimbusId};
 
 mod precompiles;
 use precompiles::{MoonbasePrecompiles, ASSET_PRECOMPILE_ADDRESS_PREFIX};
+
+use smallvec::smallvec;
+use xcm_primitives::{
+	AccountIdToCurrencyId, AccountIdToMultiLocation, AsAssetType, FirstAssetTrader,
+	MultiNativeAsset, SignedToAccountId20, UtilityAvailableCalls, UtilityEncodeCall, XcmTransact,
+};
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -129,6 +134,7 @@ pub mod currency {
 
 	pub const TRANSACTION_BYTE_FEE: Balance = 10 * MICROUNIT * SUPPLY_FACTOR;
 	pub const STORAGE_BYTE_FEE: Balance = 100 * MICROUNIT * SUPPLY_FACTOR;
+	pub const WEIGHT_FEE: Balance = 50 * KILOWEI * SUPPLY_FACTOR;
 
 	pub const fn deposit(items: u32, bytes: u32) -> Balance {
 		items as Balance * 1 * UNIT * SUPPLY_FACTOR + (bytes as Balance) * STORAGE_BYTE_FEE
@@ -169,10 +175,11 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("moonbase"),
 	impl_name: create_runtime_str!("moonbase"),
 	authoring_version: 3,
-	spec_version: 0900,
+	spec_version: 1300,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 2,
+	state_version: 0,
 };
 
 /// The version information used to identify this runtime when compiled natively.
@@ -238,11 +245,13 @@ impl frame_system::Config for Runtime {
 	/// This is used as an identifier of the chain. 42 is the generic substrate prefix.
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 impl pallet_utility::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
+	type PalletsOrigin = OriginCaller;
 	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
@@ -310,6 +319,28 @@ parameter_types! {
 	pub OperationalFeeMultiplier: u8 = 5;
 }
 
+pub struct WeightToFee;
+impl WeightToFeePolynomial for WeightToFee {
+	type Balance = Balance;
+
+	/// Return a vec of coefficients. Here we just use one coefficient and reduce it to a constant
+	/// modifier in order to closely match Ethereum-based fees.
+	///
+	/// Calculation, per the documentation in `frame_support`:
+	///
+	/// ```ignore
+	/// coeff_integer * x^(degree) + coeff_frac * x^(degree)
+	/// ```
+	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+		smallvec![WeightToFeeCoefficient {
+			degree: 1,
+			coeff_frac: Perbill::zero(),
+			coeff_integer: currency::WEIGHT_FEE,
+			negative: false,
+		}]
+	}
+}
+
 impl pallet_transaction_payment::Config for Runtime {
 	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Runtime>>;
 	type TransactionByteFee = TransactionByteFee;
@@ -363,6 +394,7 @@ parameter_types! {
 	/// This value is currently only used by pallet-transaction-payment as an assertion that the
 	/// next multiplier is always > min value.
 	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000u128);
+	pub PrecompilesValue: MoonbasePrecompiles<Runtime> = MoonbasePrecompiles::<_>::new();
 }
 
 pub struct FixedGasPrice;
@@ -409,8 +441,63 @@ impl AccountIdAssetIdConversion<AccountId, AssetId> for Runtime {
 		let mut data = [0u8; 20];
 		data[0..4].copy_from_slice(ASSET_PRECOMPILE_ADDRESS_PREFIX);
 		data[4..20].copy_from_slice(&asset_id.to_be_bytes());
-		H160::from_slice(&data)
+		AccountId::from(data)
 	}
+}
+
+/// The author inherent provides an AccountId, but pallet evm needs an H160.
+/// This simple adapter makes the conversion for any types T, U such that T: Into<U>
+pub struct FindAuthorAdapter<T, U, Inner>(sp_std::marker::PhantomData<(T, U, Inner)>);
+
+impl<T, U, Inner> FindAuthor<U> for FindAuthorAdapter<T, U, Inner>
+where
+	T: Into<U>,
+	Inner: FindAuthor<T>,
+{
+	fn find_author<'a, I>(digests: I) -> Option<U>
+	where
+		I: 'a + IntoIterator<Item = (sp_runtime::ConsensusEngineId, &'a [u8])>,
+	{
+		Inner::find_author(digests).map(Into::into)
+	}
+}
+
+type CurrencyAccountId<T> = <T as frame_system::Config>::AccountId;
+
+type BalanceFor<T> =
+	<<T as pallet_evm::Config>::Currency as CurrencyT<CurrencyAccountId<T>>>::Balance;
+
+type PositiveImbalanceFor<T> =
+	<<T as pallet_evm::Config>::Currency as CurrencyT<CurrencyAccountId<T>>>::PositiveImbalance;
+
+type NegativeImbalanceFor<T> =
+	<<T as pallet_evm::Config>::Currency as CurrencyT<CurrencyAccountId<T>>>::NegativeImbalance;
+
+pub struct OnChargeEVMTransaction<OU>(sp_std::marker::PhantomData<OU>);
+impl<T, OU> OnChargeEVMTransactionT<T> for OnChargeEVMTransaction<OU>
+where
+	T: pallet_evm::Config,
+	PositiveImbalanceFor<T>: Imbalance<BalanceFor<T>, Opposite = NegativeImbalanceFor<T>>,
+	NegativeImbalanceFor<T>: Imbalance<BalanceFor<T>, Opposite = PositiveImbalanceFor<T>>,
+	OU: OnUnbalanced<NegativeImbalanceFor<T>>,
+{
+	type LiquidityInfo = Option<NegativeImbalanceFor<T>>;
+
+	fn withdraw_fee(who: &H160, fee: U256) -> Result<Self::LiquidityInfo, pallet_evm::Error<T>> {
+		EVMCurrencyAdapter::<<T as pallet_evm::Config>::Currency, ()>::withdraw_fee(who, fee)
+	}
+
+	fn correct_and_deposit_fee(
+		who: &H160,
+		corrected_fee: U256,
+		already_withdrawn: Self::LiquidityInfo,
+	) {
+		<EVMCurrencyAdapter<<T as pallet_evm::Config>::Currency, OU> as OnChargeEVMTransactionT<
+			T,
+		>>::correct_and_deposit_fee(who, corrected_fee, already_withdrawn)
+	}
+
+	fn pay_priority_fee(_tip: U256) {}
 }
 
 impl pallet_evm::Config for Runtime {
@@ -419,15 +506,17 @@ impl pallet_evm::Config for Runtime {
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 	type CallOrigin = EnsureAddressRoot<AccountId>;
 	type WithdrawOrigin = EnsureAddressNever<AccountId>;
-	type AddressMapping = IdentityAddressMapping;
+	type AddressMapping = runtime_common::IntoAddressMapping;
 	type Currency = Balances;
 	type Event = Event;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type Precompiles = MoonbasePrecompiles<Self>;
+	type PrecompilesType = MoonbasePrecompiles<Self>;
+	type PrecompilesValue = PrecompilesValue;
 	type ChainId = EthereumChainId;
-	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, DealWithFees<Runtime>>;
+	type OnChargeTransaction = OnChargeEVMTransaction<DealWithFees<Runtime>>;
 	type BlockGasLimit = BlockGasLimit;
-	type FindAuthor = AuthorInherent;
+	type FindAuthor = FindAuthorAdapter<AccountId20, H160, AuthorInherent>;
+	type WeightInfo = pallet_evm::weights::SubstrateWeight<Self>;
 }
 
 parameter_types! {
@@ -444,6 +533,9 @@ impl pallet_scheduler::Config for Runtime {
 	type ScheduleOrigin = EnsureRoot<AccountId>;
 	type MaxScheduledPerBlock = MaxScheduledPerBlock;
 	type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
+	type OriginPrivilegeCmp = EqualPrivilegeOnly;
+	type PreimageProvider = ();
+	type NoPreimagePostponement = ();
 }
 
 parameter_types! {
@@ -530,13 +622,11 @@ impl pallet_democracy::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, TechCommitteeInstance>;
 	// To cancel a proposal which has been passed.
 	type CancellationOrigin = EnsureOneOf<
-		AccountId,
 		EnsureRoot<AccountId>,
 		pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilInstance>,
 	>;
 	// To cancel a proposal before it has been passed.
 	type CancelProposalOrigin = EnsureOneOf<
-		AccountId,
 		EnsureRoot<AccountId>,
 		pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, TechCommitteeInstance>,
 	>;
@@ -565,13 +655,11 @@ parameter_types! {
 }
 
 type TreasuryApproveOrigin = EnsureOneOf<
-	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilInstance>,
 >;
 
 type TreasuryRejectOrigin = EnsureOneOf<
-	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilInstance>,
 >;
@@ -594,6 +682,7 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = MaxApprovals;
 	type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
 	type SpendFunds = ();
+	type ProposalBondMaximum = ();
 }
 
 parameter_types! {
@@ -609,12 +698,10 @@ parameter_types! {
 }
 
 type IdentityForceOrigin = EnsureOneOf<
-	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilInstance>,
 >;
 type IdentityRegistrarOrigin = EnsureOneOf<
-	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilInstance>,
 >;
@@ -660,7 +747,7 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
 
 impl pallet_ethereum::Config for Runtime {
 	type Event = Event;
-	type StateRoot = pallet_ethereum::IntermediateStateRoot;
+	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
 parameter_types! {
@@ -670,12 +757,12 @@ parameter_types! {
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type Event = Event;
-	type OnValidationData = ();
+	type OnSystemEvent = ();
 	type SelfParaId = ParachainInfo;
-	type DmpMessageHandler = DmpQueue;
+	type DmpMessageHandler = MaintenanceMode;
 	type ReservedDmpWeight = ReservedDmpWeight;
 	type OutboundXcmpMessageSource = XcmpQueue;
-	type XcmpMessageHandler = XcmpQueue;
+	type XcmpMessageHandler = MaintenanceMode;
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 }
 
@@ -684,24 +771,26 @@ impl parachain_info::Config for Runtime {}
 parameter_types! {
 	/// Minimum round length is 2 minutes (10 * 12 second block times)
 	pub const MinBlocksPerRound: u32 = 10;
-	/// Default BlocksPerRound is every hour (300 * 12 second block times)
-	pub const DefaultBlocksPerRound: u32 = 300;
-	/// Collator candidate exits are delayed by 2 hours (2 * 300 * block_time)
+	/// Blocks per round
+	pub const DefaultBlocksPerRound: u32 = 2 * HOURS;
+	/// Rounds before the collator leaving the candidates request can be executed
 	pub const LeaveCandidatesDelay: u32 = 2;
-	/// Collator candidate bond increases/decreases are delayed by 2 hours (2 * 300 block_time)
-	pub const CandidateBondDelay: u32 = 2;
-	/// Delegator exits are delayed by 2 hours (2 * 300 * block_time)
+	/// Rounds before the candidate bond increase/decrease can be executed
+	pub const CandidateBondLessDelay: u32 = 2;
+	/// Rounds before the delegator exit can be executed
 	pub const LeaveDelegatorsDelay: u32 = 2;
-	/// Delegation revocations are delayed by 2 hours (2 * 300 * block_time)
+	/// Rounds before the delegator revocation can be executed
 	pub const RevokeDelegationDelay: u32 = 2;
-	/// Delegation bond increases/decreases are delayed by 2 hours (2 * 300 * block_time)
-	pub const DelegationBondDelay: u32 = 2;
-	/// Reward payments are delayed by 2 hours (2 * 300 * block_time)
+	/// Rounds before the delegator bond increase/decrease can be executed
+	pub const DelegationBondLessDelay: u32 = 2;
+	/// Rounds before the reward is paid
 	pub const RewardPaymentDelay: u32 = 2;
 	/// Minimum collators selected per round, default at genesis and minimum forever after
 	pub const MinSelectedCandidates: u32 = 8;
-	/// Maximum delegators counted per candidate
-	pub const MaxDelegatorsPerCandidate: u32 = 100;
+	/// Maximum top delegations per candidate
+	pub const MaxTopDelegationsPerCandidate: u32 = 300;
+	/// Maximum bottom delegations per candidate
+	pub const MaxBottomDelegationsPerCandidate: u32 = 50;
 	/// Maximum delegations per delegator
 	pub const MaxDelegationsPerDelegator: u32 = 100;
 	/// Default fixed percent a collator takes off the top of due rewards
@@ -709,9 +798,9 @@ parameter_types! {
 	/// Default percent of inflation set aside for parachain bond every round
 	pub const DefaultParachainBondReservePercent: Percent = Percent::from_percent(30);
 	/// Minimum stake required to become a collator
-	pub const MinCollatorStk: u128 = 1 * currency::KILOUNIT * currency::SUPPLY_FACTOR;
+	pub const MinCollatorStk: u128 = 1000 * currency::UNIT * currency::SUPPLY_FACTOR;
 	/// Minimum stake required to be reserved to be a candidate
-	pub const MinCandidateStk: u128 = 1 * currency::KILOUNIT * currency::SUPPLY_FACTOR;
+	pub const MinCandidateStk: u128 = 500 * currency::UNIT * currency::SUPPLY_FACTOR;
 	/// Minimum stake required to be reserved to be a delegator
 	pub const MinDelegatorStk: u128 = 5 * currency::UNIT * currency::SUPPLY_FACTOR;
 }
@@ -723,13 +812,14 @@ impl parachain_staking::Config for Runtime {
 	type MinBlocksPerRound = MinBlocksPerRound;
 	type DefaultBlocksPerRound = DefaultBlocksPerRound;
 	type LeaveCandidatesDelay = LeaveCandidatesDelay;
-	type CandidateBondDelay = CandidateBondDelay;
+	type CandidateBondLessDelay = CandidateBondLessDelay;
 	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
 	type RevokeDelegationDelay = RevokeDelegationDelay;
-	type DelegationBondDelay = DelegationBondDelay;
+	type DelegationBondLessDelay = DelegationBondLessDelay;
 	type RewardPaymentDelay = RewardPaymentDelay;
 	type MinSelectedCandidates = MinSelectedCandidates;
-	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
+	type MaxTopDelegationsPerCandidate = MaxTopDelegationsPerCandidate;
+	type MaxBottomDelegationsPerCandidate = MaxBottomDelegationsPerCandidate;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
 	type DefaultParachainBondReservePercent = DefaultParachainBondReservePercent;
@@ -741,7 +831,6 @@ impl parachain_staking::Config for Runtime {
 }
 
 impl pallet_author_inherent::Config for Runtime {
-	type AuthorId = NimbusId;
 	type SlotBeacon = RelaychainBlockNumberProvider<Self>;
 	type AccountLookup = AuthorMapping;
 	type EventHandler = ParachainStaking;
@@ -761,6 +850,8 @@ parameter_types! {
 	pub const InitializationPayment: Perbill = Perbill::from_percent(30);
 	pub const MaxInitContributorsBatchSizes: u32 = 500;
 	pub const RelaySignaturesThreshold: Perbill = Perbill::from_percent(100);
+	pub const SignatureNetworkIdentifier:  &'static [u8] = b"moonbase-";
+
 }
 
 impl pallet_crowdloan_rewards::Config for Runtime {
@@ -770,9 +861,11 @@ impl pallet_crowdloan_rewards::Config for Runtime {
 	type MaxInitContributors = MaxInitContributorsBatchSizes;
 	type MinimumReward = MinimumReward;
 	type RewardCurrency = Balances;
-	type RelayChainAccountId = AccountId32;
+	type RelayChainAccountId = [u8; 32];
+	type RewardAddressAssociateOrigin = EnsureSigned<Self::AccountId>;
 	type RewardAddressChangeOrigin = EnsureSigned<Self::AccountId>;
 	type RewardAddressRelayVoteThreshold = RelaySignaturesThreshold;
+	type SignatureNetworkIdentifier = SignatureNetworkIdentifier;
 	type VestingBlockNumber = cumulus_primitives_core::relay_chain::BlockNumber;
 	type VestingBlockProvider =
 		cumulus_pallet_parachain_system::RelaychainBlockNumberProvider<Self>;
@@ -786,7 +879,6 @@ parameter_types! {
 // entirely by pallet sessions
 impl pallet_author_mapping::Config for Runtime {
 	type Event = Event;
-	type AuthorId = NimbusId;
 	type DepositCurrency = Balances;
 	type DepositAmount = DepositAmount;
 	type WeightInfo = pallet_author_mapping::weights::SubstrateWeight<Runtime>;
@@ -814,19 +906,19 @@ parameter_types! {
 )]
 pub enum ProxyType {
 	/// All calls can be proxied. This is the trivial/most permissive filter.
-	Any,
+	Any = 0,
 	/// Only extrinsics that do not transfer funds.
-	NonTransfer,
+	NonTransfer = 1,
 	/// Only extrinsics related to governance (democracy and collectives).
-	Governance,
+	Governance = 2,
 	/// Only extrinsics related to staking.
-	Staking,
+	Staking = 3,
 	/// Allow to veto an announced proxy call.
-	CancelProxy,
+	CancelProxy = 4,
 	/// Allow extrinsic related to Balances.
-	Balances,
+	Balances = 5,
 	/// Allow extrinsic related to AuthorMapping.
-	AuthorMapping,
+	AuthorMapping = 6,
 }
 
 impl Default for ProxyType {
@@ -845,9 +937,10 @@ impl InstanceFilter<Call> for ProxyType {
 					Call::System(..)
 						| Call::Timestamp(..) | Call::ParachainStaking(..)
 						| Call::Democracy(..) | Call::CouncilCollective(..)
-						| Call::TechCommitteeCollective(..)
+						| Call::Identity(..) | Call::TechCommitteeCollective(..)
 						| Call::Utility(..) | Call::Proxy(..)
 						| Call::AuthorMapping(..)
+						| Call::CrowdloanRewards(pallet_crowdloan_rewards::Call::claim { .. })
 				)
 			}
 			ProxyType::Governance => matches!(
@@ -861,18 +954,12 @@ impl InstanceFilter<Call> for ProxyType {
 				c,
 				Call::ParachainStaking(..) | Call::Utility(..) | Call::AuthorMapping(..)
 			),
-			ProxyType::CancelProxy => {
-				matches!(
-					c,
-					Call::Proxy(pallet_proxy::Call::reject_announcement { .. })
-				)
-			}
-			ProxyType::Balances => {
-				matches!(c, Call::Balances(..) | Call::Utility(..))
-			}
-			ProxyType::AuthorMapping => {
-				matches!(c, Call::AuthorMapping(..))
-			}
+			ProxyType::CancelProxy => matches!(
+				c,
+				Call::Proxy(pallet_proxy::Call::reject_announcement { .. })
+			),
+			ProxyType::Balances => matches!(c, Call::Balances(..) | Call::Utility(..)),
+			ProxyType::AuthorMapping => matches!(c, Call::AuthorMapping(..)),
 		}
 	}
 
@@ -904,11 +991,18 @@ impl pallet_proxy::Config for Runtime {
 impl pallet_migrations::Config for Runtime {
 	type Event = Event;
 	//TODO wire up our correct list of migrations here. Maybe this shouldn't be in `runtime_common`.
-	type MigrationsList = runtime_common::migrations::CommonMigrations<
-		Runtime,
-		CouncilCollective,
-		TechCommitteeCollective,
-	>;
+	type MigrationsList = (
+		runtime_common::migrations::CommonMigrations<
+			Runtime,
+			CouncilCollective,
+			TechCommitteeCollective,
+		>,
+		runtime_common::migrations::XcmMigrations<
+			Runtime,
+			StatemintParaId,
+			StatemintAssetPalletInstance,
+		>,
+	);
 }
 
 parameter_types! {
@@ -918,16 +1012,34 @@ parameter_types! {
 	pub RelayChainOrigin: Origin = cumulus_pallet_xcm::Origin::Relay.into();
 	// The ancestry, defines the multilocation describing this consensus system
 	pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
-	// Self Reserve location, defines the multilocation identifiying the self-reserve currency
+	// Old Self Reserve location, defines the multilocation identifiying the self-reserve currency
 	// This is used to match it against our Balances pallet when we receive such a MultiLocation
 	// (Parent, Self Para Id, Self Balances pallet index)
-	pub SelfReserve: MultiLocation = MultiLocation {
+	// This is the old anchoring way
+	pub OldAnchoringSelfReserve: MultiLocation = MultiLocation {
 		parents:1,
 		interior: Junctions::X2(
 			Parachain(ParachainInfo::parachain_id().into()),
-			PalletInstance(<Runtime as frame_system::Config>::PalletInfo::index::<Balances>().unwrap() as u8)
+			PalletInstance(<Balances as PalletInfoAccess>::index() as u8)
 		)
 	};
+	// New Self Reserve location, defines the multilocation identifiying the self-reserve currency
+	// This is used to match it also against our Balances pallet when we receive such
+	// a MultiLocation: (Self Balances pallet index)
+	// This is the new anchoring way
+	pub NewAnchoringSelfReserve: MultiLocation = MultiLocation {
+		parents:0,
+		interior: Junctions::X1(
+			PalletInstance(<Balances as PalletInfoAccess>::index() as u8)
+		)
+	};
+
+	// The Locations we accept to refer to our own currency. We need to support both pre and
+	// post 0.9.16 versions, hence the reason for this being a Vec
+	pub SelfReserveRepresentations: Vec<MultiLocation> = vec![
+		OldAnchoringSelfReserve::get(),
+		NewAnchoringSelfReserve::get()
+	];
 }
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
@@ -935,7 +1047,7 @@ parameter_types! {
 /// `Transact` in order to determine the dispatch Origin.
 pub type LocationToAccountId = (
 	// The parent (Relay-chain) origin converts to the default `AccountId`.
-	ParentIsDefault<AccountId>,
+	ParentIsPreset<AccountId>,
 	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
 	SiblingParachainConvertsVia<polkadot_parachain::primitives::Sibling, AccountId>,
 	// If we receive a MultiLocation of type AccountKey20, just generate a native account
@@ -952,7 +1064,7 @@ pub type FungiblesTransactor = FungiblesAdapter<
 		ConvertedConcreteAssetId<
 			AssetId,
 			Balance,
-			xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>,
+			AsAssetType<AssetId, AssetType, AssetManager>,
 			JustTry,
 		>,
 	),
@@ -970,8 +1082,9 @@ pub type FungiblesTransactor = FungiblesAdapter<
 pub type LocalAssetTransactor = XcmCurrencyAdapter<
 	// Use this currency:
 	Balances,
-	// Use this currency when it is a fungible asset matching the given location or name:
-	IsConcrete<SelfReserve>,
+	// Use this currency when it is a fungible asset matching any of the locations in
+	// SelfReserveRepresentations
+	xcm_primitives::MultiIsConcrete<SelfReserveRepresentations>,
 	// We can convert the MultiLocations with our converter above:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
@@ -979,8 +1092,7 @@ pub type LocalAssetTransactor = XcmCurrencyAdapter<
 	// We dont allow teleport
 	(),
 >;
-
-// We use both transactors
+// We use all transactors
 pub type AssetTransactors = (LocalAssetTransactor, FungiblesTransactor);
 
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
@@ -1031,6 +1143,28 @@ pub type XcmBarrier = (
 	AllowSubscriptionsFrom<Everything>,
 );
 
+parameter_types! {
+	/// Xcm fees will go to the treasury account
+	pub XcmFeesAccount: AccountId = Treasury::account_id();
+}
+
+/// This is the struct that will handle the revenue from xcm fees
+/// We do not burn anything because we want to mimic exactly what
+/// the sovereign account has
+pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
+	Assets,
+	(
+		ConvertedConcreteAssetId<
+			AssetId,
+			Balance,
+			AsAssetType<AssetId, AssetType, AssetManager>,
+			JustTry,
+		>,
+	),
+	AccountId,
+	XcmFeesAccount,
+>;
+
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type Call = Call;
@@ -1039,25 +1173,33 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = AssetTransactors;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	// Filter to the reserve withdraw operations
-	type IsReserve = xcm_primitives::MultiNativeAsset;
+	type IsReserve = MultiNativeAsset;
 	type IsTeleporter = (); // No teleport
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = XcmBarrier;
 	type Weigher = XcmWeigher;
-	// We use two traders
-	// When we receive the self-reserve asset, we use pallet-transaction-payment
+	// We use three traders
+	// When we receive either representation of the self-reserve asset,
+	// we use UsingComponents and the local way of handling fees
 	// When we receive a non-reserve asset, we use AssetManager to fetch how many
 	// units per second we should charge
-	type Trader = xcm_primitives::MultiWeightTraders<
+	type Trader = (
 		UsingComponents<
-			IdentityFee<Balance>,
-			SelfReserve,
+			WeightToFee,
+			OldAnchoringSelfReserve,
 			AccountId,
 			Balances,
 			DealWithFees<Runtime>,
 		>,
-		xcm_primitives::FirstAssetTrader<AssetId, AssetType, AssetManager, ()>,
-	>;
+		UsingComponents<
+			WeightToFee,
+			NewAnchoringSelfReserve,
+			AccountId,
+			Balances,
+			DealWithFees<Runtime>,
+		>,
+		FirstAssetTrader<AssetType, AssetManager, XcmFeesToAccount>,
+	);
 	type ResponseHandler = PolkadotXcm;
 	type SubscriptionService = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
@@ -1071,8 +1213,7 @@ parameter_types! {
 }
 
 // Converts a Signed Local Origin into a MultiLocation
-pub type LocalOriginToLocation =
-	xcm_primitives::SignedToAccountId20<Origin, AccountId, RelayNetwork>;
+pub type LocalOriginToLocation = SignedToAccountId20<Origin, AccountId, RelayNetwork>;
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
@@ -1110,6 +1251,9 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type XcmExecutor = XcmExecutor;
 	type ChannelInfo = ParachainSystem;
 	type VersionWrapper = PolkadotXcm;
+	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type ControllerOrigin = EnsureRoot<AccountId>;
+	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 }
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
@@ -1127,11 +1271,11 @@ parameter_types! {
 	pub const MetadataDepositBase: Balance = 0;
 	pub const MetadataDepositPerByte: Balance = 0;
 	pub const ExecutiveBody: BodyId = BodyId::Executive;
+	pub const AssetAccountDeposit: Balance = currency::deposit(1, 18);
 }
 
 /// We allow root and Chain council to execute privileged asset operations.
 pub type AssetsForceOrigin = EnsureOneOf<
-	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilInstance>,
 >;
@@ -1149,9 +1293,16 @@ impl pallet_assets::Config for Runtime {
 	type StringLimit = AssetsStringLimit;
 	type Freezer = ();
 	type Extra = ();
+	type AssetAccountDeposit = AssetAccountDeposit;
 	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	// Statemint ParaId in Alphanet
+	pub StatemintParaId: u32 = 1001;
+	// Assets Pallet instance in Statemint alphanet
+	pub StatemintAssetPalletInstance: u8 = 50;
+}
 // Our AssetType. For now we only handle Xcm Assets
 #[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
 pub enum AssetType {
@@ -1165,12 +1316,28 @@ impl Default for AssetType {
 
 impl From<MultiLocation> for AssetType {
 	fn from(location: MultiLocation) -> Self {
-		Self::Xcm(location)
+		match location {
+			// Change https://github.com/paritytech/cumulus/pull/831
+			// This avoids interrumption once they upgrade
+			// We map the previous location to the new one so that the assetId is well retrieved
+			MultiLocation {
+				parents: 1,
+				interior: X2(Parachain(id), GeneralIndex(index)),
+			} if id == StatemintParaId::get() => Self::Xcm(MultiLocation {
+				parents: 1,
+				interior: X3(
+					Parachain(id),
+					PalletInstance(StatemintAssetPalletInstance::get()),
+					GeneralIndex(index),
+				),
+			}),
+			_ => Self::Xcm(location),
+		}
 	}
 }
 
 impl Into<Option<MultiLocation>> for AssetType {
-	fn into(self: Self) -> Option<MultiLocation> {
+	fn into(self) -> Option<MultiLocation> {
 		match self {
 			Self::Xcm(location) => Some(location),
 		}
@@ -1178,7 +1345,7 @@ impl Into<Option<MultiLocation>> for AssetType {
 }
 
 // Implementation on how to retrieve the AssetId from an AssetType
-// We simply hash the AssetType and take the lowest 128 bits
+// We take it
 impl From<AssetType> for AssetId {
 	fn from(asset: AssetType) -> AssetId {
 		match asset {
@@ -1203,12 +1370,13 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 		asset: AssetId,
 		min_balance: Balance,
 		metadata: AssetRegistrarMetadata,
+		is_sufficient: bool,
 	) -> DispatchResult {
 		Assets::force_create(
 			Origin::root(),
 			asset,
 			AssetManager::account_id(),
-			true,
+			is_sufficient,
 			min_balance,
 		)?;
 
@@ -1259,11 +1427,11 @@ pub enum CurrencyId {
 	OtherReserve(AssetId),
 }
 
-impl xcm_primitives::AccountIdToCurrencyId<AccountId, CurrencyId> for Runtime {
+impl AccountIdToCurrencyId<AccountId, CurrencyId> for Runtime {
 	fn account_to_currency_id(account: AccountId) -> Option<CurrencyId> {
 		match account {
 			// the self-reserve currency is identified by the pallet-balances address
-			a if a == H160::from_low_u64_be(2050) => Some(CurrencyId::SelfReserve),
+			a if a == H160::from_low_u64_be(2050).into() => Some(CurrencyId::SelfReserve),
 			// the rest of the currencies, by their corresponding erc20 address
 			_ => Runtime::account_to_asset_id(account)
 				.map(|asset_id| CurrencyId::OtherReserve(asset_id)),
@@ -1280,8 +1448,13 @@ where
 {
 	fn convert(currency: CurrencyId) -> Option<MultiLocation> {
 		match currency {
+			// For now and until Xtokens is adapted to handle 0.9.16 version we use
+			// the old anchoring here
+			// This is not a problem in either cases, since the view of the destination
+			// chain does not change
+			// TODO! change this to NewAnchoringSelfReserve once xtokens is adapted for it
 			CurrencyId::SelfReserve => {
-				let multi: MultiLocation = SelfReserve::get();
+				let multi: MultiLocation = OldAnchoringSelfReserve::get();
 				Some(multi)
 			}
 			CurrencyId::OtherReserve(asset) => AssetXConverter::reverse_ref(asset).ok(),
@@ -1291,6 +1464,8 @@ where
 
 parameter_types! {
 	pub const BaseXcmWeight: Weight = 100_000_000;
+	pub const MaxAssetsForTransfer: usize = 2;
+
 	// This is how we are going to detect whether the asset is a Reserve asset
 	// This however is the chain part only
 	pub SelfLocation: MultiLocation = MultiLocation {
@@ -1305,14 +1480,15 @@ impl orml_xtokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
-	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
+	type AccountIdToMultiLocation = AccountIdToMultiLocation<AccountId>;
 	type CurrencyIdConvert =
-		CurrencyIdtoMultiLocation<xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>>;
+		CurrencyIdtoMultiLocation<AsAssetType<AssetId, AssetType, AssetManager>>;
 	type XcmExecutor = XcmExecutor;
 	type SelfLocation = SelfLocation;
 	type Weigher = XcmWeigher;
 	type BaseXcmWeight = BaseXcmWeight;
 	type LocationInverter = LocationInverter<Ancestry>;
+	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 }
 
 // For now we only allow to transact in the relay, although this might change in the future
@@ -1333,8 +1509,8 @@ impl TryFrom<u8> for Transactors {
 	}
 }
 
-impl xcm_primitives::UtilityEncodeCall for Transactors {
-	fn encode_call(self, call: xcm_primitives::UtilityAvailableCalls) -> Vec<u8> {
+impl UtilityEncodeCall for Transactors {
+	fn encode_call(self, call: UtilityAvailableCalls) -> Vec<u8> {
 		match self {
 			// Shall we use westend for moonbase? The tests are probably based on rococo
 			// but moonbase-alpha is attached to westend-runtime I think
@@ -1343,7 +1519,7 @@ impl xcm_primitives::UtilityEncodeCall for Transactors {
 	}
 }
 
-impl xcm_primitives::XcmTransact for Transactors {
+impl XcmTransact for Transactors {
 	fn destination(self) -> MultiLocation {
 		match self {
 			Transactors::Relay => MultiLocation::parent(),
@@ -1358,27 +1534,34 @@ impl xcm_transactor::Config for Runtime {
 	type DerivativeAddressRegistrationOrigin = EnsureRoot<AccountId>;
 	type SovereignAccountDispatcherOrigin = EnsureRoot<AccountId>;
 	type CurrencyId = CurrencyId;
-	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
+	type AccountIdToMultiLocation = AccountIdToMultiLocation<AccountId>;
 	type CurrencyIdToMultiLocation =
-		CurrencyIdtoMultiLocation<xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>>;
-	type XcmExecutor = XcmExecutor;
+		CurrencyIdtoMultiLocation<AsAssetType<AssetId, AssetType, AssetManager>>;
 	type XcmSender = XcmRouter;
 	type SelfLocation = SelfLocation;
 	type Weigher = xcm_builder::FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	type LocationInverter = LocationInverter<Ancestry>;
 	type BaseXcmWeight = BaseXcmWeight;
+	type AssetTransactor = AssetTransactors;
+	type WeightInfo = xcm_transactor::weights::SubstrateWeight<Runtime>;
 }
 
-/// Call filter used during Phase 3 of the Moonriver rollout
+/// Maintenance mode Call filter
 pub struct MaintenanceFilter;
 impl Contains<Call> for MaintenanceFilter {
 	fn contains(c: &Call) -> bool {
 		match c {
+			Call::Assets(_) => false,
 			Call::Balances(_) => false,
 			Call::CrowdloanRewards(_) => false,
 			Call::Ethereum(_) => false,
 			Call::EVM(_) => false,
+			Call::Identity(_) => false,
 			Call::XTokens(_) => false,
+			Call::ParachainStaking(_) => false,
+			Call::PolkadotXcm(_) => false,
+			Call::Treasury(_) => false,
+			Call::XcmTransactor(_) => false,
 			_ => true,
 		}
 	}
@@ -1401,8 +1584,89 @@ impl Contains<Call> for NormalFilter {
 				pallet_assets::Call::cancel_approval { .. } => true,
 				_ => false,
 			},
+			// We just want to enable this in case of live chains, since the default version
+			// is populated at genesis
+			Call::PolkadotXcm(method) => match method {
+				pallet_xcm::Call::force_default_xcm_version { .. } => true,
+				_ => false,
+			},
 			_ => true,
 		}
+	}
+}
+
+use cumulus_primitives_core::{
+	relay_chain::BlockNumber as RelayBlockNumber, DmpMessageHandler, ParaId, XcmpMessageHandler,
+};
+pub struct MaintenanceDmpHandler;
+impl DmpMessageHandler for MaintenanceDmpHandler {
+	// This implementation makes messages be queued
+	// Since the limit is 0, messages are queued for next iteration
+	fn handle_dmp_messages(
+		iter: impl Iterator<Item = (RelayBlockNumber, Vec<u8>)>,
+		_limit: Weight,
+	) -> Weight {
+		DmpQueue::handle_dmp_messages(iter, 0)
+	}
+}
+
+pub struct MaintenanceXcmpHandler;
+impl XcmpMessageHandler for MaintenanceXcmpHandler {
+	// This implementation makes messages be queued
+	// Since the limit is 0, messages are queued for next iteration
+	fn handle_xcmp_messages<'a, I: Iterator<Item = (ParaId, RelayBlockNumber, &'a [u8])>>(
+		iter: I,
+		_limit: Weight,
+	) -> Weight {
+		XcmpQueue::handle_xcmp_messages(iter, 0)
+	}
+}
+
+/// The hooks we wnat to run in Maintenance Mode
+pub struct MaintenanceHooks;
+
+impl OnInitialize<BlockNumber> for MaintenanceHooks {
+	fn on_initialize(n: BlockNumber) -> Weight {
+		AllPalletsReversedWithSystemFirst::on_initialize(n)
+	}
+}
+
+// return 0
+// For some reason using empty tuple () isnt working
+// There exist only two pallets that use onIdle and these are xcmp and dmp queues
+// For some reason putting an empty tumple does not work (transaction never finishes)
+// We use an empty onIdle, if on the future we want one of the pallets to execute it
+// we need to provide it here
+impl OnIdle<BlockNumber> for MaintenanceHooks {
+	fn on_idle(_n: BlockNumber, _max_weight: Weight) -> Weight {
+		0
+	}
+}
+
+impl OnRuntimeUpgrade for MaintenanceHooks {
+	fn on_runtime_upgrade() -> Weight {
+		AllPalletsReversedWithSystemFirst::on_runtime_upgrade()
+	}
+	#[cfg(feature = "try-runtime")]
+	fn pre_upgrade() -> Result<(), &'static str> {
+		AllPalletsReversedWithSystemFirst::pre_upgrade()
+	}
+
+	#[cfg(feature = "try-runtime")]
+	fn post_upgrade() -> Result<(), &'static str> {
+		AllPalletsReversedWithSystemFirst::post_upgrade()
+	}
+}
+
+impl OnFinalize<BlockNumber> for MaintenanceHooks {
+	fn on_finalize(n: BlockNumber) {
+		AllPalletsReversedWithSystemFirst::on_finalize(n)
+	}
+}
+
+impl OffchainWorker<BlockNumber> for MaintenanceHooks {
+	fn offchain_worker(n: BlockNumber) {
+		AllPalletsReversedWithSystemFirst::offchain_worker(n)
 	}
 }
 
@@ -1412,10 +1676,44 @@ impl pallet_maintenance_mode::Config for Runtime {
 	type MaintenanceCallFilter = MaintenanceFilter;
 	type MaintenanceOrigin =
 		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechCommitteeInstance>;
+	type NormalDmpHandler = DmpQueue;
+	type MaintenanceDmpHandler = MaintenanceDmpHandler;
+	type NormalXcmpHandler = XcmpQueue;
+	type MaintenanceXcmpHandler = MaintenanceXcmpHandler;
+	// We use AllPalletsReversedWithSystemFirst because we dont want to change the hooks in normal
+	// operation
+	type NormalExecutiveHooks = AllPalletsReversedWithSystemFirst;
+	type MaitenanceExecutiveHooks = MaintenanceHooks;
 }
 
 impl pallet_proxy_genesis_companion::Config for Runtime {
 	type ProxyType = ProxyType;
+}
+
+parameter_types! {
+	// Tells `pallet_base_fee` whether to calculate a new BaseFee `on_finalize` or not.
+	pub IsActive: bool = false;
+	pub DefaultBaseFeePerGas: U256 = (1 * currency::GIGAWEI * currency::SUPPLY_FACTOR).into();
+}
+
+pub struct BaseFeeThreshold;
+impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
+	fn lower() -> Permill {
+		Permill::zero()
+	}
+	fn ideal() -> Permill {
+		Permill::from_parts(500_000)
+	}
+	fn upper() -> Permill {
+		Permill::from_parts(1_000_000)
+	}
+}
+
+impl pallet_base_fee::Config for Runtime {
+	type Event = Event;
+	type Threshold = BaseFeeThreshold;
+	type IsActive = IsActive;
+	type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
 construct_runtime! {
@@ -1437,7 +1735,7 @@ construct_runtime! {
 		EVM: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 10,
 		Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Origin, Config} = 11,
 		ParachainStaking: parachain_staking::{Pallet, Call, Storage, Event<T>, Config<T>} = 12,
-		Scheduler: pallet_scheduler::{Pallet, Storage, Config, Event<T>, Call} = 13,
+		Scheduler: pallet_scheduler::{Pallet, Storage, Event<T>, Call} = 13,
 		Democracy: pallet_democracy::{Pallet, Storage, Config<T>, Event<T>, Call} = 14,
 		CouncilCollective:
 			pallet_collective::<Instance1>::{Pallet, Call, Storage, Event<T>, Origin<T>, Config<T>} = 15,
@@ -1454,15 +1752,14 @@ construct_runtime! {
 		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 25,
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 26,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 27,
-		// PolkadotXcm and Assets are filtered by AssetManager and XTokens for now
-		PolkadotXcm: pallet_xcm::{Pallet, Storage, Event<T>, Origin, Config} = 28,
+		PolkadotXcm: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin, Config} = 28,
 		Assets: pallet_assets::{Pallet, Call, Storage, Event<T>} = 29,
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 30,
 		AssetManager: pallet_asset_manager::{Pallet, Call, Storage, Event<T>} = 31,
 		Migrations: pallet_migrations::{Pallet, Storage, Config, Event<T>} = 32,
 		XcmTransactor: xcm_transactor::{Pallet, Call, Storage, Event<T>} = 33,
 		ProxyGenesisCompanion: pallet_proxy_genesis_companion::{Pallet, Config<T>} = 34,
-
+		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 35,
 	}
 }
 
@@ -1494,7 +1791,7 @@ pub type Executive = frame_executive::Executive<
 	Block,
 	frame_system::ChainContext<Runtime>,
 	Runtime,
-	AllPallets,
+	pallet_maintenance_mode::ExecutiveHooks<Runtime>,
 >;
 
 // All of our runtimes share most of their Runtime API implementations.
@@ -1624,6 +1921,41 @@ mod tests {
 	use super::{currency::*, *};
 
 	#[test]
+	// Helps us to identify a Pallet Call in case it exceeds the 1kb limit.
+	// Hint: this should be a rare case. If that happens, one or more of the dispatchable arguments
+	// need to be Boxed.
+	fn call_max_size() {
+		const CALL_ALIGN: u32 = 1024;
+		assert!(
+			std::mem::size_of::<pallet_ethereum_chain_id::Call<Runtime>>() <= CALL_ALIGN as usize
+		);
+		assert!(std::mem::size_of::<pallet_evm::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(std::mem::size_of::<pallet_ethereum::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(std::mem::size_of::<parachain_staking::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(
+			std::mem::size_of::<pallet_author_inherent::Call<Runtime>>() <= CALL_ALIGN as usize
+		);
+		assert!(
+			std::mem::size_of::<pallet_author_slot_filter::Call<Runtime>>() <= CALL_ALIGN as usize
+		);
+		assert!(
+			std::mem::size_of::<pallet_crowdloan_rewards::Call<Runtime>>() <= CALL_ALIGN as usize
+		);
+		assert!(std::mem::size_of::<pallet_author_mapping::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(
+			std::mem::size_of::<pallet_maintenance_mode::Call<Runtime>>() <= CALL_ALIGN as usize
+		);
+		assert!(std::mem::size_of::<orml_xtokens::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(std::mem::size_of::<pallet_asset_manager::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(std::mem::size_of::<pallet_migrations::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(std::mem::size_of::<xcm_transactor::Call<Runtime>>() <= CALL_ALIGN as usize);
+		assert!(
+			std::mem::size_of::<pallet_proxy_genesis_companion::Call<Runtime>>()
+				<= CALL_ALIGN as usize
+		);
+	}
+
+	#[test]
 	fn currency_constants_are_correct() {
 		assert_eq!(SUPPLY_FACTOR, 1);
 
@@ -1651,7 +1983,7 @@ mod tests {
 
 		// staking minimums
 		assert_eq!(MinCollatorStk::get(), Balance::from(1 * KILOUNIT));
-		assert_eq!(MinCandidateStk::get(), Balance::from(1 * KILOUNIT));
+		assert_eq!(MinCandidateStk::get(), Balance::from(500 * UNIT));
 		assert_eq!(MinDelegatorStk::get(), Balance::from(5 * UNIT));
 
 		// crowdloan min reward
@@ -1674,5 +2006,13 @@ mod tests {
 			AnnouncementDepositFactor::get(),
 			Balance::from(5600 * MICROUNIT)
 		);
+	}
+
+	#[test]
+	// Required migration is parachain_staking::migrations::IncreaseMaxTopDelegationsPerCandidate
+	// Purpose of this test is to remind of required migration if constant is ever changed
+	fn updating_maximum_delegators_per_candidate_requires_configuring_required_migration() {
+		assert_eq!(MaxTopDelegationsPerCandidate::get(), 300);
+		assert_eq!(MaxBottomDelegationsPerCandidate::get(), 50);
 	}
 }

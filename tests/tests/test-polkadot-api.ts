@@ -62,7 +62,7 @@ describeDevMoonbeam("Polkadot API - Transfers", (context) => {
           expect(message.substring(0, 33)).to.eq(`parachainSystem.setValidationData`);
           break;
         case 2:
-          expect(message.substring(0, 24)).to.eq(`authorInherent.setAuthor`);
+          expect(message.substring(0, 42)).to.eq(`authorInherent.kickOffAuthorshipValidation`);
           break;
         case 3:
           expect(message).to.eq(
@@ -78,9 +78,9 @@ describeDevMoonbeam("Polkadot API - Transfers", (context) => {
 
   it("should appear in events", async function () {
     const signedBlock = await context.polkadotApi.rpc.chain.getBlock();
-    const allRecords = await context.polkadotApi.query.system.events.at(
+    const allRecords = (await context.polkadotApi.query.system.events.at(
       signedBlock.block.header.hash
-    );
+    )) as any;
 
     // map between the extrinsics and events
     signedBlock.block.extrinsics.forEach(({ method: { method, section } }, index) => {

@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2022 PureStake Inc.
 // This file is part of Moonbeam.
 
 // Moonbeam is free software: you can redistribute it and/or modify
@@ -47,7 +47,7 @@ const MGA_TOKEN_ID: TokenId = 0u32;
 /// For each liquidity token, two additional tokens must be created
 /// (Token n, Token n+1) <=> Token n+2
 /// Starting from n0=5 as the first 4 are taken by the genesis config, but the starting n0 will be determined at the start of each bench by checking tokens
-/// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7 
+/// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7
 /// Since we are creating new tokens every time we can simply just use (v, v+1) as the pooled token amounts, to mint v liquidity tokens
 
 
@@ -56,7 +56,7 @@ fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pa
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
-	let x: TokenId = 
+	let x: TokenId =
 		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::get_next_currency_id().into();
 	let v = v.unwrap_or(1_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, v.into())?;
@@ -73,7 +73,7 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
-	let x: TokenId = 
+	let x: TokenId =
 		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::get_next_currency_id().into();
 	let v = v.unwrap_or(1_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &funding_account, v.into())?;
@@ -185,7 +185,9 @@ benchmarks! {
 
 	// ROOT DISPATCHABLES
 
-	set_total_selected {}: _(RawOrigin::Root, 100u32)
+	set_total_selected {
+		Pallet::<T>::set_blocks_per_round(RawOrigin::Root.into(), 100u32)?;
+	}: _(RawOrigin::Root, 100u32)
 	verify {
 		assert_eq!(Pallet::<T>::total_selected(), 100u32);
 	}
@@ -200,7 +202,7 @@ benchmarks! {
 	join_candidates {
 		let x in 3..45;
 		let y in 3..100;
-		
+
 		// Worst Case Complexity is search into a list so \exists full list before call
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(y > liquidity_token_count);
@@ -276,7 +278,7 @@ benchmarks! {
 
 	}: _(RawOrigin::Signed(caller.clone()), x)
 	verify {
-		assert!(Pallet::<T>::candidate_state(&caller).unwrap().is_leaving());
+		assert!(Pallet::<T>::candidate_info(&caller).unwrap().is_leaving());
 	}
 
 	execute_leave_candidates {
@@ -394,7 +396,7 @@ benchmarks! {
 		candidate_count -= 1u32;
 	}: _(RawOrigin::Signed(caller.clone()), candidate_count)
 	verify {
-		assert!(Pallet::<T>::candidate_state(&caller).unwrap().is_active());
+		assert!(Pallet::<T>::candidate_info(&caller).unwrap().is_active());
 	}
 
 	go_offline {
@@ -418,7 +420,7 @@ benchmarks! {
 		)?;
 	}: _(RawOrigin::Signed(caller.clone()))
 	verify {
-		assert!(!Pallet::<T>::candidate_state(&caller).unwrap().is_active());
+		assert!(!Pallet::<T>::candidate_info(&caller).unwrap().is_active());
 	}
 
 	go_online {
@@ -444,7 +446,7 @@ benchmarks! {
 		Pallet::<T>::go_offline(RawOrigin::Signed(caller.clone()).into())?;
 	}: _(RawOrigin::Signed(caller.clone()))
 	verify {
-		assert!(Pallet::<T>::candidate_state(&caller).unwrap().is_active());
+		assert!(Pallet::<T>::candidate_info(&caller).unwrap().is_active());
 	}
 
 	schedule_candidate_bond_more {
@@ -458,7 +460,7 @@ benchmarks! {
 		liquidity_token_count = liquidity_token_count + 1u32;
 
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
-	
+
 		let more = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -469,7 +471,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &caller, more.into(), ExistenceRequirement::AllowDeath));
-		
+
 	}: _(RawOrigin::Signed(caller.clone()), more)
 	verify {
 		let state = Pallet::<T>::candidate_state(&caller).expect("request bonded more so exists");
@@ -506,7 +508,7 @@ benchmarks! {
 		)?;
 	}: _(RawOrigin::Signed(caller.clone()), less)
 	verify {
-		let state = Pallet::<T>::candidate_state(&caller).expect("request bonded less so exists");
+		let state = Pallet::<T>::candidate_info(&caller).expect("request bonded less so exists");
 		assert_eq!(
 			state.request,
 			Some(CandidateBondRequest {
@@ -539,7 +541,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &caller, more.into(), ExistenceRequirement::AllowDeath));
-		
+
 		Pallet::<T>::schedule_candidate_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
 			more
@@ -564,7 +566,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), liquidity_token_count));
 
 		liquidity_token_count = liquidity_token_count + 1u32;
-		
+
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let less = 10*DOLLAR;
@@ -582,7 +584,7 @@ benchmarks! {
 		)?;
 		roll_to_round_and_author::<T>(2, Some(caller.clone()));
 	}: {
-		Pallet::<T>::execute_candidate_bond_request(
+		Pallet::<T>::execute_candidate_bond_less(
 			RawOrigin::Signed(caller.clone()).into(),
 			caller.clone()
 		)?;
@@ -599,7 +601,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), liquidity_token_count));
 
 		liquidity_token_count = liquidity_token_count + 1u32;
-		
+
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let more = 10*DOLLAR;
@@ -612,7 +614,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &caller, more.into(), ExistenceRequirement::AllowDeath));
-		
+
 		Pallet::<T>::schedule_candidate_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
 			more
@@ -636,7 +638,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), liquidity_token_count));
 
 		liquidity_token_count = liquidity_token_count + 1u32;
-		
+
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let less = 10*DOLLAR;
@@ -653,12 +655,12 @@ benchmarks! {
 			less
 		)?;
 	}: {
-		Pallet::<T>::cancel_candidate_bond_request(
+		Pallet::<T>::cancel_candidate_bond_less(
 			RawOrigin::Signed(caller.clone()).into(),
 		)?;
 	} verify {
 		assert!(
-			Pallet::<T>::candidate_state(&caller).unwrap().request.is_none()
+			Pallet::<T>::candidate_info(&caller).unwrap().request.is_none()
 		);
 	}
 
@@ -999,7 +1001,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(RawOrigin::Signed(
 			caller.clone()).into(),
 			collator.clone(),
@@ -1045,7 +1047,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
@@ -1138,7 +1140,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(RawOrigin::Signed(
 			caller.clone()).into(),
 			collator.clone(),
@@ -1183,7 +1185,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
@@ -1270,7 +1272,7 @@ benchmarks! {
 		for i in liquidity_token_count..(x){
 			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
 		}
-		
+
 	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
 	verify {
 		assert!(
@@ -1289,7 +1291,7 @@ benchmarks! {
 		}
 
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x - 1u32));
-		
+
 	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
 	verify {
 		assert!(
@@ -1305,7 +1307,7 @@ benchmarks! {
 	passive_session_change {
 		// Move on by a block
 		// Assuming we start at (say) 0, and that round is atleast 3 blocks.
-		
+
 		<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
@@ -1333,7 +1335,7 @@ benchmarks! {
 		// Total selected
 		let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(bench_y as u32);
 
-		
+
 		// // liquidity tokens
 		// let x =30;
 		// // candidate_count
@@ -1356,7 +1358,7 @@ benchmarks! {
 		assert!(x > start_liquidity_token_count);
 
 		for i in start_liquidity_token_count..(x - 1u32){
-			
+
 			let created_liquidity_token =
 				create_staking_liquidity_for_funding::<T>(None).unwrap();
 
@@ -1398,7 +1400,7 @@ benchmarks! {
 		// Now we will create `z*y` delegators each with `100*DOLLAR` created_liquidity_token tokens
 
 		let mut delegators: Vec<T::AccountId> = Vec::<T::AccountId>::new();
-		
+
 		let current_delegator_count: u32 = delegators.len() as u32;
 
 		for i in current_delegator_count..(z*y){
@@ -1476,7 +1478,7 @@ benchmarks! {
 
 		let selected_candidates = Pallet::<T>::selected_candidates();
 
-		
+
 		// We would like to move on to the end of round 1
 		let session_to_reach = 5u32;
 
@@ -1504,7 +1506,7 @@ benchmarks! {
 			}
 		}
 
-		
+
 		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 5u32);
 		assert_eq!(Pallet::<T>::round().current as u32, 5u32);
 
@@ -1517,11 +1519,11 @@ benchmarks! {
 
 			if candidate_bond.liquidity_token == created_liquidity_token {
 				assert_eq!(candidate_bond.amount as u128, (z as u128 + 1u128)*100*DOLLAR);
-				
+
 			}
 
 		}
-		
+
 		for candidate in selected_candidates.clone() {
 			Pallet::<T>::note_author(candidate.clone());
 		}

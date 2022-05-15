@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2022 PureStake Inc.
 // This file is part of Moonbeam.
 
 // Moonbeam is free software: you can redistribute it and/or modify
@@ -150,7 +150,7 @@ impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestin
 		_starting_block: B,
 		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
 	) -> DispatchResult {
-		
+
 		Ok(())
 	}
 
@@ -213,10 +213,10 @@ impl crate::StakingBenchmarkConfig for Test {}
 parameter_types! {
 	pub const BlocksPerRound: u32 = 5;
 	pub const LeaveCandidatesDelay: u32 = 2;
-	pub const CandidateBondDelay: u32 = 2;
+	pub const CandidateBondLessDelay: u32 = 2;
 	pub const LeaveDelegatorsDelay: u32 = 2;
 	pub const RevokeDelegationDelay: u32 = 2;
-	pub const DelegationBondDelay: u32 = 2;
+	pub const DelegationBondLessDelay: u32 = 2;
 	pub const RewardPaymentDelay: u32 = 2;
 	pub const MinSelectedCandidates: u32 = 5;
 	pub const MaxCollatorCandidates: u32 = 10;
@@ -234,10 +234,10 @@ impl Config for Test {
 	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
 	type BlocksPerRound = BlocksPerRound;
 	type LeaveCandidatesDelay = LeaveCandidatesDelay;
-	type CandidateBondDelay = CandidateBondDelay;
+	type CandidateBondLessDelay = CandidateBondLessDelay;
 	type LeaveDelegatorsDelay = LeaveDelegatorsDelay;
 	type RevokeDelegationDelay = RevokeDelegationDelay;
-	type DelegationBondDelay = DelegationBondDelay;
+	type DelegationBondLessDelay = DelegationBondLessDelay;
 	type RewardPaymentDelay = RewardPaymentDelay;
 	type MinSelectedCandidates = MinSelectedCandidates;
 	type MaxCollatorCandidates = MaxCollatorCandidates;
@@ -413,7 +413,7 @@ impl ExtBuilder {
 			assert!(current_issuance <= target_tge);
 
 			assert_ok!(StakeCurrency::mint(MGA_TOKEN_ID, &99999, target_tge - current_issuance));
-			
+
 			assert_ok!(Issuance::finalize_tge(Origin::root()));
 			assert_ok!(Issuance::init_issuance_config(Origin::root()));
 			assert_ok!(Issuance::calculate_and_store_round_issuance(0u32));
@@ -440,6 +440,22 @@ pub(crate) fn roll_to(n: u64) {
 			}
 		}
 	}
+	num_blocks
+}
+
+/// Rolls block-by-block to the beginning of the specified round.
+/// This will complete the block in which the round change occurs.
+/// Returns the number of blocks played.
+pub(crate) fn roll_to_round_begin(round: u64) -> u64 {
+	let block = (round - 1) * DefaultBlocksPerRound::get() as u64;
+	roll_to(block)
+}
+
+/// Rolls block-by-block to the end of the specified round.
+/// The block following will be the one in which the specified round change occurs.
+pub(crate) fn roll_to_round_end(round: u64) -> u64 {
+	let block = round * DefaultBlocksPerRound::get() as u64 - 1;
+	roll_to(block)
 }
 
 pub(crate) fn last_event() -> Event {
@@ -451,7 +467,7 @@ pub(crate) fn events() -> Vec<pallet::Event<Test>> {
 		.into_iter()
 		.map(|r| r.event)
 		.filter_map(|e| {
-			if let Event::Stake(inner) = e {
+			if let Event::ParachainStaking(inner) = e {
 				Some(inner)
 			} else {
 				None
@@ -481,6 +497,47 @@ macro_rules! assert_eq_events {
 	};
 }
 
+/// Compares the last N system events with passed in events, where N is the length of events passed
+/// in.
+///
+/// Prints highlighted diff iff assert_eq fails.
+/// The last events from frame_system will be taken in order to match the number passed to this
+/// macro. If there are insufficient events from frame_system, they will still be compared; the
+/// output may or may not be helpful.
+///
+/// Examples:
+/// If frame_system has events [A, B, C, D, E] and events [C, D, E] are passed in, the result would
+/// be a successful match ([C, D, E] == [C, D, E]).
+///
+/// If frame_system has events [A, B, C, D] and events [B, C] are passed in, the result would be an
+/// error and a hopefully-useful diff will be printed between [C, D] and [B, C].
+///
+/// Note that events are filtered to only match parachain-staking (see events()).
+#[macro_export]
+macro_rules! assert_eq_last_events {
+	($events:expr) => {
+		assert_tail_eq!($events, crate::mock::events());
+	};
+}
+
+/// Assert that one array is equal to the tail of the other. A more generic and testable version of
+/// assert_eq_last_events.
+#[macro_export]
+macro_rules! assert_tail_eq {
+	($tail:expr, $arr:expr) => {
+		if $tail.len() != 0 {
+			// 0-length always passes
+
+			if $tail.len() > $arr.len() {
+				similar_asserts::assert_eq!($tail, $arr); // will fail
+			}
+
+			let len_diff = $arr.len() - $tail.len();
+			similar_asserts::assert_eq!($tail, $arr[len_diff..]);
+		}
+	};
+}
+
 /// Panics if an event is not found in the system log of events
 #[macro_export]
 macro_rules! assert_event_emitted {
@@ -490,6 +547,23 @@ macro_rules! assert_event_emitted {
 				assert!(
 					crate::mock::events().iter().find(|x| *x == e).is_some(),
 					"Event {:?} was not found in events: \n {:?}",
+					e,
+					crate::mock::events()
+				);
+			}
+		}
+	};
+}
+
+/// Panics if an event is found in the system log of events
+#[macro_export]
+macro_rules! assert_event_not_emitted {
+	($event:expr) => {
+		match &$event {
+			e => {
+				assert!(
+					crate::mock::events().iter().find(|x| *x == e).is_none(),
+					"Event {:?} was found in events: \n {:?}",
 					e,
 					crate::mock::events()
 				);
@@ -545,7 +619,7 @@ fn geneses() {
 			}
 			// uninvolved
 			for x in 7..10 {
-				assert!(!Stake::is_delegator(&x));
+				assert!(!ParachainStaking::is_delegator(&x));
 			}
 			assert_eq!(StakeCurrency::free_balance(3, &7), 100);
 			assert_eq!(StakeCurrency::reserved_balance(3, &7), 0);
@@ -615,4 +689,82 @@ fn geneses() {
 				assert_eq!(StakeCurrency::reserved_balance(2, &x), 10);
 			}
 		});
+}
+
+#[test]
+fn roll_to_round_begin_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// these tests assume blocks-per-round of 5, as established by DefaultBlocksPerRound
+		assert_eq!(System::block_number(), 1); // we start on block 1
+
+		let num_blocks = roll_to_round_begin(1);
+		assert_eq!(System::block_number(), 1); // no-op, we're already on this round
+		assert_eq!(num_blocks, 0);
+
+		let num_blocks = roll_to_round_begin(2);
+		assert_eq!(System::block_number(), 5);
+		assert_eq!(num_blocks, 4);
+
+		let num_blocks = roll_to_round_begin(3);
+		assert_eq!(System::block_number(), 10);
+		assert_eq!(num_blocks, 5);
+	});
+}
+
+#[test]
+fn roll_to_round_end_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// these tests assume blocks-per-round of 5, as established by DefaultBlocksPerRound
+		assert_eq!(System::block_number(), 1); // we start on block 1
+
+		let num_blocks = roll_to_round_end(1);
+		assert_eq!(System::block_number(), 4);
+		assert_eq!(num_blocks, 3);
+
+		let num_blocks = roll_to_round_end(2);
+		assert_eq!(System::block_number(), 9);
+		assert_eq!(num_blocks, 5);
+
+		let num_blocks = roll_to_round_end(3);
+		assert_eq!(System::block_number(), 14);
+		assert_eq!(num_blocks, 5);
+	});
+}
+
+#[test]
+fn assert_tail_eq_works() {
+	assert_tail_eq!(vec![1, 2], vec![0, 1, 2]);
+
+	assert_tail_eq!(vec![1], vec![1]);
+
+	assert_tail_eq!(
+		vec![0u32; 0], // 0 length array
+		vec![0u32; 1]  // 1-length array
+	);
+
+	assert_tail_eq!(vec![0u32, 0], vec![0u32, 0]);
+}
+
+#[test]
+#[should_panic]
+fn assert_tail_eq_panics_on_non_equal_tail() {
+	assert_tail_eq!(vec![2, 2], vec![0, 1, 2]);
+}
+
+#[test]
+#[should_panic]
+fn assert_tail_eq_panics_on_empty_arr() {
+	assert_tail_eq!(vec![2, 2], vec![0u32; 0]);
+}
+
+#[test]
+#[should_panic]
+fn assert_tail_eq_panics_on_longer_tail() {
+	assert_tail_eq!(vec![1, 2, 3], vec![1, 2]);
+}
+
+#[test]
+#[should_panic]
+fn assert_tail_eq_panics_on_unequal_elements_same_length_array() {
+	assert_tail_eq!(vec![1, 2, 3], vec![0, 1, 2]);
 }

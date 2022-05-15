@@ -13,11 +13,16 @@ import {
   ALITH_PRIV_KEY,
 } from "../../util/constants";
 import { blake2AsHex, randomAsHex } from "@polkadot/util-crypto";
-import { describeDevMoonbeam, DevTestContext } from "../../util/setup-dev-tests";
+import {
+  describeDevMoonbeam,
+  describeDevMoonbeamAllEthTxTypes,
+  DevTestContext,
+} from "../../util/setup-dev-tests";
 import { numberToHex, stringToHex } from "@polkadot/util";
 import Web3 from "web3";
 import { customWeb3Request } from "../../util/providers";
 import { callPrecompile, sendPrecompileTx } from "../../util/transactions";
+import { verifyLatestBlockFees } from "../../util/block";
 
 const ADDRESS_STAKING = "0x0000000000000000000000000000000000000800";
 
@@ -70,7 +75,7 @@ describeDevMoonbeam("Staking - Genesis", (context) => {
   });
 });
 
-describeDevMoonbeam("Staking - Join Candidates", (context) => {
+describeDevMoonbeamAllEthTxTypes("Staking - Join Candidates", (context) => {
   it("should successfully call joinCandidates on ETHAN", async function () {
     const block = await sendPrecompileTx(
       context,
@@ -91,7 +96,7 @@ describeDevMoonbeam("Staking - Join Candidates", (context) => {
       "New candidate should have been added"
     );
     expect((candidatesAfter.toJSON() as { owner: string; amount: string }[])[1].owner).to.equal(
-      ETHAN.toLowerCase(),
+      ETHAN,
       "New candidate ethan should have been added"
     );
     expect((candidatesAfter.toJSON() as { owner: string; amount: string }[])[1].amount).to.equal(
@@ -100,10 +105,11 @@ describeDevMoonbeam("Staking - Join Candidates", (context) => {
     );
 
     expect(Number((await isCandidate(context, ETHAN)).result)).to.equal(1);
+    await verifyLatestBlockFees(context, expect, MIN_GLMR_STAKING);
   });
 });
 
-describeDevMoonbeam("Staking - Join Delegators", (context) => {
+describeDevMoonbeamAllEthTxTypes("Staking - Join Delegators", (context) => {
   beforeEach("should successfully call delegate for ETHAN to ALITH", async function () {
     await sendPrecompileTx(context, ADDRESS_STAKING, SELECTORS, ETHAN, ETHAN_PRIVKEY, "nominate", [
       ALITH,
@@ -123,7 +129,7 @@ describeDevMoonbeam("Staking - Join Delegators", (context) => {
           delegations: { owner: string; amount: string }[];
         }
       ).delegations[0].owner
-    ).to.equal(ALITH.toLowerCase(), "delegation didn't go through");
+    ).to.equal(ALITH, "delegation didn't go through");
     expect(delegatorsAfter.status.toString()).equal("Active");
   });
 });
