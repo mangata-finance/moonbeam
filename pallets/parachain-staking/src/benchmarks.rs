@@ -21,17 +21,17 @@
 // 	BalanceOf, Call, CandidateBondChange, CandidateBondRequest, Config, DelegationChange,
 // 	DelegationRequest, Pallet, Range,
 // };
-use crate::*;
-use frame_benchmarking::BenchmarkParameter::y as bench_y;
+use crate::{*};
 use frame_benchmarking::{account, benchmarks};
 use frame_support::assert_ok;
-use frame_support::traits::{ExistenceRequirement, Get};
+use frame_support::traits::{Get, ExistenceRequirement};
 use frame_system::RawOrigin;
+use sp_runtime::{Perbill, Percent};
+use sp_std::{vec::Vec};
 use orml_tokens::MultiTokenCurrencyExtended;
 use orml_tokens::Pallet as Tokens;
 use pallet_authorship::EventHandler;
-use sp_runtime::{Perbill, Percent};
-use sp_std::vec::Vec;
+use frame_benchmarking::BenchmarkParameter::y as bench_y;
 
 const DOLLAR: Balance = 1__000_000_000_000_000_000u128;
 const MGA_TOKEN_ID: TokenId = 0u32;
@@ -50,31 +50,22 @@ const MGA_TOKEN_ID: TokenId = 0u32;
 /// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7
 /// Since we are creating new tokens every time we can simply just use (v, v+1) as the pooled token amounts, to mint v liquidity tokens
 
+
 /// Mint v liquidity tokens of token set x to funding account
-fn create_non_staking_liquidity_for_funding<
-	T: Config + orml_tokens::Config + pallet_xyk::Config,
->(
+fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet_xyk::Config>(
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
-	let x: TokenId = <orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<
-		T::AccountId,
-	>>::get_next_currency_id()
-	.into();
+	let x: TokenId =
+		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::get_next_currency_id().into();
 	let v = v.unwrap_or(1_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(
-		RawOrigin::Signed(funding_account.clone()).into(),
-		x.into(),
-		v.into(),
-		(x + 1u32).into(),
-		(v + 1).into()
-	));
+	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(RawOrigin::Signed(funding_account.clone()).into(), x.into(), v.into(), (x + 1u32).into(), (v + 1).into()));
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 2u32).into(), &funding_account), v.into());
-	Ok(x + 2u32)
+	Ok(x+2u32)
 }
 
 /// Mint v liquidity tokens of token set x to funding account
@@ -82,28 +73,16 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
-	let x: TokenId = <orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<
-		T::AccountId,
-	>>::get_next_currency_id()
-	.into();
+	let x: TokenId =
+		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::get_next_currency_id().into();
 	let v = v.unwrap_or(1_000_000 * DOLLAR);
-	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(
-		MGA_TOKEN_ID.into(),
-		&funding_account,
-		v.into(),
-	)?;
+	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(
-		RawOrigin::Signed(funding_account.clone()).into(),
-		MGA_TOKEN_ID.into(),
-		v.into(),
-		(x).into(),
-		(v + 1).into()
-	));
+	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(RawOrigin::Signed(funding_account.clone()).into(), MGA_TOKEN_ID.into(), v.into(), (x).into(), (v + 1).into()));
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 1u32).into(), &funding_account), v.into());
-	Ok(x + 1u32)
+	Ok(x+1u32)
 }
 
 /// Create a funded user.
@@ -120,15 +99,7 @@ fn create_funded_user<T: Config + orml_tokens::Config>(
 	let user = account(string, n, SEED);
 	// log::info!("user: {:?}",user);
 	let v = v.unwrap_or(100 * DOLLAR);
-	assert_ok!(
-		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer(
-			(token_id).into(),
-			&funding_account,
-			&user,
-			v.into(),
-			ExistenceRequirement::AllowDeath
-		)
-	);
+	assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((token_id).into(), &funding_account, &user, v.into(), ExistenceRequirement::AllowDeath));
 	(user, token_id, v)
 }
 
@@ -172,65 +143,39 @@ fn create_funded_collator<T: Config + orml_tokens::Config>(
 	Ok(user)
 }
 
-pub(crate) fn roll_to_round_and_author<T: Config + pallet_session::Config>(
-	n: u32,
-	author: Option<T::AccountId>,
-) {
+pub(crate) fn roll_to_round_and_author<T: Config + pallet_session::Config>(n: u32, author: Option<T::AccountId>) {
 	let current_round: u32 = Pallet::<T>::round().current;
 
 	while !(Pallet::<T>::round().current >= n + current_round as u32 + 1u32) {
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<
-			T,
-		>>::block_number());
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(
-			<frame_system::Pallet<T>>::block_number(),
-		);
-		<frame_system::Pallet<T>>::set_block_number(
-			<frame_system::Pallet<T>>::block_number() + 1u32.into(),
-		);
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
-			<frame_system::Pallet<T>>::block_number(),
-		);
-		if author.clone().is_some() {
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+		if author.clone().is_some(){
 			Pallet::<T>::note_author(author.clone().unwrap().clone());
 		}
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
-			<frame_system::Pallet<T>>::block_number(),
-		);
-		if <Pallet<T> as pallet_session::ShouldEndSession<_>>::should_end_session(
-			<frame_system::Pallet<T>>::block_number(),
-		) {
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+		if <Pallet::<T> as pallet_session::ShouldEndSession<_>>::should_end_session(<frame_system::Pallet<T>>::block_number()){
 			// This doesn't really use pallet_session::Pallet::<T>::current_index()
 			// especially since pallet_session's on_initialize is not triggered (session index will always be 0)
 			// But Staking's start session doesn't care as long as it isn't session 0
-			<Pallet<T> as pallet_session::SessionManager<_>>::start_session(
-				pallet_session::Pallet::<T>::current_index() as u32 + 1u32,
-			);
+			<Pallet::<T> as pallet_session::SessionManager<_>>::start_session(pallet_session::Pallet::<T>::current_index() as u32 + 1u32);
 		}
 	}
 
 	// Assumes round is atleast 3 blocks
 	// Roll to 2 blocks into the given round
-	for _i in 0..2 {
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<
-			T,
-		>>::block_number());
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(
-			<frame_system::Pallet<T>>::block_number(),
-		);
-		<frame_system::Pallet<T>>::set_block_number(
-			<frame_system::Pallet<T>>::block_number() + 1u32.into(),
-		);
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
-			<frame_system::Pallet<T>>::block_number(),
-		);
-		if author.clone().is_some() {
+	for _i in 0..2{
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+		if author.clone().is_some(){
 			Pallet::<T>::note_author(author.clone().unwrap().clone());
 		}
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
-			<frame_system::Pallet<T>>::block_number(),
-		);
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
 	}
+
 }
 
 const USER_SEED: u32 = 999666;
