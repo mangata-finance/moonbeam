@@ -13,10 +13,10 @@ serde = { version = "1.0.126", optional = true }
 frame-benchmarking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.18", optional = true, default-features = false }
 frame-support = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.18", default-features = false }
 frame-system = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.18", default-features = false }
-parity-scale-codec = { version = "2.2", default-features = false, features = [
+parity-scale-codec = { version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
-scale-info = { version = "1.0.0", default-features = false, features = [
+scale-info = { version = "2.0.0", default-features = false, features = [
 	"derive",
 ] }
 pallet-authorship = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev-v0.9.18" }
