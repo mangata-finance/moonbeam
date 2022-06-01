@@ -999,11 +999,10 @@ dependencies = [
 
 [[package]]
 name = "lock_api"
-version = "0.4.7"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "327fa5b6a6940e4699ec49a9beae1ea4845c6bab9314e4f84ac68742139d8c53"
+checksum = "88943dd7ef4a2e5a4bfa2753aaab3013e34ce2533d1996fb18ef591e315e2b3b"
 dependencies = [
- "autocfg",
  "scopeguard",
 ]
 
@@ -1019,7 +1018,7 @@ dependencies = [
 [[package]]
 name = "mangata-primitives"
 version = "0.1.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#72039203a58d2a5e35485ade3dece1c7a5003984"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#b07e1a1c65b9945802ab5effa0399f13c5e251dc"
 dependencies = [
  "sp-core",
  "sp-runtime",
@@ -1284,7 +1283,7 @@ dependencies = [
 [[package]]
 name = "pallet-assets-info"
 version = "2.0.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#72039203a58d2a5e35485ade3dece1c7a5003984"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#b07e1a1c65b9945802ab5effa0399f13c5e251dc"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1314,7 +1313,7 @@ dependencies = [
 [[package]]
 name = "pallet-bootstrap"
 version = "0.1.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#72039203a58d2a5e35485ade3dece1c7a5003984"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#b07e1a1c65b9945802ab5effa0399f13c5e251dc"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -1351,7 +1350,7 @@ dependencies = [
 [[package]]
 name = "pallet-issuance"
 version = "2.0.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#72039203a58d2a5e35485ade3dece1c7a5003984"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#b07e1a1c65b9945802ab5effa0399f13c5e251dc"
 dependencies = [
  "cfg-if",
  "frame-benchmarking",
@@ -1424,7 +1423,7 @@ dependencies = [
 [[package]]
 name = "pallet-xyk"
 version = "0.1.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#72039203a58d2a5e35485ade3dece1c7a5003984"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#b07e1a1c65b9945802ab5effa0399f13c5e251dc"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -2109,7 +2108,7 @@ dependencies = [
 [[package]]
 name = "sp-bootstrap"
 version = "0.1.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#72039203a58d2a5e35485ade3dece1c7a5003984"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop-v0.9.18#b07e1a1c65b9945802ab5effa0399f13c5e251dc"
 dependencies = [
  "frame-support",
  "mangata-primitives",
@@ -2477,9 +2476,9 @@ dependencies = [
 
 [[package]]
 name = "ss58-registry"
-version = "1.20.0"
+version = "1.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e1e7c268f5610088463d23188fc9e764cda491784360e5e4ea3a8ce1e0e2ac9"
+checksum = "5d804c8d48aeab838be31570866fce1130d275b563d49af08b4927a0bd561e7c"
 dependencies = [
  "Inflector",
  "num-format",
