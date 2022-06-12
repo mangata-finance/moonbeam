@@ -76,6 +76,7 @@ use sp_staking::SessionIndex;
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 
 pub use pallet::*;
+use sp_std::convert::TryInto;
 
 pub mod weights;
 pub use weights::WeightInfo;
