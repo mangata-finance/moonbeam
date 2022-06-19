@@ -277,6 +277,7 @@ pub mod pallet {
 		pub fn schedule_bond_more<T: Config>(
 			&mut self,
 			more: Balance,
+			use_balance_from: Option<BondKind>
 		) -> Result<RoundIndex, DispatchError>
 		where
 			T::AccountId: From<A>,
@@ -288,7 +289,7 @@ pub mod pallet {
 			);
 			let candidate_id: T::AccountId = self.id.clone().into();
 			ensure!(
-				<<T as pallet::Config>::Currency as MultiTokenReservableCurrency<T::AccountId>>::can_reserve(self.liquidity_token.into(), &candidate_id, more.into()),
+				<<T as pallet::Config>::StakingReservesProvider::can_bond(self.liquidity_token.into(), &candidate_id, more.into(), use_balance_from),
 				Error::<T>::InsufficientBalance
 			);
 			let when_executable = <Round<T>>::get().current.saturating_add(T::CandidateBondDelay::get());
@@ -326,7 +327,7 @@ pub mod pallet {
 		}
 		/// Execute pending request to change the collator self bond
 		/// Returns the event to be emitted
-		pub fn execute_pending_request<T: Config>(&mut self) -> Result<Event<T>, DispatchError>
+		pub fn execute_pending_request<T: Config>(&mut self, use_balance_from: Option<BondKind>) -> Result<Event<T>, DispatchError>
 		where
 			T::AccountId: From<A>,
 		{
@@ -344,7 +345,7 @@ pub mod pallet {
 					
 					self.total_counted = self.total_counted.checked_add(request.amount).ok_or(Error::<T>::MathError)?;
 					self.total_backing = self.total_backing.checked_add(request.amount).ok_or(Error::<T>::MathError)?;
-					<T as pallet::Config>::Currency::reserve(self.liquidity_token.into(), &caller, request.amount.into())?;
+					<T as pallet::Config>::StakingReservesProvider::bond(self.liquidity_token.into(), &caller, request.amount.into(), use_balance_from)?;
 					let new_total = <Total<T>>::get(self.liquidity_token).saturating_add(request.amount);
 					<Total<T>>::insert(self.liquidity_token, new_total);
 					Event::CandidateBondedMore(
@@ -360,7 +361,13 @@ pub mod pallet {
 					
 					self.total_counted = self.total_counted.checked_sub(request.amount).ok_or(Error::<T>::MathError)?;
 					self.total_backing = self.total_backing.checked_sub(request.amount).ok_or(Error::<T>::MathError)?;
-					<T as pallet::Config>::Currency::unreserve(self.liquidity_token.into(), &caller, request.amount.into());
+					let debug_amount = <T as pallet::Config>::StakingReservesProvider::unbond(self.liquidity_token.into(), &caller, request.amount.into());
+					if !debug_amount.is_zero(){
+						log::warn!(
+							"Unbond in staking returned non-zero value {:?}",
+							debug_amount
+						);
+					}
 					let new_total_staked = <Total<T>>::get(self.liquidity_token).saturating_sub(request.amount);
 					<Total<T>>::insert(self.liquidity_token, new_total_staked);
 					Event::CandidateBondedLess(
@@ -788,6 +795,7 @@ pub mod pallet {
 			&mut self,
 			collator: A,
 			more: Balance,
+			use_balance_from: Option<BondKind>,
 		) -> Result<RoundIndex, DispatchError>
 		where
 			T::AccountId: From<A>,
@@ -802,7 +810,7 @@ pub mod pallet {
 				.ok_or(Error::<T>::DelegationDNE)?;
 			let delegator_id: T::AccountId = self.id.clone().into();
 			ensure!(
-				<T as pallet::Config>::Currency::can_reserve((*liquidity_token).into(), &delegator_id, more.into()),
+				<T as pallet::Config>::StakingReservesProvider::can_bond((*liquidity_token).into(), &delegator_id, more.into(), use_balance_from),
 				Error::<T>::InsufficientBalance
 			);
 			let when = <Round<T>>::get().current.saturating_add(T::DelegationBondDelay::get());
@@ -855,7 +863,7 @@ pub mod pallet {
 			Ok((now, when))
 		}
 		/// Execute pending delegation change request
-		pub fn execute_pending_request<T: Config>(&mut self, candidate: A) -> DispatchResult
+		pub fn execute_pending_request<T: Config>(&mut self, candidate: A, use_balance_from: Option<BondKind>) -> DispatchResult
 		where
 			Balance: From<Balance> + Into<Balance>,
 			T::AccountId: From<A>,
@@ -918,7 +926,7 @@ pub mod pallet {
 							// update collator state delegation
 							let mut collator_state = <CandidateState<T>>::get(&candidate_id)
 								.ok_or(Error::<T>::CandidateDNE)?;
-							<T as pallet::Config>::Currency::reserve(x.liquidity_token.into(), &self.id.clone().into(), balance_amt.into())?;
+							<T as pallet::Config>::StakingReservesProvider::bond(x.liquidity_token.into(), &self.id.clone().into(), balance_amt.into(), use_balance_from)?;
 							let before = collator_state.total_counted;
 							let in_top = collator_state
 								.increase_delegation::<T>(self.id.clone().into(), balance_amt)?;
@@ -955,7 +963,13 @@ pub mod pallet {
 								x.amount = x.amount.checked_sub(amount).ok_or(Error::<T>::MathError)?;
 								let mut collator = <CandidateState<T>>::get(&candidate_id)
 									.ok_or(Error::<T>::CandidateDNE)?;
-								<T as pallet::Config>::Currency::unreserve(x.liquidity_token.into(), &delegator_id, balance_amt.into());
+								let debug_amount = <T as pallet::Config>::StakingReservesProvider::unbond(x.liquidity_token.into(), &delegator_id, balance_amt.into());
+								if !debug_amount.is_zero(){
+									log::warn!(
+										"Unbond in staking returned non-zero value {:?}",
+										debug_amount
+									);
+								}
 								let before = collator.total_counted;
 								// need to go into decrease_delegation
 								let in_top =
@@ -1185,6 +1199,8 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + StakingBenchmarkConfig{
 		/// Overarching event type
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		/// Multipurpose-liquidity
+		type StakingReservesProvider: StakingReservesProviderTrait;
 		/// The currency type
 		type Currency: MultiTokenCurrency<Self::AccountId>
 			+ MultiTokenReservableCurrency<Self::AccountId>;
@@ -1571,6 +1587,13 @@ pub mod pallet {
 		}
 	}
 
+	#[derive(Eq, PartialEq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
+	pub enum BondKind {
+		FreeBalance,
+		ActivatedUnstakedLiquidty,
+		UnspentReserves,
+	}
+
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(<T as Config>::WeightInfo::set_total_selected())]
@@ -1607,6 +1630,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			bond: Balance,
 			liquidity_token: TokenId,
+			use_balance_from: Option<BondKind>,
 			candidate_count: u32,
 			liquidity_token_count: u32,
 		) -> DispatchResultWithPostInfo {
@@ -1649,7 +1673,7 @@ pub mod pallet {
 			);
 			// reserve must be called before storage changes
 			// and before any unsafe math operations with `bond: Balance`
-			<T as pallet::Config>::Currency::reserve(liquidity_token.into(), &acc, bond.into())?;
+			<T as pallet::Config>::StakingReservesProvider::bond(liquidity_token.into(), &acc, bond.into(), use_balance_from)?;
 			let candidate = CollatorCandidate::new(acc.clone(), bond, liquidity_token);
 			<CandidateState<T>>::insert(&acc, candidate);
 			<CandidatePool<T>>::put(candidates);
@@ -1696,7 +1720,13 @@ pub mod pallet {
 			state.can_leave::<T>()?;
 
 			let return_stake = |bond: Bond<T::AccountId>| {
-				<T as pallet::Config>::Currency::unreserve(bond.liquidity_token.into(), &bond.owner, bond.amount.into());
+				let debug_amount = <T as pallet::Config>::StakingReservesProvider::unbond(bond.liquidity_token.into(), &bond.owner, bond.amount.into());
+				if !debug_amount.is_zero(){
+					log::warn!(
+						"Unbond in staking returned non-zero value {:?}",
+						debug_amount
+					);
+				}
 				// remove delegation from delegator state
 				let mut delegator = DelegatorState::<T>::get(&bond.owner).expect(
 					"Collator state and delegator state are consistent. 
@@ -1721,7 +1751,13 @@ pub mod pallet {
 				return_stake(bond);
 			}
 			// return stake to collator
-			<T as pallet::Config>::Currency::unreserve(state.liquidity_token.into(), &state.id, state.bond.into());
+			let debug_amount = <T as pallet::Config>::StakingReservesProvider::unbond(state.liquidity_token.into(), &state.id, state.bond.into());
+			if !debug_amount.is_zero(){
+				log::warn!(
+					"Unbond in staking returned non-zero value {:?}",
+					debug_amount
+				);
+			}
 			<CandidateState<T>>::remove(&candidate);
 			let new_total_staked =
 				<Total<T>>::get(state.liquidity_token).saturating_sub(state.total_backing);
@@ -1821,10 +1857,11 @@ pub mod pallet {
 		pub fn schedule_candidate_bond_more(
 			origin: OriginFor<T>,
 			more: Balance,
+			use_balance_from: Option<BondKind>,
 		) -> DispatchResultWithPostInfo {
 			let collator = ensure_signed(origin)?;
 			let mut state = <CandidateState<T>>::get(&collator).ok_or(Error::<T>::CandidateDNE)?;
-			let when = state.schedule_bond_more::<T>(more)?;
+			let when = state.schedule_bond_more::<T>(more, use_balance_from)?;
 			<CandidateState<T>>::insert(&collator, state);
 			Self::deposit_event(Event::CandidateBondMoreRequested(collator, more, when));
 			Ok(().into())
@@ -1847,10 +1884,11 @@ pub mod pallet {
 		pub fn execute_candidate_bond_request(
 			origin: OriginFor<T>,
 			candidate: T::AccountId,
+			use_balance_from: Option<BondKind>,
 		) -> DispatchResultWithPostInfo {
 			ensure_signed(origin)?; // we may want to reward this if caller != candidate
 			let mut state = <CandidateState<T>>::get(&candidate).ok_or(Error::<T>::CandidateDNE)?;
-			let event = state.execute_pending_request::<T>()?;
+			let event = state.execute_pending_request::<T>(use_balance_from)?;
 			<CandidateState<T>>::insert(&candidate, state);
 			Self::deposit_event(event);
 			Ok(().into())
@@ -1877,6 +1915,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collator: T::AccountId,
 			amount: Balance,
+			use_balance_from: Option<BondKind>,
 			candidate_delegation_count: u32,
 			delegation_count: u32,
 		) -> DispatchResultWithPostInfo {
@@ -1931,7 +1970,7 @@ pub mod pallet {
 				Error::<T>::TooLowCandidateDelegationCountToDelegate
 			);
 			let delegator_position = collator_state.add_delegation::<T>(acc.clone(), amount)?;
-			<T as pallet::Config>::Currency::reserve(collator_state.liquidity_token.into(), &acc, amount.into())?;
+			<T as pallet::Config>::StakingReservesProvider::bond(collator_state.liquidity_token.into(), &acc, amount.into(), use_balance_from)?;
 			if let DelegatorAdded::AddedToTop { new_total } = delegator_position {
 				if collator_state.is_active() {
 					// collator in candidate pool
@@ -2026,10 +2065,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			candidate: T::AccountId,
 			more: Balance,
+			use_balance_from: Option<BondKind>,
 		) -> DispatchResultWithPostInfo {
 			let delegator = ensure_signed(origin)?;
 			let mut state = <DelegatorState<T>>::get(&delegator).ok_or(Error::<T>::DelegatorDNE)?;
-			let when = state.schedule_increase_delegation::<T>(candidate.clone(), more)?;
+			let when = state.schedule_increase_delegation::<T>(candidate.clone(), more, use_balance_from)?;
 			<DelegatorState<T>>::insert(&delegator, state);
 			Self::deposit_event(Event::DelegationIncreaseScheduled(
 				delegator, candidate, more, when,
@@ -2184,7 +2224,13 @@ pub mod pallet {
 		) -> DispatchResult {
 			let mut state = <CandidateState<T>>::get(&collator).ok_or(Error::<T>::CandidateDNE)?;
 			let (total_changed, delegator_stake) = state.rm_delegator::<T>(delegator.clone())?;
-			<T as pallet::Config>::Currency::unreserve(state.liquidity_token.into(), &delegator, delegator_stake.into());
+			let debug_amount = <T as pallet::Config>::StakingReservesProvider::unbond(state.liquidity_token.into(), &delegator, delegator_stake.into());
+			if !debug_amount.is_zero(){
+				log::warn!(
+					"Unbond in staking returned non-zero value {:?}",
+					debug_amount
+				);
+			}
 			if state.is_active() && total_changed {
 				Self::update_active(collator.clone(), state.total_counted, state.liquidity_token);
 			}
