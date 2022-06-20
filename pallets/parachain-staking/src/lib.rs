@@ -55,7 +55,7 @@ mod tests;
 
 use frame_support::pallet;
 pub use mangata_primitives::{Balance, TokenId};
-use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
+use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency, MultiTokenCurrencyExtended};
 use pallet_xyk::Valuate;
 
 use crate::set::OrderedSet;
@@ -74,6 +74,8 @@ use sp_runtime::{
 use sp_staking::SessionIndex;
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 use pallet_collective::GetMembers;
+use mp_multipurpose_liquidity::BondKind;
+use mp_traits::StakingReservesProviderTrait;
 
 pub use pallet::*;
 
@@ -289,7 +291,7 @@ pub mod pallet {
 			);
 			let candidate_id: T::AccountId = self.id.clone().into();
 			ensure!(
-				<<T as pallet::Config>::StakingReservesProvider::can_bond(self.liquidity_token.into(), &candidate_id, more.into(), use_balance_from),
+				<T as pallet::Config>::StakingReservesProvider::can_bond(self.liquidity_token, &candidate_id, more, use_balance_from),
 				Error::<T>::InsufficientBalance
 			);
 			let when_executable = <Round<T>>::get().current.saturating_add(T::CandidateBondDelay::get());
@@ -1200,10 +1202,11 @@ pub mod pallet {
 		/// Overarching event type
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		/// Multipurpose-liquidity
-		type StakingReservesProvider: StakingReservesProviderTrait;
+		type StakingReservesProvider: StakingReservesProviderTrait<AccountId = Self::AccountId>;
 		/// The currency type
 		type Currency: MultiTokenCurrency<Self::AccountId>
-			+ MultiTokenReservableCurrency<Self::AccountId>;
+			+ MultiTokenReservableCurrency<Self::AccountId>
+			+MultiTokenCurrencyExtended<Self::AccountId>;
 		/// The origin for monetary governance
 		type MonetaryGovernanceOrigin: EnsureOrigin<Self::Origin>;
 		/// Default number of blocks per round at genesis
@@ -1505,7 +1508,7 @@ pub mod pallet {
 			// Initialize the candidates
 			for &(ref candidate, balance, liquidity_token) in &self.candidates {
 				assert!(
-					<T as pallet::Config>::Currency::free_balance(liquidity_token.into(), candidate).into() >= balance,
+					<T as pallet::Config>::Currency::available_balance(liquidity_token.into(), candidate).into() >= balance,
 					"Account does not have enough balance to bond as a candidate."
 				);
 				candidate_count = candidate_count.saturating_add(1u32);
@@ -1513,8 +1516,9 @@ pub mod pallet {
 					T::Origin::from(Some(candidate.clone()).into()),
 					balance,
 					liquidity_token,
+					None,
 					candidate_count,
-					liquidity_token_count
+					liquidity_token_count,
 				) {
 					log::warn!("Join candidates failed in genesis with error {:?}", error);
 				} else {
@@ -1530,7 +1534,7 @@ pub mod pallet {
 					.expect("Delegation to non-existant collator")
 					.2;
 				assert!(
-					<T as pallet::Config>::Currency::free_balance(collator_liquidity_token.into(), delegator).into() >= balance,
+					<T as pallet::Config>::Currency::available_balance(collator_liquidity_token.into(), delegator).into() >= balance,
 					"Account does not have enough balance to place delegation."
 				);
 				let cd_count = if let Some(x) = col_delegator_count.get(target) {
@@ -1547,6 +1551,7 @@ pub mod pallet {
 					T::Origin::from(Some(delegator.clone()).into()),
 					target.clone(),
 					balance,
+					None,
 					cd_count,
 					dd_count,
 				) {
@@ -1585,13 +1590,6 @@ pub mod pallet {
 				total_relevant_exposure,
 			));
 		}
-	}
-
-	#[derive(Eq, PartialEq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-	pub enum BondKind {
-		FreeBalance,
-		ActivatedUnstakedLiquidty,
-		UnspentReserves,
 	}
 
 	#[pallet::call]
@@ -2098,10 +2096,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			delegator: T::AccountId,
 			candidate: T::AccountId,
+			use_balance_from: Option<BondKind>,
 		) -> DispatchResultWithPostInfo {
 			ensure_signed(origin)?; // we may want to reward caller if caller != delegator
 			let mut state = <DelegatorState<T>>::get(&delegator).ok_or(Error::<T>::DelegatorDNE)?;
-			state.execute_pending_request::<T>(candidate)?;
+			state.execute_pending_request::<T>(candidate, use_balance_from)?;
 			Ok(().into())
 		}
 		#[pallet::weight(<T as Config>::WeightInfo::cancel_delegator_bond_more())]
