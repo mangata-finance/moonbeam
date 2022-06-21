@@ -47,12 +47,14 @@ use frame_support::{
 	},
 	weights::{
 		constants::{RocksDbWeight, WEIGHT_PER_SECOND},
-		DispatchClass, GetDispatchInfo, IdentityFee, Weight, WeightToFeeCoefficient,
-		WeightToFeeCoefficients, WeightToFeePolynomial,
+		DispatchClass, GetDispatchInfo, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
+		WeightToFeePolynomial,
 	},
 	PalletId,
 };
 
+#[cfg(feature = "std")]
+pub use fp_evm::GenesisAccount;
 use frame_system::{EnsureRoot, EnsureSigned};
 pub use moonbeam_core_primitives::{
 	AccountId, AccountIndex, Address, AssetId, Balance, BlockNumber, DigestItem, Hash, Header,
@@ -63,8 +65,6 @@ pub use pallet_author_slot_filter::EligibilityValue;
 use pallet_balances::NegativeImbalance;
 use pallet_ethereum::Call::transact;
 use pallet_ethereum::Transaction as EthereumTransaction;
-#[cfg(feature = "std")]
-pub use pallet_evm::GenesisAccount;
 use pallet_evm::{
 	Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressNever, EnsureAddressRoot,
 	FeeCalculator, GasWeightMapping, OnChargeEVMTransaction as OnChargeEVMTransactionT, Runner,
@@ -77,7 +77,10 @@ use sp_api::impl_runtime_apis;
 use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{BlakeTwo256, Block as BlockT, Dispatchable, IdentityLookup, PostDispatchInfoOf},
+	traits::{
+		BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, IdentityLookup,
+		PostDispatchInfoOf,
+	},
 	transaction_validity::{
 		InvalidTransaction, TransactionSource, TransactionValidity, TransactionValidityError,
 	},
@@ -126,7 +129,7 @@ pub mod currency {
 	pub const UNIT: Balance = 1_000_000_000_000_000_000;
 	pub const KILOUNIT: Balance = 1_000_000_000_000_000_000_000;
 
-	pub const TRANSACTION_BYTE_FEE: Balance = 10 * MICROUNIT * SUPPLY_FACTOR;
+	pub const TRANSACTION_BYTE_FEE: Balance = 1 * GIGAWEI * SUPPLY_FACTOR;
 	pub const STORAGE_BYTE_FEE: Balance = 100 * MICROUNIT * SUPPLY_FACTOR;
 	pub const WEIGHT_FEE: Balance = 50 * KILOWEI * SUPPLY_FACTOR;
 
@@ -146,7 +149,7 @@ pub const WEEKS: BlockNumber = DAYS * 7;
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
-/// to even the core datastructures.
+/// to even the core data structures.
 pub mod opaque {
 	use super::*;
 
@@ -156,6 +159,7 @@ pub mod opaque {
 	impl_opaque_keys! {
 		pub struct SessionKeys {
 			pub nimbus: AuthorInherent,
+			pub vrf: session_keys_primitives::VrfSessionKey,
 		}
 	}
 }
@@ -169,7 +173,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("moonbase"),
 	impl_name: create_runtime_str!("moonbase"),
 	authoring_version: 3,
-	spec_version: 1600,
+	spec_version: 1601,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 2,
@@ -318,11 +322,33 @@ impl WeightToFeePolynomial for WeightToFee {
 	}
 }
 
+pub struct LengthToFee;
+impl WeightToFeePolynomial for LengthToFee {
+	type Balance = Balance;
+
+	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+		smallvec![
+			WeightToFeeCoefficient {
+				degree: 1,
+				coeff_frac: Perbill::zero(),
+				coeff_integer: currency::TRANSACTION_BYTE_FEE,
+				negative: false,
+			},
+			WeightToFeeCoefficient {
+				degree: 3,
+				coeff_frac: Perbill::zero(),
+				coeff_integer: 1,
+				negative: false,
+			},
+		]
+	}
+}
+
 impl pallet_transaction_payment::Config for Runtime {
 	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Runtime>>;
-	type TransactionByteFee = ConstU128<{ currency::TRANSACTION_BYTE_FEE }>;
 	type OperationalFeeMultiplier = ConstU8<5>;
-	type WeightToFee = IdentityFee<Balance>;
+	type WeightToFee = WeightToFee;
+	type LengthToFee = LengthToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Runtime>;
 }
 
@@ -376,8 +402,11 @@ parameter_types! {
 
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> U256 {
-		(1 * currency::GIGAWEI * currency::SUPPLY_FACTOR).into()
+	fn min_gas_price() -> (U256, Weight) {
+		(
+			(1 * currency::GIGAWEI * currency::SUPPLY_FACTOR).into(),
+			0u64,
+		)
 	}
 }
 
@@ -412,43 +441,7 @@ where
 	}
 }
 
-type CurrencyAccountId<T> = <T as frame_system::Config>::AccountId;
-
-type BalanceFor<T> =
-	<<T as pallet_evm::Config>::Currency as CurrencyT<CurrencyAccountId<T>>>::Balance;
-
-type PositiveImbalanceFor<T> =
-	<<T as pallet_evm::Config>::Currency as CurrencyT<CurrencyAccountId<T>>>::PositiveImbalance;
-
-type NegativeImbalanceFor<T> =
-	<<T as pallet_evm::Config>::Currency as CurrencyT<CurrencyAccountId<T>>>::NegativeImbalance;
-
-pub struct OnChargeEVMTransaction<OU>(sp_std::marker::PhantomData<OU>);
-impl<T, OU> OnChargeEVMTransactionT<T> for OnChargeEVMTransaction<OU>
-where
-	T: pallet_evm::Config,
-	PositiveImbalanceFor<T>: Imbalance<BalanceFor<T>, Opposite = NegativeImbalanceFor<T>>,
-	NegativeImbalanceFor<T>: Imbalance<BalanceFor<T>, Opposite = PositiveImbalanceFor<T>>,
-	OU: OnUnbalanced<NegativeImbalanceFor<T>>,
-{
-	type LiquidityInfo = Option<NegativeImbalanceFor<T>>;
-
-	fn withdraw_fee(who: &H160, fee: U256) -> Result<Self::LiquidityInfo, pallet_evm::Error<T>> {
-		EVMCurrencyAdapter::<<T as pallet_evm::Config>::Currency, ()>::withdraw_fee(who, fee)
-	}
-
-	fn correct_and_deposit_fee(
-		who: &H160,
-		corrected_fee: U256,
-		already_withdrawn: Self::LiquidityInfo,
-	) {
-		<EVMCurrencyAdapter<<T as pallet_evm::Config>::Currency, OU> as OnChargeEVMTransactionT<
-			T,
-		>>::correct_and_deposit_fee(who, corrected_fee, already_withdrawn)
-	}
-
-	fn pay_priority_fee(_tip: U256) {}
-}
+runtime_common::impl_on_charge_evm_transaction!();
 
 impl pallet_evm::Config for Runtime {
 	type FeeCalculator = FixedGasPrice;
@@ -740,9 +733,9 @@ impl parachain_staking::Config for Runtime {
 	/// Minimum stake required to be reserved to be a candidate
 	type MinCandidateStk = ConstU128<{ 500 * currency::UNIT * currency::SUPPLY_FACTOR }>;
 	/// Minimum stake required to be reserved to be a delegator
-	type MinDelegation = ConstU128<{ 5 * currency::UNIT * currency::SUPPLY_FACTOR }>;
+	type MinDelegation = ConstU128<{ 1 * currency::UNIT * currency::SUPPLY_FACTOR }>;
 	/// Minimum stake required to be reserved to be a delegator
-	type MinDelegatorStk = ConstU128<{ 5 * currency::UNIT * currency::SUPPLY_FACTOR }>;
+	type MinDelegatorStk = ConstU128<{ 1 * currency::UNIT * currency::SUPPLY_FACTOR }>;
 	type OnCollatorPayout = OnCollatorPayout;
 	type OnNewRound = OnNewRound;
 	type WeightInfo = parachain_staking::weights::SubstrateWeight<Runtime>;
@@ -750,9 +743,10 @@ impl parachain_staking::Config for Runtime {
 
 impl pallet_author_inherent::Config for Runtime {
 	type SlotBeacon = RelaychainBlockNumberProvider<Self>;
-	type AccountLookup = AuthorMapping;
+	type AccountLookup = MoonbeamOrbiters;
 	type EventHandler = ParachainStaking;
 	type CanAuthor = AuthorFilter;
+	type WeightInfo = pallet_author_inherent::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_author_slot_filter::Config for Runtime {
@@ -794,7 +788,7 @@ impl pallet_author_mapping::Config for Runtime {
 	type Event = Event;
 	type DepositCurrency = Balances;
 	type DepositAmount = ConstU128<{ 100 * currency::UNIT * currency::SUPPLY_FACTOR }>;
-	type Keys = NimbusId; // TODO: consider making custom type?
+	type Keys = session_keys_primitives::VrfId;
 	type WeightInfo = pallet_author_mapping::weights::SubstrateWeight<Runtime>;
 }
 
@@ -1053,7 +1047,7 @@ impl pallet_maintenance_mode::Config for Runtime {
 	// We use AllPalletsReversedWithSystemFirst because we dont want to change the hooks in normal
 	// operation
 	type NormalExecutiveHooks = AllPalletsReversedWithSystemFirst;
-	type MaitenanceExecutiveHooks = MaintenanceHooks;
+	type MaintenanceExecutiveHooks = MaintenanceHooks;
 }
 
 impl pallet_proxy_genesis_companion::Config for Runtime {
@@ -1361,13 +1355,13 @@ mod tests {
 		assert_eq!(SUPPLY_FACTOR, 1);
 
 		// txn fees
-		assert_eq!(TRANSACTION_BYTE_FEE, Balance::from(10 * MICROUNIT));
+		assert_eq!(TRANSACTION_BYTE_FEE, Balance::from(1 * GIGAWEI));
 		assert_eq!(
 			get!(pallet_transaction_payment, OperationalFeeMultiplier, u8),
 			5_u8
 		);
 		assert_eq!(STORAGE_BYTE_FEE, Balance::from(100 * MICROUNIT));
-		assert_eq!(FixedGasPrice::min_gas_price(), (1 * GIGAWEI).into());
+		assert_eq!(FixedGasPrice::min_gas_price().0, (1 * GIGAWEI).into());
 
 		// democracy minimums
 		assert_eq!(
@@ -1408,11 +1402,11 @@ mod tests {
 		);
 		assert_eq!(
 			get!(parachain_staking, MinDelegation, u128),
-			Balance::from(5 * UNIT)
+			Balance::from(1 * UNIT)
 		);
 		assert_eq!(
 			get!(parachain_staking, MinDelegatorStk, u128),
-			Balance::from(5 * UNIT)
+			Balance::from(1 * UNIT)
 		);
 
 		// crowdloan min reward

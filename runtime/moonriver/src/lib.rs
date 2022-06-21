@@ -33,20 +33,22 @@ use cumulus_pallet_parachain_system::RelaychainBlockNumberProvider;
 use fp_rpc::TransactionStatus;
 
 // Re-export required by get! macro.
+#[cfg(feature = "std")]
+pub use fp_evm::GenesisAccount;
 pub use frame_support::traits::Get;
 use frame_support::{
 	construct_runtime,
 	pallet_prelude::DispatchResult,
 	parameter_types,
 	traits::{
-		ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, Contains, EnsureOneOf,
-		EqualPrivilegeOnly, Imbalance, InstanceFilter, OffchainWorker, OnFinalize, OnIdle,
-		OnInitialize, OnRuntimeUpgrade, OnUnbalanced,
+		ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, Contains,
+		Currency as CurrencyT, EnsureOneOf, EqualPrivilegeOnly, Imbalance, InstanceFilter,
+		OffchainWorker, OnFinalize, OnIdle, OnInitialize, OnRuntimeUpgrade, OnUnbalanced,
 	},
 	weights::{
 		constants::{RocksDbWeight, WEIGHT_PER_SECOND},
-		DispatchClass, GetDispatchInfo, IdentityFee, Weight, WeightToFeeCoefficient,
-		WeightToFeeCoefficients, WeightToFeePolynomial,
+		ConstantMultiplier, DispatchClass, GetDispatchInfo, IdentityFee, Weight,
+		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
 	PalletId,
 };
@@ -59,11 +61,9 @@ use moonbeam_rpc_primitives_txpool::TxPoolResponse;
 use pallet_balances::NegativeImbalance;
 use pallet_ethereum::Call::transact;
 use pallet_ethereum::Transaction as EthereumTransaction;
-#[cfg(feature = "std")]
-pub use pallet_evm::GenesisAccount;
 use pallet_evm::{
-	Account as EVMAccount, EnsureAddressNever, EnsureAddressRoot, FeeCalculator, GasWeightMapping,
-	Runner,
+	Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressNever, EnsureAddressRoot,
+	FeeCalculator, GasWeightMapping, OnChargeEVMTransaction as OnChargeEVMTransactionT, Runner,
 };
 use pallet_transaction_payment::{CurrencyAdapter, Multiplier, TargetedFeeAdjustment};
 pub use parachain_staking::{InflationInfo, Range};
@@ -73,7 +73,10 @@ use sp_api::impl_runtime_apis;
 use sp_core::{OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{BlakeTwo256, Block as BlockT, Dispatchable, IdentityLookup, PostDispatchInfoOf},
+	traits::{
+		BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, IdentityLookup,
+		PostDispatchInfoOf,
+	},
 	transaction_validity::{
 		InvalidTransaction, TransactionSource, TransactionValidity, TransactionValidityError,
 	},
@@ -150,6 +153,7 @@ pub mod opaque {
 	impl_opaque_keys! {
 		pub struct SessionKeys {
 			pub nimbus: AuthorInherent,
+			pub vrf: session_keys_primitives::VrfSessionKey,
 		}
 	}
 }
@@ -163,7 +167,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("moonriver"),
 	impl_name: create_runtime_str!("moonriver"),
 	authoring_version: 3,
-	spec_version: 1600,
+	spec_version: 1601,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 2,
@@ -312,11 +316,15 @@ impl WeightToFeePolynomial for WeightToFee {
 	}
 }
 
+parameter_types! {
+	pub const TransactionByteFee: Balance = currency::TRANSACTION_BYTE_FEE;
+}
+
 impl pallet_transaction_payment::Config for Runtime {
 	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees<Runtime>>;
-	type TransactionByteFee = ConstU128<{ currency::TRANSACTION_BYTE_FEE }>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
+	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Runtime>;
 }
 
@@ -365,8 +373,11 @@ parameter_types! {
 
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> U256 {
-		(1 * currency::GIGAWEI * currency::SUPPLY_FACTOR).into()
+	fn min_gas_price() -> (U256, Weight) {
+		(
+			(1 * currency::GIGAWEI * currency::SUPPLY_FACTOR).into(),
+			0u64,
+		)
 	}
 }
 
@@ -404,6 +415,8 @@ where
 	}
 }
 
+runtime_common::impl_on_charge_evm_transaction!();
+
 impl pallet_evm::Config for Runtime {
 	type FeeCalculator = FixedGasPrice;
 	type GasWeightMapping = MoonbeamGasWeightMapping;
@@ -417,7 +430,7 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesType = MoonriverPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = EthereumChainId;
-	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, DealWithFees<Runtime>>;
+	type OnChargeTransaction = OnChargeEVMTransaction<DealWithFees<Runtime>>;
 	type BlockGasLimit = BlockGasLimit;
 	type FindAuthor = FindAuthorAdapter<AuthorInherent>;
 	type WeightInfo = pallet_evm::weights::SubstrateWeight<Self>;
@@ -730,9 +743,10 @@ impl parachain_staking::Config for Runtime {
 
 impl pallet_author_inherent::Config for Runtime {
 	type SlotBeacon = RelaychainBlockNumberProvider<Self>;
-	type AccountLookup = AuthorMapping;
+	type AccountLookup = MoonbeamOrbiters;
 	type EventHandler = ParachainStaking;
 	type CanAuthor = AuthorFilter;
+	type WeightInfo = pallet_author_inherent::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_author_slot_filter::Config for Runtime {
@@ -773,7 +787,7 @@ impl pallet_author_mapping::Config for Runtime {
 	type Event = Event;
 	type DepositCurrency = Balances;
 	type DepositAmount = ConstU128<{ 100 * currency::MOVR * currency::SUPPLY_FACTOR }>;
-	type Keys = NimbusId; // TODO: consider making custom type?
+	type Keys = session_keys_primitives::VrfId;
 	type WeightInfo = pallet_author_mapping::weights::SubstrateWeight<Runtime>;
 }
 
@@ -942,6 +956,12 @@ impl Contains<Call> for NormalFilter {
 				pallet_xcm::Call::force_default_xcm_version { .. } => true,
 				_ => false,
 			},
+			// We filter for now transact through signed
+			Call::XcmTransactor(method) => match method {
+				xcm_transactor::Call::transact_through_signed_multilocation { .. } => false,
+				xcm_transactor::Call::transact_through_signed { .. } => false,
+				_ => true,
+			},
 			_ => true,
 		}
 	}
@@ -1029,7 +1049,7 @@ impl pallet_maintenance_mode::Config for Runtime {
 	// We use AllPalletsReversedWithSystemFirst because we dont want to change the hooks in normal
 	// operation
 	type NormalExecutiveHooks = AllPalletsReversedWithSystemFirst;
-	type MaitenanceExecutiveHooks = MaintenanceHooks;
+	type MaintenanceExecutiveHooks = MaintenanceHooks;
 }
 
 impl pallet_proxy_genesis_companion::Config for Runtime {
@@ -1334,7 +1354,7 @@ mod tests {
 			5_u8
 		);
 		assert_eq!(STORAGE_BYTE_FEE, Balance::from(100 * MICROMOVR));
-		assert_eq!(FixedGasPrice::min_gas_price(), (1 * GIGAWEI).into());
+		assert_eq!(FixedGasPrice::min_gas_price().0, (1 * GIGAWEI).into());
 
 		// democracy minimums
 		assert_eq!(
