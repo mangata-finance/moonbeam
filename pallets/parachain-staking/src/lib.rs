@@ -74,8 +74,8 @@ use sp_runtime::{
 use sp_staking::SessionIndex;
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 use pallet_collective::GetMembers;
-use mp_multipurpose_liquidity::BondKind;
-use mp_traits::StakingReservesProviderTrait;
+pub use mp_multipurpose_liquidity::BondKind;
+pub use mp_traits::StakingReservesProviderTrait;
 
 pub use pallet::*;
 

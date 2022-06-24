@@ -117,6 +117,7 @@ fn create_funded_delegator<T: Config>(
 		RawOrigin::Signed(user.clone()).into(),
 		collator,
 		v,
+		None,
 		collator_delegator_count,
 		0u32, // first delegation for all calls
 	)?;
@@ -137,8 +138,9 @@ fn create_funded_collator<T: Config + orml_tokens::Config>(
 		RawOrigin::Signed(user.clone()).into(),
 		v,
 		token_id,
+		None,
 		candidate_count,
-		liquidity_token_count,
+		liquidity_token_count
 	)?;
 	Ok(user)
 }
@@ -237,7 +239,7 @@ benchmarks! {
 			}
 		}
 		let (caller, _, _) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-	}: _(RawOrigin::Signed(caller.clone()), 100*DOLLAR, created_liquidity_token , x, y)
+	}: _(RawOrigin::Signed(caller.clone()), 100*DOLLAR, created_liquidity_token, None , x, y)
 	verify {
 		assert!(Pallet::<T>::is_candidate(&caller));
 	}
@@ -329,8 +331,9 @@ benchmarks! {
 				RawOrigin::Signed(delegator.clone()).into(),
 				second_candidate.clone(),
 				100*DOLLAR,
+				None,
 				col_del_count,
-				1u32,
+				1u32
 			));
 			assert_ok!(Pallet::<T>::schedule_revoke_delegation(
 				RawOrigin::Signed(delegator.clone()).into(),
@@ -470,7 +473,7 @@ benchmarks! {
 		)?;
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &caller, more.into(), ExistenceRequirement::AllowDeath));
 		
-	}: _(RawOrigin::Signed(caller.clone()), more)
+	}: _(RawOrigin::Signed(caller.clone()), more, None)
 	verify {
 		let state = Pallet::<T>::candidate_state(&caller).expect("request bonded more so exists");
 		assert_eq!(
@@ -542,13 +545,15 @@ benchmarks! {
 		
 		Pallet::<T>::schedule_candidate_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
-			more
+			more,
+			None
 		)?;
 		roll_to_round_and_author::<T>(2, Some(caller.clone()));
 	}: {
 		Pallet::<T>::execute_candidate_bond_request(
 			RawOrigin::Signed(caller.clone()).into(),
-			caller.clone()
+			caller.clone(),
+			None
 		)?;
 	} verify {
 		let expected_bond = 110*DOLLAR;
@@ -584,7 +589,8 @@ benchmarks! {
 	}: {
 		Pallet::<T>::execute_candidate_bond_request(
 			RawOrigin::Signed(caller.clone()).into(),
-			caller.clone()
+			caller.clone(),
+			None
 		)?;
 	} verify {
 		assert_eq!(<T as pallet::Config>::Currency::reserved_balance(created_liquidity_token.into(), &caller).into(), 90*DOLLAR);
@@ -615,7 +621,8 @@ benchmarks! {
 		
 		Pallet::<T>::schedule_candidate_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
-			more
+			more,
+			None
 		)?;
 	}: {
 		Pallet::<T>::cancel_candidate_bond_request(
@@ -699,7 +706,7 @@ benchmarks! {
 		// Nominate MaxDelegationsPerDelegators collator candidates
 		for col in collators.clone() {
 			Pallet::<T>::delegate(
-				RawOrigin::Signed(caller.clone()).into(), col, 100 * DOLLAR, 0u32, del_del_count
+				RawOrigin::Signed(caller.clone()).into(), col, 100 * DOLLAR, None, 0u32, del_del_count
 			)?;
 			del_del_count += 1u32;
 		}
@@ -726,7 +733,7 @@ benchmarks! {
 			)?;
 			col_del_count += 1u32;
 		}
-	}: _(RawOrigin::Signed(caller.clone()), collator, 100*DOLLAR + 1u128, col_del_count, del_del_count)
+	}: _(RawOrigin::Signed(caller.clone()), collator, 100*DOLLAR + 1u128, None, col_del_count, del_del_count)
 	verify {
 		assert!(Pallet::<T>::is_delegator(&caller));
 	}
@@ -756,6 +763,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			100*DOLLAR,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -803,6 +811,7 @@ benchmarks! {
 				RawOrigin::Signed(caller.clone()).into(),
 				col,
 				100*DOLLAR,
+				None,
 				0u32,
 				delegation_count
 			)?;
@@ -840,6 +849,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			v,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -874,6 +884,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			v,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -915,10 +926,11 @@ benchmarks! {
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
 			v - 10*DOLLAR,
+			None,
 			0u32,
 			0u32
 		)?;
-	}: _(RawOrigin::Signed(caller.clone()), collator.clone(), 10*DOLLAR)
+	}: _(RawOrigin::Signed(caller.clone()), collator.clone(), 10*DOLLAR, None)
 	verify {
 		let state = Pallet::<T>::delegator_state(&caller)
 			.expect("just request bonded less so exists");
@@ -959,6 +971,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			v,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -1004,6 +1017,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			v,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -1016,7 +1030,8 @@ benchmarks! {
 		Pallet::<T>::execute_delegation_request(
 			RawOrigin::Signed(caller.clone()).into(),
 			caller.clone(),
-			collator.clone()
+			collator.clone(),
+			None
 		)?;
 	} verify {
 		assert!(
@@ -1050,20 +1065,23 @@ benchmarks! {
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
 			v - 10*DOLLAR,
+			None,
 			0u32,
 			0u32
 		)?;
 		Pallet::<T>::schedule_delegator_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
-			10*DOLLAR
+			10*DOLLAR,
+			None
 		)?;
 		roll_to_round_and_author::<T>(2, Some(collator.clone()));
 	}: {
 		Pallet::<T>::execute_delegation_request(
 			RawOrigin::Signed(caller.clone()).into(),
 			caller.clone(),
-			collator.clone()
+			collator.clone(),
+			None
 		)?;
 	} verify {
 		let expected_bond = 100*DOLLAR;
@@ -1096,6 +1114,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			v,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -1110,7 +1129,8 @@ benchmarks! {
 		Pallet::<T>::execute_delegation_request(
 			RawOrigin::Signed(caller.clone()).into(),
 			caller.clone(),
-			collator.clone()
+			collator.clone(),
+			None
 		)?;
 	} verify {
 		let expected = v - bond_less;
@@ -1143,6 +1163,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			v,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -1188,13 +1209,15 @@ benchmarks! {
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
 			v - 10*DOLLAR,
+			None,
 			0u32,
 			0u32
 		)?;
 		Pallet::<T>::schedule_delegator_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
-			10*DOLLAR
+			10*DOLLAR,
+			None
 		)?;
 		roll_to_round_and_author::<T>(2, Some(collator.clone()));
 	}: {
@@ -1237,6 +1260,7 @@ benchmarks! {
 			caller.clone()).into(),
 			collator.clone(),
 			total - 10*DOLLAR,
+			None,
 			0u32,
 			0u32
 		)?;
@@ -1419,6 +1443,7 @@ benchmarks! {
 				// candidates.get(targetted_collator_index as usize).unwrap().clone(),
 				candidates[targetted_collator_index as usize].clone(),
 				100*DOLLAR,
+				None,
 				delegated_to_collator_count,
 				0u32
 			));

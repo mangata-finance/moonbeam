@@ -16,10 +16,10 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate};
+use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate, BondKind, StakingReservesProviderTrait};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize},
+	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, WithdrawReasons},
 	weights::Weight,
 	PalletId, assert_ok
 };
@@ -208,6 +208,26 @@ impl orml_tokens::Config for Test {
 	type DustRemovalWhitelist = DustRemovalWhitelist;
 }
 
+pub struct TokensStakingPassthrough<T: stake::Config>(PhantomData<T>);
+impl<T: stake::Config> StakingReservesProviderTrait for TokensStakingPassthrough<T>{
+	type AccountId = T::AccountId;
+
+	fn can_bond(token_id: TokenId, account_id: &T::AccountId, amount: Balance, _use_balance_from: Option<BondKind>)
+	-> bool{
+		T::Currency::can_reserve(token_id.into(), &account_id, amount.into())
+	}
+
+	fn bond(token_id: TokenId, account_id: &T::AccountId, amount: Balance, _use_balance_from: Option<BondKind>)
+	-> DispatchResult{
+		T::Currency::reserve(token_id.into(), account_id, amount.into())
+	}
+
+	fn unbond(token_id: TokenId, account_id: &T::AccountId, amount: Balance) -> Balance{
+		T::Currency::unreserve(token_id.into(), account_id, amount.into()).into()
+	}
+}
+
+
 impl crate::StakingBenchmarkConfig for Test {}
 
 parameter_types! {
@@ -230,6 +250,7 @@ parameter_types! {
 
 impl Config for Test {
 	type Event = Event;
+	type StakingReservesProvider = TokensStakingPassthrough<Test>;
 	type Currency = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
 	type BlocksPerRound = BlocksPerRound;
