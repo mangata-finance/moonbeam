@@ -30,6 +30,8 @@ pallet-xyk = { default-features = false, git = "https://github.com/mangata-finan
 mangata-primitives = { git = "https://github.com/mangata-finance/mangata-node", branch = "develop", default-features = false }
 orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
 pallet-issuance = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
+mp-multipurpose-liquidity = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
+mp-traits = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
 
 [dev-dependencies]
 similar-asserts = "1.1.0"
@@ -57,6 +59,8 @@ std = [
 	"pallet-xyk/std",
 	"orml-tokens/std",
 	"pallet-issuance/std",
+	"mp-multipurpose-liquidity/std",
+	"mp-traits/std",
 ]
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",

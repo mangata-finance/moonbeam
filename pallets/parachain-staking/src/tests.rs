@@ -138,7 +138,7 @@ fn join_candidates_event_emits_correctly() {
 		.with_default_token_candidates(vec![(999, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, None, 1u32, 10000u32));
 			assert_last_event!(MetaEvent::Stake(Event::JoinedCollatorCandidates(
 				1, 10u128, 20u128,
 			)));
@@ -154,7 +154,7 @@ fn join_candidates_reserves_balance() {
 		.execute_with(|| {
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 0);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 10);
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, None, 1u32, 10000u32));
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 10);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 0);
 		});
@@ -168,7 +168,7 @@ fn join_candidates_increases_total_staked() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(Stake::total(1u32), 10);
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, None, 1u32, 10000u32));
 			assert_eq!(Stake::total(1u32), 20);
 		});
 }
@@ -181,7 +181,7 @@ fn join_candidates_creates_candidate_state() {
 		.build()
 		.execute_with(|| {
 			assert!(Stake::candidate_state(1).is_none());
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, None, 1u32, 10000u32));
 			let candidate_state = Stake::candidate_state(1).expect("just joined => exists");
 			assert_eq!(candidate_state.bond, 10u128);
 		});
@@ -195,7 +195,7 @@ fn join_candidates_adds_to_candidate_pool() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(Stake::candidate_pool().0.len(), 1usize);
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, 1u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(1), 10u128, 1u32, None, 1u32, 10000u32));
 			let candidate_pool = Stake::candidate_pool();
 			assert_eq!(
 				candidate_pool.0[0],
@@ -216,7 +216,7 @@ fn cannot_join_candidates_if_candidate() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::join_candidates(Origin::signed(1), 11u128, 1u32, 100u32, 10000u32),
+				Stake::join_candidates(Origin::signed(1), 11u128, 1u32, None, 100u32, 10000u32),
 				Error::<Test>::CandidateExists
 			);
 		});
@@ -231,7 +231,7 @@ fn cannot_join_candidates_if_delegator() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::join_candidates(Origin::signed(2), 10u128, 1u32, 1u32, 10000u32),
+				Stake::join_candidates(Origin::signed(2), 10u128, 1u32, None, 1u32, 10000u32),
 				Error::<Test>::DelegatorExists
 			);
 		});
@@ -245,7 +245,7 @@ fn cannot_join_candidates_without_min_bond() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::join_candidates(Origin::signed(1), 9u128, 1u32, 100u32, 10000u32),
+				Stake::join_candidates(Origin::signed(1), 9u128, 1u32, None, 100u32, 10000u32),
 				Error::<Test>::CandidateBondBelowMin
 			);
 		});
@@ -259,7 +259,7 @@ fn cannot_join_candidates_with_more_than_available_balance() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::join_candidates(Origin::signed(1), 501u128, 1u32, 100u32, 10000u32),
+				Stake::join_candidates(Origin::signed(1), 501u128, 1u32, None, 100u32, 10000u32),
 				DispatchError::Module {
 					index: 1,
 					error: 0,
@@ -278,7 +278,7 @@ fn insufficient_join_candidates_weight_hint_fails() {
 		.execute_with(|| {
 			for i in 0..5 {
 				assert_noop!(
-					Stake::join_candidates(Origin::signed(6), 20, 1u32, i, 10000u32),
+					Stake::join_candidates(Origin::signed(6), 20, 1u32, None, i, 10000u32),
 					Error::<Test>::TooLowCandidateCountWeightHintJoinCandidates
 				);
 			}
@@ -304,7 +304,7 @@ fn sufficient_join_candidates_weight_hint_succeeds() {
 		.execute_with(|| {
 			let mut count = 5u32;
 			for i in 6..10 {
-				assert_ok!(Stake::join_candidates(Origin::signed(i), 20, 1u32, 10000u32, count));
+				assert_ok!(Stake::join_candidates(Origin::signed(i), 20, 1u32, None, 10000u32, count));
 				count += 1u32;
 			}
 		});
@@ -709,7 +709,7 @@ fn schedule_candidate_bond_more_event_emits_correctly() {
 		.with_default_token_candidates(vec![(1, 20)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 			assert_last_event!(MetaEvent::Stake(Event::CandidateBondMoreRequested(
 				1, 30, 2,
 			)));
@@ -723,7 +723,7 @@ fn schedule_candidate_bond_more_updates_candidate_state() {
 		.with_default_token_candidates(vec![(1, 20)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 			let state = Stake::candidate_state(&1).expect("request bonded more so exists");
 			assert_eq!(
 				state.request,
@@ -743,9 +743,9 @@ fn cannot_schedule_candidate_bond_more_if_request_exists() {
 		.with_default_token_candidates(vec![(1, 30)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 5));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 5, None));
 			assert_noop!(
-				Stake::schedule_candidate_bond_more(Origin::signed(1), 5),
+				Stake::schedule_candidate_bond_more(Origin::signed(1), 5, None),
 				Error::<Test>::PendingCandidateRequestAlreadyExists
 			);
 		});
@@ -755,7 +755,7 @@ fn cannot_schedule_candidate_bond_more_if_request_exists() {
 fn cannot_schedule_candidate_bond_more_if_not_candidate() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			Stake::schedule_candidate_bond_more(Origin::signed(6), 50),
+			Stake::schedule_candidate_bond_more(Origin::signed(6), 50, None),
 			Error::<Test>::CandidateDNE
 		);
 	});
@@ -769,7 +769,7 @@ fn cannot_schedule_candidate_bond_more_if_insufficient_balance() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::schedule_candidate_bond_more(Origin::signed(1), 1),
+				Stake::schedule_candidate_bond_more(Origin::signed(1), 1, None),
 				Error::<Test>::InsufficientBalance
 			);
 		});
@@ -783,7 +783,7 @@ fn can_schedule_candidate_bond_more_if_leaving_candidates() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_leave_candidates(Origin::signed(1), 1));
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 		});
 }
 
@@ -798,7 +798,7 @@ fn cannot_schedule_candidate_bond_more_if_exited_candidates() {
 			roll_to(10);
 			assert_ok!(Stake::execute_leave_candidates(Origin::signed(1), 1, 10000u32));
 			assert_noop!(
-				Stake::schedule_candidate_bond_more(Origin::signed(1), 30),
+				Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None),
 				Error::<Test>::CandidateDNE
 			);
 		});
@@ -898,9 +898,9 @@ fn execute_candidate_bond_more_emits_correct_event() {
 		.with_default_token_candidates(vec![(1, 20)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			assert_last_event!(MetaEvent::Stake(Event::CandidateBondedMore(1, 30, 50)));
 		});
 }
@@ -914,9 +914,9 @@ fn execute_candidate_bond_more_reserves_balance() {
 		.execute_with(|| {
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 20);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 30);
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 50);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 0);
 		});
@@ -930,9 +930,9 @@ fn execute_candidate_bond_more_increases_total() {
 		.build()
 		.execute_with(|| {
 			let mut total = Stake::total(1u32);
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			total += 30;
 			assert_eq!(Stake::total(1u32), total);
 		});
@@ -947,9 +947,9 @@ fn execute_candidate_bond_more_updates_candidate_state() {
 		.execute_with(|| {
 			let candidate_state = Stake::candidate_state(1).expect("updated => exists");
 			assert_eq!(candidate_state.bond, 20);
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			let candidate_state = Stake::candidate_state(1).expect("updated => exists");
 			assert_eq!(candidate_state.bond, 50);
 		});
@@ -970,9 +970,9 @@ fn execute_candidate_bond_more_updates_candidate_pool() {
 					liquidity_token: 1u32
 				}
 			);
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 30, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			assert_eq!(
 				Stake::candidate_pool().0[0],
 				Bond {
@@ -995,7 +995,7 @@ fn execute_candidate_bond_less_emits_correct_event() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_candidate_bond_less(Origin::signed(1), 30));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			assert_last_event!(MetaEvent::Stake(Event::CandidateBondedLess(1, 30, 20)));
 		});
 }
@@ -1011,7 +1011,7 @@ fn execute_candidate_bond_less_unreserves_balance() {
 			assert_eq!(StakeCurrency::free_balance(1, &1), 0);
 			assert_ok!(Stake::schedule_candidate_bond_less(Origin::signed(1), 10));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			assert_eq!(StakeCurrency::reserved_balance(1, &1), 20);
 			assert_eq!(StakeCurrency::free_balance(1, &1), 10);
 		});
@@ -1027,7 +1027,7 @@ fn execute_candidate_bond_less_decreases_total() {
 			let mut total = Stake::total(1u32);
 			assert_ok!(Stake::schedule_candidate_bond_less(Origin::signed(1), 10));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			total -= 10;
 			assert_eq!(Stake::total(1u32), total);
 		});
@@ -1044,7 +1044,7 @@ fn execute_candidate_bond_less_updates_candidate_state() {
 			assert_eq!(candidate_state.bond, 30);
 			assert_ok!(Stake::schedule_candidate_bond_less(Origin::signed(1), 10));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			let candidate_state = Stake::candidate_state(1).expect("updated => exists");
 			assert_eq!(candidate_state.bond, 20);
 		});
@@ -1067,7 +1067,7 @@ fn execute_candidate_bond_less_updates_candidate_pool() {
 			);
 			assert_ok!(Stake::schedule_candidate_bond_less(Origin::signed(1), 10));
 			roll_to(10);
-			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1));
+			assert_ok!(Stake::execute_candidate_bond_request(Origin::signed(1), 1, None));
 			assert_eq!(
 				Stake::candidate_pool().0[0],
 				Bond {
@@ -1089,7 +1089,7 @@ fn cancel_candidate_bond_more_emits_event() {
 		.with_default_token_candidates(vec![(1, 30)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 10));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 10, None));
 			assert_ok!(Stake::cancel_candidate_bond_request(Origin::signed(1)));
 			assert_last_event!(MetaEvent::Stake(Event::CancelledCandidateBondChange(
 				1,
@@ -1109,7 +1109,7 @@ fn cancel_candidate_bond_more_updates_candidate_state() {
 		.with_default_token_candidates(vec![(1, 30)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 10));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 10, None));
 			assert_ok!(Stake::cancel_candidate_bond_request(Origin::signed(1)));
 			assert!(Stake::candidate_state(&1).unwrap().request.is_none());
 		});
@@ -1122,7 +1122,7 @@ fn only_candidate_can_cancel_candidate_bond_more_request() {
 		.with_default_token_candidates(vec![(1, 30)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 10));
+			assert_ok!(Stake::schedule_candidate_bond_more(Origin::signed(1), 10, None));
 			assert_noop!(
 				Stake::cancel_candidate_bond_request(Origin::signed(2)),
 				Error::<Test>::CandidateDNE
@@ -1189,7 +1189,7 @@ fn delegate_event_emits_correctly() {
 		.with_default_token_candidates(vec![(1, 30)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, 0, 0));
+			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, None, 0, 0));
 			assert_last_event!(MetaEvent::Stake(Event::Delegation(
 				2,
 				10,
@@ -1208,7 +1208,7 @@ fn delegate_reserves_balance() {
 		.execute_with(|| {
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 0);
 			assert_eq!(StakeCurrency::free_balance(1, &2), 10);
-			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, 0, 0));
+			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, None, 0, 0));
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 10);
 			assert_eq!(StakeCurrency::free_balance(1, &2), 0);
 		});
@@ -1222,7 +1222,7 @@ fn delegate_updates_delegator_state() {
 		.build()
 		.execute_with(|| {
 			assert!(Stake::delegator_state(2).is_none());
-			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, 0, 0));
+			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, None, 0, 0));
 			let delegator_state = Stake::delegator_state(2).expect("just delegated => exists");
 			assert_eq!(
 				delegator_state.delegations.0[0],
@@ -1246,7 +1246,7 @@ fn delegate_updates_collator_state() {
 			assert_eq!(candidate_state.total_backing, 30);
 			assert_eq!(candidate_state.total_counted, 30);
 			assert!(candidate_state.top_delegations.is_empty());
-			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, 0, 0));
+			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, None, 0, 0));
 			let candidate_state = Stake::candidate_state(1).expect("just delegated => exists");
 			assert_eq!(candidate_state.total_backing, 40);
 			assert_eq!(candidate_state.total_counted, 40);
@@ -1268,8 +1268,8 @@ fn can_delegate_immediately_after_other_join_candidates() {
 		.with_default_token_candidates(vec![(999, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::join_candidates(Origin::signed(1), 20, 1u32, 10000u32, 1));
-			assert_ok!(Stake::delegate(Origin::signed(2), 1, 20, 0, 0));
+			assert_ok!(Stake::join_candidates(Origin::signed(1), 20, 1u32, None, 10000u32, 1));
+			assert_ok!(Stake::delegate(Origin::signed(2), 1, 20, None, 0, 0));
 		});
 }
 
@@ -1282,7 +1282,7 @@ fn can_delegate_if_revoking() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
-			assert_ok!(Stake::delegate(Origin::signed(2), 4, 10, 0, 2));
+			assert_ok!(Stake::delegate(Origin::signed(2), 4, 10, None, 0, 2));
 		});
 }
 
@@ -1296,7 +1296,7 @@ fn cannot_delegate_if_leaving() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_leave_delegators(Origin::signed(2)));
 			assert_noop!(
-				Stake::delegate(Origin::signed(2), 3, 10, 0, 1),
+				Stake::delegate(Origin::signed(2), 3, 10, None, 0, 1),
 				Error::<Test>::CannotDelegateIfLeaving
 			);
 		});
@@ -1310,7 +1310,7 @@ fn cannot_delegate_if_candidate() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::delegate(Origin::signed(2), 1, 10, 0, 0),
+				Stake::delegate(Origin::signed(2), 1, 10, None, 0, 0),
 				Error::<Test>::CandidateExists
 			);
 		});
@@ -1325,7 +1325,7 @@ fn cannot_delegate_if_already_delegated() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::delegate(Origin::signed(2), 1, 10, 1, 1),
+				Stake::delegate(Origin::signed(2), 1, 10, None, 1, 1),
 				Error::<Test>::AlreadyDelegatedCandidate
 			);
 		});
@@ -1340,7 +1340,7 @@ fn cannot_delegate_more_than_max_delegations() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::delegate(Origin::signed(2), 6, 10, 0, 4),
+				Stake::delegate(Origin::signed(2), 6, 10, None, 0, 4),
 				Error::<Test>::ExceedMaxDelegationsPerDelegator,
 			);
 		});
@@ -1367,12 +1367,12 @@ fn sufficient_delegate_weight_hint_succeeds() {
 		.execute_with(|| {
 			let mut count = 4u32;
 			for i in 7..11 {
-				assert_ok!(Stake::delegate(Origin::signed(i), 1, 10, count, 0u32));
+				assert_ok!(Stake::delegate(Origin::signed(i), 1, 10, None, count, 0u32));
 				count += 1u32;
 			}
 			let mut count = 0u32;
 			for i in 3..11 {
-				assert_ok!(Stake::delegate(Origin::signed(i), 2, 10, count, 1u32));
+				assert_ok!(Stake::delegate(Origin::signed(i), 2, 10, None, count, 1u32));
 				count += 1u32;
 			}
 		});
@@ -1400,20 +1400,20 @@ fn insufficient_delegate_weight_hint_fails() {
 			let mut count = 3u32;
 			for i in 7..11 {
 				assert_noop!(
-					Stake::delegate(Origin::signed(i), 1, 10, count, 0u32),
+					Stake::delegate(Origin::signed(i), 1, 10, None, count, 0u32),
 					Error::<Test>::TooLowCandidateDelegationCountToDelegate
 				);
 			}
 			// to set up for next error test
 			count = 4u32;
 			for i in 7..11 {
-				assert_ok!(Stake::delegate(Origin::signed(i), 1, 10, count, 0u32));
+				assert_ok!(Stake::delegate(Origin::signed(i), 1, 10, None, count, 0u32));
 				count += 1u32;
 			}
 			count = 0u32;
 			for i in 3..11 {
 				assert_noop!(
-					Stake::delegate(Origin::signed(i), 2, 10, count, 0u32),
+					Stake::delegate(Origin::signed(i), 2, 10, None, count, 0u32),
 					Error::<Test>::TooLowDelegationCountToDelegate
 				);
 				count += 1u32;
@@ -1676,7 +1676,7 @@ fn revoke_delegation_event_emits_correctly() {
 				0, 2, 1, 2,
 			)));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_event_emitted!(Event::DelegatorLeftCandidate(2, 1, 10, 30));
 		});
 }
@@ -1757,7 +1757,7 @@ fn delegator_bond_more_event_emits_correctly() {
 		.with_delegations(vec![(2, 1, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			assert_last_event!(MetaEvent::Stake(Event::DelegationIncreaseScheduled(
 				2, 1, 5, 2,
 			)));
@@ -1772,7 +1772,7 @@ fn delegator_bond_more_updates_delegator_state() {
 		.with_delegations(vec![(2, 1, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			let state = Stake::delegator_state(&2).expect("just request bonded less so exists");
 			assert_eq!(
 				state.requests().get(&1),
@@ -1795,7 +1795,7 @@ fn can_delegator_bond_more_if_leaving() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_leave_delegators(Origin::signed(2)));
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 		});
 }
 
@@ -1809,7 +1809,7 @@ fn cannot_delegator_bond_more_if_revoking() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			assert_noop!(
-				Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5),
+				Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None),
 				Error::<Test>::PendingDelegationRequestAlreadyExists
 			);
 		});
@@ -1819,7 +1819,7 @@ fn cannot_delegator_bond_more_if_revoking() {
 fn cannot_delegator_bond_more_if_not_delegator() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5),
+			Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None),
 			Error::<Test>::DelegatorDNE
 		);
 	});
@@ -1834,7 +1834,7 @@ fn cannot_delegator_bond_more_if_candidate_dne() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::schedule_delegator_bond_more(Origin::signed(2), 3, 5),
+				Stake::schedule_delegator_bond_more(Origin::signed(2), 3, 5, None),
 				Error::<Test>::DelegationDNE
 			);
 		});
@@ -1849,7 +1849,7 @@ fn cannot_delegator_bond_more_if_delegation_dne() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::schedule_delegator_bond_more(Origin::signed(2), 3, 5),
+				Stake::schedule_delegator_bond_more(Origin::signed(2), 3, 5, None),
 				Error::<Test>::DelegationDNE
 			);
 		});
@@ -1864,7 +1864,7 @@ fn cannot_delegator_bond_more_if_insufficient_balance() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5),
+				Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None),
 				Error::<Test>::InsufficientBalance
 			);
 		});
@@ -2023,7 +2023,7 @@ fn execute_revoke_delegation_emits_exit_event_if_exit_happens() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_event_emitted!(Event::DelegatorLeftCandidate(2, 1, 10, 30));
 			assert_event_emitted!(Event::DelegatorLeft(2, 10));
 		});
@@ -2040,7 +2040,7 @@ fn revoke_delegation_executes_exit_if_last_delegation() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_event_emitted!(Event::DelegatorLeftCandidate(2, 1, 10, 30));
 			assert_event_emitted!(Event::DelegatorLeft(2, 10));
 		});
@@ -2056,7 +2056,7 @@ fn execute_revoke_delegation_emits_correct_event() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_event_emitted!(Event::DelegatorLeftCandidate(2, 1, 10, 30));
 		});
 }
@@ -2073,7 +2073,7 @@ fn execute_revoke_delegation_unreserves_balance() {
 			assert_eq!(StakeCurrency::free_balance(1, &2), 0);
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 0);
 			assert_eq!(StakeCurrency::free_balance(1, &2), 10);
 		});
@@ -2113,7 +2113,7 @@ fn execute_revoke_delegation_removes_revocation_from_delegator_state_upon_execut
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert!(Stake::delegator_state(2)
 				.expect("exists")
 				.requests
@@ -2134,7 +2134,7 @@ fn execute_revoke_delegation_decreases_total_staked() {
 			assert_eq!(Stake::total(1u32), 40);
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(Stake::total(1u32), 30);
 		});
 }
@@ -2152,7 +2152,7 @@ fn execute_revoke_delegation_for_last_delegation_removes_delegator_state() {
 			roll_to(10);
 			// this will be confusing for people
 			// if status is leaving, then execute_delegation_request works if last delegation
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert!(Stake::delegator_state(2).is_none());
 		});
 }
@@ -2175,7 +2175,7 @@ fn execute_revoke_delegation_removes_delegation_from_candidate_state() {
 			);
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert!(Stake::candidate_state(1)
 				.expect("exists")
 				.delegators
@@ -2196,7 +2196,7 @@ fn can_execute_revoke_delegation_for_leaving_candidate() {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
 			// can execute delegation request for leaving candidate
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 		});
 }
 
@@ -2229,17 +2229,18 @@ fn delegator_bond_more_after_revoke_delegation_does_not_effect_exit() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			assert_noop!(
-				Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 10),
+				Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 10, None),
 				Error::<Test>::PendingDelegationRequestAlreadyExists
 			);
 			assert_ok!(Stake::schedule_delegator_bond_more(
 				Origin::signed(2),
 				3,
-				10
+				10,
+				None
 			));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 3));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 3, None));
 			assert!(Stake::is_delegator(&2));
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 20);
 			assert_eq!(StakeCurrency::free_balance(1, &2), 10);
@@ -2264,8 +2265,8 @@ fn delegator_bond_less_after_revoke_delegation_does_not_effect_exit() {
 			);
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 3, 2));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 3));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 3, None));
 			assert_last_event!(MetaEvent::Stake(Event::DelegationDecreased(2, 3, 2, true)));
 			assert!(Stake::is_delegator(&2));
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 8);
@@ -2285,9 +2286,9 @@ fn execute_delegator_bond_more_reserves_balance() {
 		.execute_with(|| {
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 10);
 			assert_eq!(StakeCurrency::free_balance(1, &2), 5);
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 15);
 			assert_eq!(StakeCurrency::free_balance(1, &2), 0);
 		});
@@ -2302,9 +2303,9 @@ fn execute_delegator_bond_more_increases_total_staked() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(Stake::total(1u32), 40);
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(Stake::total(1u32), 45);
 		});
 }
@@ -2317,9 +2318,9 @@ fn execute_delegator_bond_more_updates_delegator_state() {
 		.with_delegations(vec![(2, 1, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 		});
 }
 
@@ -2339,9 +2340,9 @@ fn execute_delegator_bond_more_updates_candidate_state_top_delegations() {
 					liquidity_token: 1u32
 				}
 			);
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(
 				Stake::candidate_state(1).expect("exists").top_delegations[0],
 				Bond {
@@ -2377,9 +2378,9 @@ fn execute_delegator_bond_more_updates_candidate_state_bottom_delegations() {
 					liquidity_token: 1u32
 				}
 			);
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_last_event!(MetaEvent::Stake(Event::DelegationIncreased(2, 1, 5, false)));
 			assert_eq!(
 				Stake::candidate_state(1)
@@ -2403,9 +2404,9 @@ fn execute_delegator_bond_more_increases_total() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(Stake::total(1u32), 40);
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(Stake::total(1u32), 45);
 		});
 }
@@ -2419,10 +2420,10 @@ fn can_execute_delegator_bond_more_for_leaving_candidate() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_leave_candidates(Origin::signed(1), 1));
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			roll_to(10);
 			// can execute bond more delegation request for leaving candidate
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 		});
 }
 
@@ -2440,7 +2441,7 @@ fn execute_delegator_bond_less_unreserves_balance() {
 			assert_eq!(StakeCurrency::free_balance(1, &2), 0);
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 1, 5));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(StakeCurrency::reserved_balance(1, &2), 5);
 			assert_eq!(StakeCurrency::free_balance(1, &2), 5);
 		});
@@ -2457,7 +2458,7 @@ fn execute_delegator_bond_less_decreases_total_staked() {
 			assert_eq!(Stake::total(1u32), 40);
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 1, 5));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(Stake::total(1u32), 35);
 		});
 }
@@ -2472,7 +2473,7 @@ fn execute_delegator_bond_less_updates_delegator_state() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 1, 5));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 		});
 }
 
@@ -2494,7 +2495,7 @@ fn execute_delegator_bond_less_updates_candidate_state() {
 			);
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 1, 5));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(
 				Stake::candidate_state(1).expect("exists").top_delegations[0],
 				Bond {
@@ -2517,7 +2518,7 @@ fn execute_delegator_bond_less_decreases_total() {
 			assert_eq!(Stake::total(1u32), 40);
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 1, 5));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			assert_eq!(Stake::total(1u32), 35);
 		});
 }
@@ -2540,7 +2541,7 @@ fn execute_delegator_bond_less_updates_just_bottom_delegations() {
 				Stake::candidate_state(&1).expect("delegated by all so exists");
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 1, 2));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 			let post_call_collator_state =
 				Stake::candidate_state(&1).expect("delegated by all so exists");
 			let mut not_equal = false;
@@ -2606,7 +2607,7 @@ fn execute_delegator_bond_less_does_not_delete_bottom_delegations() {
 				Stake::candidate_state(&1).expect("delegated by all so exists");
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(6), 1, 4));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1, None));
 			let post_call_collator_state =
 				Stake::candidate_state(&1).expect("delegated by all so exists");
 			let mut equal = true;
@@ -2666,7 +2667,7 @@ fn can_execute_delegator_bond_less_for_leaving_candidate() {
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(2), 1, 5));
 			roll_to(10);
 			// can execute bond more delegation request for leaving candidate
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
 		});
 }
 
@@ -2730,7 +2731,7 @@ fn cancel_delegator_bond_more_emits_correct_event() {
 		.with_delegations(vec![(2, 1, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			assert_ok!(Stake::cancel_delegation_request(Origin::signed(2), 1));
 			assert_last_event!(MetaEvent::Stake(Event::CancelledDelegationRequest(
 				2,
@@ -2752,7 +2753,7 @@ fn cancel_delegator_bond_more_updates_delegator_state() {
 		.with_delegations(vec![(2, 1, 10)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(2), 1, 5, None));
 			let state = Stake::delegator_state(&2).unwrap();
 			assert_eq!(
 				state.requests().get(&1),
@@ -2830,13 +2831,13 @@ fn delegator_schedule_revocation() {
 		.execute_with(|| {
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 1));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1));
-			assert_ok!(Stake::delegate(Origin::signed(2), 5, 10, 0, 2));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 1, None));
+			assert_ok!(Stake::delegate(Origin::signed(2), 5, 10, None, 0, 2));
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 3));
 			assert_ok!(Stake::schedule_revoke_delegation(Origin::signed(2), 4));
 			roll_to(20);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 3));
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 4));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 3, None));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(2), 2, 4, None));
 		});
 }
 
@@ -3026,7 +3027,7 @@ fn reworked_deprecated_test() {
 			assert_eq_events!(expected.clone());
 			assert_eq!(StakeCurrency::free_balance(0, &11), 0);
 			set_author(8, 1, 100);
-			assert_ok!(Stake::delegate(Origin::signed(8), 1, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(8), 1, 10, None, 10, 10));
 			roll_to(50);
 			// new delegation is not rewarded yet
 			let mut new5 = vec![
@@ -3110,13 +3111,13 @@ fn paid_collator_commission_matches_config() {
 				Event::NewRound(5, 1, 1, 40),
 			];
 			assert_eq_events!(expected.clone());
-			assert_ok!(Stake::join_candidates(Origin::signed(4), 20u128, 1u32, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(4), 20u128, 1u32, None, 100u32, 10000u32));
 			assert_last_event!(MetaEvent::Stake(Event::JoinedCollatorCandidates(
 				4, 20u128, 60u128,
 			)));
 			roll_to(8);
-			assert_ok!(Stake::delegate(Origin::signed(5), 4, 10, 10, 10));
-			assert_ok!(Stake::delegate(Origin::signed(6), 4, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(5), 4, 10, None, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(6), 4, 10, None, 10, 10));
 			roll_to(10);
 			let mut new = vec![
 				Event::JoinedCollatorCandidates(4, 20, 60),
@@ -3236,7 +3237,7 @@ fn collator_selection_chooses_top_candidates() {
 			assert_last_event!(MetaEvent::Stake(Event::CandidateScheduledExit(1, 6, 3)));
 			roll_to(21);
 			assert_ok!(Stake::execute_leave_candidates(Origin::signed(6), 6, 10000u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(6), 69u128, 1u32, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(6), 69u128, 1u32, None, 100u32, 10000u32));
 			assert_last_event!(MetaEvent::Stake(Event::JoinedCollatorCandidates(
 				6, 69u128, 469u128,
 			)));
@@ -3451,9 +3452,9 @@ fn multiple_delegations() {
 				Event::NewRound(5, 1, 5, 140),
 			];
 			assert_eq_events!(expected.clone());
-			assert_ok!(Stake::delegate(Origin::signed(6), 2, 10, 10, 10));
-			assert_ok!(Stake::delegate(Origin::signed(6), 3, 10, 10, 10));
-			assert_ok!(Stake::delegate(Origin::signed(6), 4, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(6), 2, 10, None, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(6), 3, 10, None, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(6), 4, 10, None, 10, 10));
 			roll_to(16);
 			let mut new = vec![
 				Event::Delegation(6, 10, 2, DelegatorAdded::AddedToTop { new_total: 50 }),
@@ -3475,8 +3476,8 @@ fn multiple_delegations() {
 			expected.append(&mut new);
 			assert_eq_events!(expected.clone());
 			roll_to(21);
-			assert_ok!(Stake::delegate(Origin::signed(7), 2, 80, 10, 10));
-			assert_ok!(Stake::delegate(Origin::signed(10), 2, 10, 10, 10),);
+			assert_ok!(Stake::delegate(Origin::signed(7), 2, 80, None, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(10), 2, 10, None, 10, 10),);
 			roll_to(26);
 			let mut new2 = vec![
 				Event::CollatorChosen(5, 1, 50),
@@ -3700,7 +3701,7 @@ fn payouts_follow_delegation_changes() {
 			expected.append(&mut new4);
 			assert_eq_events!(expected.clone());
 			set_author(9, 1, 100);
-			assert_ok!(Stake::delegate(Origin::signed(8), 1, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(8), 1, 10, None, 10, 10));
 			roll_to(45);
 			// new delegation is not rewarded yet
 			let mut new5 = vec![
@@ -3844,22 +3845,22 @@ fn bottom_delegations_are_empty_when_top_delegations_not_full() {
 			assert!(collator_state.top_delegations.is_empty());
 			assert!(collator_state.bottom_delegations.is_empty());
 			// 1 delegator => 1 top delegator, 0 bottom delegators
-			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(2), 1, 10, None, 10, 10));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			assert_eq!(collator_state.top_delegations.len(), 1usize);
 			assert!(collator_state.bottom_delegations.is_empty());
 			// 2 delegators => 2 top delegators, 0 bottom delegators
-			assert_ok!(Stake::delegate(Origin::signed(3), 1, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(3), 1, 10, None, 10, 10));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			assert_eq!(collator_state.top_delegations.len(), 2usize);
 			assert!(collator_state.bottom_delegations.is_empty());
 			// 3 delegators => 3 top delegators, 0 bottom delegators
-			assert_ok!(Stake::delegate(Origin::signed(4), 1, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(4), 1, 10, None, 10, 10));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			assert_eq!(collator_state.top_delegations.len(), 3usize);
 			assert!(collator_state.bottom_delegations.is_empty());
 			// 4 delegators => 4 top delegators, 0 bottom delegators
-			assert_ok!(Stake::delegate(Origin::signed(5), 1, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(5), 1, 10, None, 10, 10));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			assert_eq!(collator_state.top_delegations.len(), 4usize);
 			assert!(collator_state.bottom_delegations.is_empty());
@@ -3906,16 +3907,16 @@ fn candidate_pool_updates_when_total_counted_changes() {
 			}
 			// 15 + 16 + 17 + 18 + 20 = 86 (top 4 + self bond)
 			is_candidate_pool_bond(1, 86);
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(3), 1, 8));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(3), 1, 8, None));
 			roll_to(10);
 			// 3: 11 -> 19 => 3 is in top, bumps out 7
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(3), 3, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(3), 3, 1, None));
 			// 16 + 17 + 18 + 19 + 20 = 90 (top 4 + self bond)
 			is_candidate_pool_bond(1, 90);
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(4), 1, 8));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(4), 1, 8, None));
 			roll_to(20);
 			// 4: 12 -> 20 => 4 is in top, bumps out 8
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(4), 4, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(4), 4, 1, None));
 			// 17 + 18 + 19 + 20 + 20 = 94 (top 4 + self bond)
 			is_candidate_pool_bond(1, 94);
 			assert_ok!(Stake::schedule_delegator_bond_less(
@@ -3925,12 +3926,12 @@ fn candidate_pool_updates_when_total_counted_changes() {
 			));
 			roll_to(30);
 			// 10: 18 -> 15 => 10 bumped to bottom, 8 bumped to top (- 18 + 16 = -2 for count)
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(10), 10, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(10), 10, 1, None));
 			// 16 + 17 + 19 + 20 + 20 = 92 (top 4 + self bond)
 			is_candidate_pool_bond(1, 92);
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(9), 1, 4));
 			roll_to(40);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(9), 9, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(9), 9, 1, None));
 			// 15 + 16 + 19 + 20 + 20 = 90 (top 4 + self bond)
 			is_candidate_pool_bond(1, 90);
 		});
@@ -3977,10 +3978,10 @@ fn only_top_collators_are_counted() {
 				collator_state.total_backing
 			);
 			// bump bottom to the top
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(3), 1, 8));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(3), 1, 8, None));
 			assert_event_emitted!(Event::DelegationIncreaseScheduled(3, 1, 8, 2));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(3), 3, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(3), 3, 1, None));
 			assert_event_emitted!(Event::DelegationIncreased(3, 1, 8, true));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			// 16 + 17 + 18 + 19 + 20 = 90 (top 4 + self bond)
@@ -3991,10 +3992,10 @@ fn only_top_collators_are_counted() {
 				collator_state.total_backing
 			);
 			// bump bottom to the top
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(4), 1, 8));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(4), 1, 8, None));
 			assert_event_emitted!(Event::DelegationIncreaseScheduled(4, 1, 8, 4));
 			roll_to(20);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(4), 4, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(4), 4, 1, None));
 			assert_event_emitted!(Event::DelegationIncreased(4, 1, 8, true));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			// 17 + 18 + 19 + 20 + 20 = 94 (top 4 + self bond)
@@ -4005,10 +4006,10 @@ fn only_top_collators_are_counted() {
 				collator_state.total_backing
 			);
 			// bump bottom to the top
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(5), 1, 8));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(5), 1, 8, None));
 			assert_event_emitted!(Event::DelegationIncreaseScheduled(5, 1, 8, 6));
 			roll_to(30);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(5), 5, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(5), 5, 1, None));
 			assert_event_emitted!(Event::DelegationIncreased(5, 1, 8, true));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			// 18 + 19 + 20 + 21 + 20 = 98 (top 4 + self bond)
@@ -4019,10 +4020,10 @@ fn only_top_collators_are_counted() {
 				collator_state.total_backing
 			);
 			// bump bottom to the top
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(6), 1, 8));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(6), 1, 8, None));
 			assert_event_emitted!(Event::DelegationIncreaseScheduled(6, 1, 8, 8));
 			roll_to(40);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1, None));
 			assert_event_emitted!(Event::DelegationIncreased(6, 1, 8, true));
 			let collator_state = Stake::candidate_state(1).unwrap();
 			// 19 + 20 + 21 + 22 + 20 = 102 (top 4 + self bond)
@@ -4059,7 +4060,7 @@ fn delegation_events_convey_correct_position() {
 			assert_eq!(collator1_state.total_counted, 70);
 			assert_eq!(collator1_state.total_counted, collator1_state.total_backing);
 			// Top delegations are full, new highest delegation is made
-			assert_ok!(Stake::delegate(Origin::signed(7), 1, 15, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(7), 1, 15, None, 10, 10));
 			assert_event_emitted!(Event::Delegation(
 				7,
 				15,
@@ -4075,7 +4076,7 @@ fn delegation_events_convey_correct_position() {
 				collator1_state.total_backing
 			);
 			// New delegation is added to the bottom
-			assert_ok!(Stake::delegate(Origin::signed(8), 1, 10, 10, 10));
+			assert_ok!(Stake::delegate(Origin::signed(8), 1, 10, None, 10, 10));
 			assert_event_emitted!(Event::Delegation(8, 10, 1, DelegatorAdded::AddedToBottom));
 			let collator1_state = Stake::candidate_state(1).unwrap();
 			// 12 + 13 + 14 + 15 + 20 = 70 (top 4 + self bond)
@@ -4086,10 +4087,10 @@ fn delegation_events_convey_correct_position() {
 				collator1_state.total_backing
 			);
 			// 8 increases delegation to the top
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(8), 1, 3));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(8), 1, 3, None));
 			assert_event_emitted!(Event::DelegationIncreaseScheduled(8, 1, 3, 2));
 			roll_to(10);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(8), 8, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(8), 8, 1, None));
 			assert_event_emitted!(Event::DelegationIncreased(8, 1, 3, true));
 			let collator1_state = Stake::candidate_state(1).unwrap();
 			// 13 + 13 + 14 + 15 + 20 = 75 (top 4 + self bond)
@@ -4100,10 +4101,10 @@ fn delegation_events_convey_correct_position() {
 				collator1_state.total_backing
 			);
 			// 3 increases delegation but stays in bottom
-			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(3), 1, 1));
+			assert_ok!(Stake::schedule_delegator_bond_more(Origin::signed(3), 1, 1, None));
 			assert_event_emitted!(Event::DelegationIncreaseScheduled(3, 1, 1, 4));
 			roll_to(20);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(3), 3, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(3), 3, 1, None));
 			assert_event_emitted!(Event::DelegationIncreased(3, 1, 1, false));
 			let collator1_state = Stake::candidate_state(1).unwrap();
 			// 13 + 13 + 14 + 15 + 20 = 75 (top 4 + self bond)
@@ -4117,7 +4118,7 @@ fn delegation_events_convey_correct_position() {
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(6), 1, 2));
 			assert_event_emitted!(Event::DelegationDecreaseScheduled(6, 1, 2, 6));
 			roll_to(30);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1, None));
 			assert_event_emitted!(Event::DelegationDecreased(6, 1, 2, true));
 			let collator1_state = Stake::candidate_state(1).unwrap();
 			// 12 + 13 + 13 + 15 + 20 = 73 (top 4 + self bond)ƒ
@@ -4131,7 +4132,7 @@ fn delegation_events_convey_correct_position() {
 			assert_ok!(Stake::schedule_delegator_bond_less(Origin::signed(6), 1, 1));
 			assert_event_emitted!(Event::DelegationDecreaseScheduled(6, 1, 1, 8));
 			roll_to(40);
-			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1));
+			assert_ok!(Stake::execute_delegation_request(Origin::signed(6), 6, 1, None));
 			assert_event_emitted!(Event::DelegationDecreased(6, 1, 1, false));
 			let collator1_state = Stake::candidate_state(1).unwrap();
 			// 12 + 13 + 13 + 15 + 20 = 73 (top 4 + self bond)
@@ -4178,7 +4179,7 @@ fn start_and_new_session_works() {
 			expected.append(&mut new);
 			assert_eq_events!(expected.clone());
 
-			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 1u32, 2u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 1u32, None, 2u32, 10000u32));
 
 			roll_to(10);
 
@@ -4201,8 +4202,8 @@ fn start_and_new_session_works() {
 			expected.append(&mut new1);
 			assert_eq_events!(expected.clone());
 
-			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 1u32, 3u32, 10000u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(5), 10u128, 1u32, 4u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 1u32, None, 3u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(5), 10u128, 1u32, None, 4u32, 10000u32));
 
 			roll_to(15);
 
@@ -4266,28 +4267,28 @@ fn adding_removing_staking_token_works() {
 			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
 
-			assert_ok!(Stake::join_candidates(Origin::signed(8), 10u128, 1u32, 100u32, 10000u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(9), 10u128, 2u32, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(8), 10u128, 1u32, None, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(9), 10u128, 2u32, None, 100u32, 10000u32));
 
-			assert_noop!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			
 			// Add 3 as a staking token
 			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(3u32), 100u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, None, 100u32, 10000u32));
 			assert_eq!(Stake::staking_liquidity_tokens().get(&3), Some(&None));
 			// Check that the rest remain the same
 			assert_eq!(Stake::staking_liquidity_tokens().get(&4), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&5), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
-			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			
 			roll_to(5);
 
@@ -4301,10 +4302,10 @@ fn adding_removing_staking_token_works() {
 			assert_eq!(Stake::staking_liquidity_tokens().get(&5), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&6), None);
 			assert_eq!(Stake::staking_liquidity_tokens().get(&7), None);
-			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			
 			// Adding same liquidity token doesn't work
 			assert_noop!(
@@ -4332,7 +4333,7 @@ fn adding_removing_staking_token_works() {
 				100u32
 			));
 			// Candidate cannot join using it.
-			assert_noop!(Stake::join_candidates(Origin::signed(10), 10u128, 3u32, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
+			assert_noop!(Stake::join_candidates(Origin::signed(10), 10u128, 3u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			
 			roll_to(10);
 
@@ -4362,9 +4363,9 @@ fn adding_removing_staking_token_works() {
 			));
 
 			// Candidates can join using the newly added tokens
-			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, 100u32, 10000u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, 100u32, 10000u32));
-			assert_ok!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(4), 10u128, 4u32, None, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, None, 100u32, 10000u32));
+			assert_ok!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, None, 100u32, 10000u32));
 
 			roll_to(15);
 
@@ -4434,7 +4435,7 @@ fn delegation_tokens_work() {
 		.build()
 		.execute_with(|| {
 			assert_noop!(
-				Stake::delegate(Origin::signed(9), 3, 10, 100u32, 100u32),
+				Stake::delegate(Origin::signed(9), 3, 10, None, 100u32, 100u32),
 				DispatchError::Module {
 					index: 1,
 					error: 0,
