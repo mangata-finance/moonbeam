@@ -200,7 +200,7 @@ benchmarks! {
 	// USER DISPATCHABLES
 
 	join_candidates {
-		let x in 3..45;
+		let x in 3..<<T as Config>::MaxCollatorCandidates as Get<u32>>::get();
 		let y in 3..100;
 		
 		// Worst Case Complexity is search into a list so \exists full list before call
@@ -247,7 +247,7 @@ benchmarks! {
 	// This call schedules the collator's exit and removes them from the candidate pool
 	// -> it retains the self-bond and delegator bonds
 	schedule_leave_candidates {
-		let x in 3..45;
+		let x in 3..<<T as Config>::MaxCollatorCandidates as Get<u32>>::get();
 
 		let created_liquidity_token =
 			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
@@ -357,7 +357,7 @@ benchmarks! {
 	}
 
 	cancel_leave_candidates {
-		let x in 3..45;
+		let x in 3..<<T as Config>::MaxCollatorCandidates as Get<u32>>::get();
 		let created_liquidity_token =
 			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
 
