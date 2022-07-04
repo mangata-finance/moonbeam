@@ -1351,13 +1351,12 @@ benchmarks! {
 		// liquidity tokens
 		let x in 3..100;
 		// candidate_count
-		let y in 3..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32); // to account for the two candidates we start with
+		let y in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32); // to account for the two candidates we start with
 		// MaxDelegatorsPerCandidate
 		let z in 3..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 		// Total selected
 		let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(bench_y as u32);
 
-		
 		// // liquidity tokens
 		// let x =30;
 		// // candidate_count
