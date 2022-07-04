@@ -31,7 +31,6 @@ use sp_std::{vec::Vec};
 use orml_tokens::MultiTokenCurrencyExtended;
 use orml_tokens::Pallet as Tokens;
 use pallet_authorship::EventHandler;
-use frame_benchmarking::BenchmarkParameter::y as bench_y;
 
 const DOLLAR: Balance = 1__000_000_000_000_000_000u128;
 const MGA_TOKEN_ID: TokenId = 0u32;
@@ -1355,7 +1354,7 @@ benchmarks! {
 		// MaxDelegatorsPerCandidate
 		let z in 3..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 		// Total selected
-		let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(bench_y as u32);
+		let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32);
 
 		// // liquidity tokens
 		// let x =30;
