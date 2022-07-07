@@ -76,6 +76,7 @@ use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 use pallet_collective::GetMembers;
 pub use mp_multipurpose_liquidity::BondKind;
 pub use mp_traits::StakingReservesProviderTrait;
+use sp_std::convert::TryInto;
 
 pub use pallet::*;
 
