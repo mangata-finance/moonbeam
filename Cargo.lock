@@ -3752,22 +3752,6 @@ version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.24#e88da3b51e6da869ea1750908f0a98fb5fb93b5d"
 
 [[patch.unused]]
-name = "orml-unknown-tokens"
-version = "0.4.1-dev"
-
-[[patch.unused]]
-name = "orml-xcm"
-version = "0.4.1-dev"
-
-[[patch.unused]]
-name = "orml-xcm-support"
-version = "0.4.1-dev"
-
-[[patch.unused]]
-name = "orml-xtokens"
-version = "0.4.1-dev"
-
-[[patch.unused]]
 name = "beefy-gadget"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.24#e88da3b51e6da869ea1750908f0a98fb5fb93b5d"
@@ -4341,6 +4325,22 @@ source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v
 name = "ver-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.24#e88da3b51e6da869ea1750908f0a98fb5fb93b5d"
+
+[[patch.unused]]
+name = "orml-unknown-tokens"
+version = "0.4.1-dev"
+
+[[patch.unused]]
+name = "orml-xcm"
+version = "0.4.1-dev"
+
+[[patch.unused]]
+name = "orml-xcm-support"
+version = "0.4.1-dev"
+
+[[patch.unused]]
+name = "orml-xtokens"
+version = "0.4.1-dev"
 
 [[patch.unused]]
 name = "pallet-multipurpose-liquidity"
