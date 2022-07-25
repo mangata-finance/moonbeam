@@ -1,3 +1,4 @@
+import "@moonbeam-network/api-augment";
 import { expect } from "chai";
 
 import { createContract } from "../../util/transactions";
@@ -15,10 +16,10 @@ describeDevMoonbeam("TxPool - Genesis", (context) => {
 
 describeDevMoonbeam("TxPool - New block", (context) => {
   before("Setup: Create transaction and empty block", async () => {
-    const { rawTx } = await createContract(context.web3, "TestContract", {
+    const { rawTx } = await createContract(context, "TestContract", {
       gas: 1048576,
     });
-    await context.createBlock({ transactions: [rawTx] });
+    await context.createBlock(rawTx);
     await context.createBlock();
   });
 

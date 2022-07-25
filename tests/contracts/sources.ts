@@ -648,22 +648,51 @@ export const contractSources: { [key: string]: string } = {
         }
     }`,
   XtokensInstance: `
+    // SPDX-License-Identifier: GPL-3.0-only
     pragma solidity >=0.8.0;
-
+  
     /**
-     * @title Xtokens Interface
-     *
-     * The interface through which solidity contracts will interact with xtokens pallet
-     *
-     */
+    * @title Xtokens Interface
+    * The interface through which solidity contracts will interact with xtokens pallet
+    * Address :    0x0000000000000000000000000000000000000804
+    */
+  
     interface Xtokens {
         // A multilocation is defined by its number of parents and the encoded junctions (interior)
         struct Multilocation {
             uint8 parents;
             bytes [] interior;
+      
         }
-
+  
+        // A MultiAsset is defined by a multilocation and an amount
+        struct MultiAsset {
+            Multilocation location;
+            uint256 amount;
+        }
+  
+        // A Currency is defined by address and the amount to be transferred
+        struct Currency {
+            address currency_address;
+            uint256 amount;
+        }
+  
         /** Transfer a token through XCM based on its currencyId
+        *
+        * @dev The token transfer burns/transfers the corresponding amount before sending
+        * @param currency_address The ERC20 address of the currency we want to transfer
+        * @param amount The amount of tokens we want to transfer
+        * @param destination The Multilocation to which we want to send the tokens
+        * @param destination The weight we want to buy in the destination chain
+        */
+        function transfer(
+            address currency_address,
+            uint256 amount,
+            Multilocation memory destination,
+            uint64 weight
+        ) external;
+    
+        /** Transfer a token through XCM based on its currencyId specifying fee
          *
          * @dev The token transfer burns/transfers the corresponding amount before sending
          * @param currency_address The ERC20 address of the currency we want to transfer
@@ -671,14 +700,15 @@ export const contractSources: { [key: string]: string } = {
          * @param destination The Multilocation to which we want to send the tokens
          * @param destination The weight we want to buy in the destination chain
          */
-        function transfer(
+        function transfer_with_fee(
             address currency_address,
             uint256 amount,
+            uint256 fee,
             Multilocation memory destination,
             uint64 weight
         ) external;
-
-        /** Transfer a token through XCM based on its currencyId
+    
+        /** Transfer a token through XCM based on its MultiLocation
          *
          * @dev The token transfer burns/transfers the corresponding amount before sending
          * @param asset The asset we want to transfer, defined by its multilocation. 
@@ -691,27 +721,74 @@ export const contractSources: { [key: string]: string } = {
             Multilocation memory asset,
             uint256 amount,
             Multilocation memory destination, uint64 weight) external;
+                
+        /** Transfer a token through XCM based on its MultiLocation specifying fee
+         *
+         * @dev The token transfer burns/transfers the corresponding amount before sending
+         * @param asset The asset we want to transfer, defined by its multilocation. 
+         * Currently only Concrete Fungible assets
+         * @param amount The amount of tokens we want to transfer
+         * @param destination The Multilocation to which we want to send the tokens
+         * @param destination The weight we want to buy in the destination chain
+         */
+        function transfer_multiasset_with_fee(
+            Multilocation memory asset,
+            uint256 amount,
+            uint256 fee,
+            Multilocation memory destination, uint64 weight) external;
+    
+        /** Transfer several tokens at once through XCM based on its address specifying fee
+         *
+         * @dev The token transfer burns/transfers the corresponding amount before sending
+         * @param currencies The currencies we want to transfer, defined by address and amount.
+         * @param fee_item Which of the currencies to be used as fee
+         * @param destination The Multilocation to which we want to send the tokens
+         * @param weight The weight we want to buy in the destination chain
+         */
+        function transfer_multi_currencies(
+            Currency[] memory currencies,
+            uint32 fee_item,
+            Multilocation memory destination,
+            uint64 weight
+        ) external;
+    
+        /** Transfer several tokens at once through XCM based on its location specifying fee
+         *
+         * @dev The token transfer burns/transfers the corresponding amount before sending
+         * @param assets The assets we want to transfer, defined by their location and amount. 
+         * @param fee_item Which of the currencies to be used as fee
+         * @param destination The Multilocation to which we want to send the tokens
+         * @param weight The weight we want to buy in the destination chain
+         */
+        function transfer_multi_assets(
+            MultiAsset[] memory assets,
+            uint32 fee_item,
+            Multilocation memory destination,
+            uint64 weight
+        ) external;
     }
-
-    // Function selector reference
-    // {
-    // "b9f813ff": "transfer(address,uint256,(uint8,bytes[]),uint64)",
-    // "b38c60fa": "transfer_multiasset((uint8,bytes[]),uint256,(uint8,bytes[]),uint64)"
-    //}
 
     contract XtokensInstance is Xtokens {
 
-    /// The Xtokens wrapper at the known pre-compile address.
-    Xtokens public xtokens = Xtokens(0x0000000000000000000000000000000000000804);
-
+        /// The Xtokens wrapper at the known pre-compile address.
+        Xtokens public xtokens = Xtokens(0x0000000000000000000000000000000000000804);
+        
         function transfer(
             address currency_address,
             uint256 amount,
             Multilocation memory destination,
             uint64 weight
         ) override external {
-            // We nominate our target collator with all the tokens provided
             xtokens.transfer(currency_address, amount, destination, weight);
+        }
+        function transfer_with_fee(
+            address currency_address,
+            uint256 amount,
+            uint256 fee,
+            Multilocation memory destination,
+            uint64 weight
+        ) override external {
+            xtokens.transfer_with_fee(currency_address, amount, fee, destination, weight);
         }
         function transfer_multiasset(
             Multilocation memory asset,
@@ -721,124 +798,255 @@ export const contractSources: { [key: string]: string } = {
         ) override external {
             xtokens.transfer_multiasset(asset, amount, destination, weight);
         }
+        function transfer_multiasset_with_fee(
+            Multilocation memory asset,
+            uint256 amount,
+            uint256 fee,
+            Multilocation memory destination,
+            uint64 weight
+        ) override external {
+            xtokens.transfer_multiasset_with_fee(asset, amount, fee, destination, weight);
+        }
+        function transfer_multi_currencies(
+            Currency[] memory currencies,
+            uint32 fee_item,
+            Multilocation memory destination,
+            uint64 weight
+        ) override external {
+            xtokens.transfer_multi_currencies(currencies, fee_item, destination, weight);
+        }
+        function transfer_multi_assets(
+            MultiAsset[] memory assets,
+            uint32 fee_item,
+            Multilocation memory destination,
+            uint64 weight
+        ) override external {
+            xtokens.transfer_multi_assets(assets, fee_item, destination, weight);
+        }
     }`,
   XcmTransactorInstance: `
-    // SPDX-License-Identifier: GPL-3.0-only
-    pragma solidity >=0.8.0;
-
-    /**
-     * @title Xcm Transactor Interface
-     *
-     * The interface through which solidity contracts will interact with xcm transactor pallet
-     *
-     */
-    interface XcmTransactor {
-        // A multilocation is defined by its number of parents and the encoded junctions (interior)
-        struct Multilocation {
-            uint8 parents;
-            bytes [] interior;
-        }
-
-        /** Get index of an account in xcm transactor
-         *
-         * @param index The index of which we want to retrieve the account
-         */
-        function index_to_account(uint16 index) external view returns(address);
-
-        /** Get transact info of a multilocation
-         * Selector 71b0edfa
-         * @param multilocation The location for which we want to retrieve transact info
-         */
-        function transact_info(
-            Multilocation memory multilocation) 
-        external view  returns(uint64, uint256, uint64, uint64, uint256);
-
-        /** Transact through XCM using fee based on its multilocation
-         *
-         * @dev The token transfer burns/transfers the corresponding amount before sending
-         * @param transactor The transactor to be used
-         * @param index The index to be used
-         * @param fee_asset The asset in which we want to pay fees. 
-         * It has to be a reserve of the destination chain
-         * @param weight The weight we want to buy in the destination chain
-         * @param inner_call The inner call to be executed in the destination chain
-         */
-        function transact_through_derivative_multilocation(
-            uint8 transactor,
-            uint16 index,
-            Multilocation memory fee_asset,
-            uint64 weight,
-            bytes memory inner_call
-        ) external;
-        
-        /** Transact through XCM using fee based on its currency_id
-         *
-         * @dev The token transfer burns/transfers the corresponding amount before sending
-         * @param transactor The transactor to be used
-         * @param index The index to be used
-         * @param currency_id Address of the currencyId of the asset to be used for fees
-         * It has to be a reserve of the destination chain
-         * @param weight The weight we want to buy in the destination chain
-         * @param inner_call The inner call to be executed in the destination chain
-         */
-        function transact_through_derivative(
-            uint8 transactor,
-            uint16 index,
-            address currency_id,
-            uint64 weight,
-            bytes memory inner_call
-        ) external;
-    }
-
-    contract XcmTransactorInstance is XcmTransactor {
-
-    /// The Xcm Transactor wrapper at the known pre-compile address.
-    XcmTransactor public xcmtransactor = XcmTransactor(0x0000000000000000000000000000000000000806);
-
-        function index_to_account(uint16 index) external view override returns(address) {
-            // We nominate our target collator with all the tokens provided
-            return xcmtransactor.index_to_account(index);
-        }
-
-        function transact_info(
-            Multilocation memory multilocation
-        ) external view override returns(uint64, uint256, uint64, uint64, uint256) {
-            // We nominate our target collator with all the tokens provided
-            return xcmtransactor.transact_info(multilocation);
-        }
-
-        function transact_through_derivative_multilocation(
-            uint8 transactor,
-            uint16 index,
-            Multilocation memory fee_asset,
-            uint64 weight,
-            bytes memory inner_call
-        ) override external {
-            xcmtransactor.transact_through_derivative_multilocation(
-                transactor,
-                index,
-                fee_asset,
-                weight,
-                inner_call
+  // SPDX-License-Identifier: GPL-3.0-only
+  pragma solidity >=0.8.0;
+  
+  /**
+   * @title Xcm Transactor Interface
+   * The interface through which solidity contracts will interact with xcm transactor pallet
+   * Address :    0x0000000000000000000000000000000000000806
+   */
+  
+  interface XcmTransactor {
+  
+      // A multilocation is defined by its number of parents and the encoded junctions (interior)
+      struct Multilocation {
+          uint8 parents;
+          bytes [] interior;
+      }
+  
+      /** Get index of an account in xcm transactor
+       * Selector 71b0edfa
+       * @param index The index of which we want to retrieve the account
+      * @return owner The owner of the derivative index
+       */
+      function index_to_account(uint16 index) external view returns(address owner);
+  
+      /// DEPRECATED, replaced by transact_info_with_signed
+      /** Get transact info of a multilocation
+       * Selector f87f493f
+       * @param multilocation The location for which we want to know the transact info
+       * @return transact_extra_weight extra weight involved in using transact through derivative
+       * @return fee_per_second The amount of fee charged for a second of execution in the dest
+       * @return max_weight Maximum allowed weight for a single message in dest
+       */
+      function transact_info(Multilocation memory multilocation) external view 
+          returns(uint64 transact_extra_weight, uint256 fee_per_second, uint64 max_weight);
+      
+      /** Get transact info of a multilocation
+       * Selector f87f493f
+       * @param multilocation The location for which we want to know the transact info
+       * @return transact_extra_weight xcm extra weight when in using transact through derivative
+       * @return transact_extra_weight_signed extra weight when using transact through signed
+       * @return max_weight Maximum allowed weight for a single message in dest
+       */
+      function transact_info_with_signed(Multilocation memory multilocation) external view 
+          returns(
+              uint64 transact_extra_weight,
+              uint64 transact_extra_weight_signed,
+              uint64 max_weight
             );
-        }
-        
-        function transact_through_derivative(
-            uint8 transactor,
-            uint16 index,
-            address currency_id,
-            uint64 weight,
-            bytes memory inner_call
-        ) override external {
-            xcmtransactor.transact_through_derivative(
-                transactor,
-                index,
-                currency_id,
-                weight,
-                inner_call
-            );
-        }
-    }`,
+  
+      /** Get fee per second charged in its reserve chain for an asset
+       * Selector f87f493f
+       * @param multilocation The asset location for which we want to know the fee per second value
+       * @return fee_per_second The fee per second that the reserve chain charges for this asset
+       */
+      function fee_per_second(Multilocation memory multilocation) external view 
+          returns(uint256 fee_per_second);
+  
+      /** Transact through XCM using fee based on its multilocation
+      * Selector 9f89f03e
+      * @dev The token transfer burns/transfers the corresponding amount before sending
+      * @param transactor The transactor to be used
+      * @param index The index to be used
+      * @param fee_asset The asset in which we want to pay fees. 
+      * It has to be a reserve of the destination chain
+      * @param weight The weight we want to buy in the destination chain
+      * @param inner_call The inner call to be executed in the destination chain
+      */
+      function transact_through_derivative_multilocation(
+          uint8 transactor,
+          uint16 index,
+          Multilocation memory fee_asset,
+          uint64 weight,
+          bytes memory inner_call
+      ) external;
+      
+      /** Transact through XCM using fee based on its currency_id
+      * Selector 267d4062
+      * @dev The token transfer burns/transfers the corresponding amount before sending
+      * @param transactor The transactor to be used
+      * @param index The index to be used
+      * @param currency_id Address of the currencyId of the asset to be used for fees
+      * It has to be a reserve of the destination chain
+      * @param weight The weight we want to buy in the destination chain
+      * @param inner_call The inner call to be executed in the destination chain
+      */
+      function transact_through_derivative(
+          uint8 transactor,
+          uint16 index,
+          address currency_id,
+          uint64 weight,
+          bytes memory inner_call
+      ) external;
+  
+      /** Transact through XCM using fee based on its multilocation through signed origins
+      * Selector 19760407
+      * @dev No token is burnt before sending the message. The caller must ensure the destination
+      * is able to undertand the DescendOrigin message, and create a unique account from which
+      * dispatch the call
+      * @param dest The destination chain (as multilocation) where to send the message
+      * @param fee_location The asset multilocation that indentifies the fee payment currency
+      * It has to be a reserve of the destination chain
+      * @param weight The weight we want to buy in the destination chain for the call to be made
+      * @param call The call to be executed in the destination chain
+      */
+      function transact_through_signed_multilocation(
+          Multilocation memory dest,
+          Multilocation memory fee_location,
+          uint64 weight,
+          bytes memory call
+      ) external;
+  
+      /** Transact through XCM using fee based on its erc20 address through signed origins
+      * Selector 9f89f03e
+      * @dev No token is burnt before sending the message. The caller must ensure the destination
+      * is able to undertand the DescendOrigin message, and create a unique account from which
+      * dispatch the call
+      * @param dest The destination chain (as multilocation) where to send the message
+      * @param fee_location_address The ERC20 address of the token we want to use to pay for fees
+      * only callable if such an asset has been BRIDGED to our chain
+      * @param weight The weight we want to buy in the destination chain for the call to be made
+      * @param call The call to be executed in the destination chain
+      */
+      function transact_through_signed(
+          Multilocation memory dest,
+          address fee_location_address,
+          uint64 weight,
+          bytes memory call
+      ) external;
+  }
+  
+  contract XcmTransactorInstance is XcmTransactor {
+  
+      /// The Xcm Transactor wrapper at the known pre-compile address.
+      XcmTransactor public xcmtransactor = XcmTransactor(
+          0x0000000000000000000000000000000000000806
+      );
+  
+      function index_to_account(uint16 index) external view override returns(address) {
+          // We nominate our target collator with all the tokens provided
+          return xcmtransactor.index_to_account(index);
+      }
+  
+      function transact_info(
+          Multilocation memory multilocation
+      ) external view override returns(uint64, uint256, uint64) {
+          return xcmtransactor.transact_info(multilocation);
+      }
+  
+      function transact_info_with_signed(
+          Multilocation memory multilocation
+      ) external view override returns(uint64, uint64, uint64) {
+          return xcmtransactor.transact_info_with_signed(multilocation);
+      }
+  
+      function fee_per_second(
+          Multilocation memory multilocation
+      ) external view override returns(uint256) {
+          return xcmtransactor.fee_per_second(multilocation);
+      }
+  
+      function transact_through_derivative_multilocation(
+          uint8 transactor,
+          uint16 index,
+          Multilocation memory fee_asset,
+          uint64 weight,
+          bytes memory inner_call
+      ) override external {
+          xcmtransactor.transact_through_derivative_multilocation(
+              transactor,
+              index,
+              fee_asset,
+              weight,
+              inner_call
+          );
+      }
+          
+      function transact_through_derivative(
+          uint8 transactor,
+          uint16 index,
+          address currency_id,
+          uint64 weight,
+          bytes memory inner_call
+      ) override external {
+          xcmtransactor.transact_through_derivative(
+              transactor,
+              index,
+              currency_id,
+              weight,
+              inner_call
+          );
+      }
+  
+      function transact_through_signed(
+          Multilocation memory dest,
+          address fee_location_address,
+          uint64 weight,
+          bytes memory call
+      ) override external {
+  
+          xcmtransactor.transact_through_signed(
+              dest,
+              fee_location_address,
+              weight,
+              call
+          );
+      }
+  
+      function transact_through_signed_multilocation(
+          Multilocation memory dest,
+          Multilocation memory fee_location,
+          uint64 weight,
+          bytes memory call
+      ) override external {
+  
+          xcmtransactor.transact_through_signed_multilocation(
+              dest,
+              fee_location,
+              weight,
+              call
+          );
+      }
+  }`,
   // Blake2Check contract used to test blake2 precompile at address 0x9
   // source: https://eips.ethereum.org/EIPS/eip-152#example-usage-in-solidity
   Blake2Check: `
@@ -1085,5 +1293,640 @@ export const contractSources: { [key: string]: string } = {
                 abi.encodeWithSignature("transferFrom(address,address,uint256)", from, to, value));
             return result;
             }
+    }`,
+  Democracy: `
+    pragma solidity >=0.8.0;
+    interface Democracy {
+        // First some simple accessors
+    
+        /**
+         * Get The total number of public proposals past and present
+         * Selector: 56fdf547
+         *
+         * @return The total number of public proposals past and present
+         */
+        function public_prop_count() external view returns (uint256);
+    
+        /**
+         * Get details about all public porposals.
+         * Selector:
+         * @return (prop index, proposal hash, proposer)
+         * TODO This is supposed to be a vec. Let's save this one for later.
+         */
+        // function public_props()
+        //     external
+        //     view
+        //     returns (
+        //         uint256,
+        //         bytes32,
+        //         address
+        //     );
+    
+        /**
+         * Get the total amount locked behind a proposal.
+         * Selector: a30305e9
+         *
+         * @dev Unlike the similarly-named Rust function this one only returns the value, not the
+         * complete list of backers.
+         * @param prop_index The index of the proposal you are interested in
+         * @return The amount of tokens locked behind the proposal
+         */
+        function deposit_of(uint256 prop_index) external view returns (uint256);
+    
+        /**
+         * Get the index of the lowest unbaked referendum
+         * Selector: 0388f282
+         *
+         * @return The lowest referendum index representing an unbaked referendum.
+         */
+        function lowest_unbaked() external view returns (uint256);
+    
+        /**
+         * Get the details about an ongoing referendum.
+         * Selector: 8b93d11a
+         *
+         * @dev This, along with "finished_referendum_info", wraps the pallet's "referendum_info"
+    * function. It is necessary to split it into two here because Solidity only has c-style enums.
+         * @param ref_index The index of the referendum you are interested in
+         * @return A tuple including:
+         * * The block in which the referendum ended
+         * * The proposal hash
+         * * The baising mechanism 0-SuperMajorityApprove, 1-SuperMajorityAgainst, 2-SimpleMajority
+         * * The delay between passing and launching
+         * * The total aye vote (including conviction)
+         * * The total nay vote (including conviction)
+         * * The total turnout (not including conviction)
+         */
+        function ongoing_referendum_info(uint256 ref_index)
+            external
+            view
+            returns (
+                uint256,
+                bytes32,
+                uint256,
+                uint256,
+                uint256,
+                uint256,
+                uint256
+            );
+    
+        /**
+         * Get the details about a finished referendum.
+         * Selector: b1fd383f
+         *
+         * @dev This, along with "ongoing_referendum_info", wraps the pallet's "referendum_info"
+    * function. It is necessary to split it into two here because Solidity only has c-style enums.
+         * @param ref_index The index of the referendum you are interested in
+    * @return A tuple including whether the referendum passed, and the block at which it finished.
+         */
+        function finished_referendum_info(uint256 ref_index)
+            external
+            view
+            returns (bool, uint256);
+    
+        // Now the dispatchables
+    
+        /**
+         * Make a new proposal
+         * Selector: 7824e7d1
+         *
+         * @param proposal_hash The hash of the proposal you are making
+         * @param value The number of tokens to be locked behind this proposal.
+         */
+        function propose(bytes32 proposal_hash, uint256 value) external;
+    
+        /**
+         * Signal agreement with a proposal
+         * Selector: c7a76601
+         *
+        * @dev No amount is necessary here. Seconds are always for the same amount that the original
+         * proposer locked. You may second multiple times.
+         *
+         * @param prop_index index of the proposal you want to second
+    * @param seconds_upper_bound A number greater than or equal to the current number of seconds.
+         * This is necessary for calculating the weight of the call.
+         */
+        function second(uint256 prop_index, uint256 seconds_upper_bound) external;
+    
+    //TODO should we have an alternative "simple_second" where the upper bound is read from storage?
+    
+        /**
+         * Vote in a referendum.
+         * Selector: 3f3c21cc
+         *
+         * @param ref_index index of the referendum you want to vote in
+    * @param aye "true" is a vote to enact the proposal; "false" is a vote to keep the status quo.
+         * @param vote_amount The number of tokens you are willing to lock if you get your way
+        * @param conviction How strongly you want to vote. Higher conviction means longer lock time.
+         * This must be an interget in the range 0 to 6
+         *
+         * @dev This function only supposrts "Standard" votes where you either vote aye xor nay.
+         * It does not support "Split" votes where you vote on both sides. If such a need
+         * arises, we should add an additional function to this interface called "split_vote".
+         */
+        function standard_vote(
+            uint256 ref_index,
+            bool aye,
+            uint256 vote_amount,
+            uint256 conviction
+        ) external;
+    
+        /** Remove a vote for a referendum.
+         * Selector: 2042f50b
+         *
+         * @dev Locks get complex when votes are removed. See pallet-democracy's docs for details.
+         * @param ref_index The index of the referendum you are interested in
+         */
+        function remove_vote(uint256 ref_index) external;
+    
+        /**
+         * Delegate voting power to another account.
+         * Selector: 0185921e
+         *
+    * @dev The balance delegated is locked for as long as it is delegated, and thereafter for the
+         * time appropriate for the conviction's lock period.
+         * @param representative The account to whom the vote shall be delegated.
+    * @param conviction The conviction with which you are delegating. This conviction is used for
+         * _all_ delegated votes.
+         * @param amount The number of tokens whose voting power shall be delegated.
+         */
+        function delegate(
+            address representative,
+            uint256 conviction,
+            uint256 amount
+        ) external;
+    
+        /**
+         * Undelegatehe voting power
+         * Selector: cb37b8ea
+         *
+    * @dev Tokens may be unlocked once the lock period corresponding to the conviction with which
+         * the delegation was issued has elapsed.
+         */
+        function un_delegate() external;
+    
+        /**
+         * Unlock tokens that have an expired lock.
+         * Selector: 2f6c493c
+         *
+         * @param target The account whose tokens should be unlocked. This may be any account.
+         */
+        function unlock(address target) external;
+    
+        /**
+         * Register the preimage for an upcoming proposal. This doesn't require the proposal to be
+         * in the dispatch queue but does require a deposit, returned once enacted.
+         * Selector: 200881f5
+         *
+        * @param encoded_proposal The scale-encoded proposal whose hash has been submitted on-chain.
+         */
+        function note_preimage(bytes memory encoded_proposal) external;
+    
+        /**
+         * Register the preimage for an upcoming proposal. This requires the proposal to be
+         * in the dispatch queue. No deposit is needed. When this call is successful, i.e.
+         * the preimage has not been uploaded before and matches some imminent proposal,
+         * no fee is paid.
+         * Selector: cf205f96
+         *
+        * @param encoded_proposal The scale-encoded proposal whose hash has been submitted on-chain.
+         */
+        function note_imminent_preimage(bytes memory encoded_proposal) external;
+    }`,
+  AuthorMapping: `
+    pragma solidity >=0.8.0;
+
+    /**
+     * @title Pallet AuthorMapping Interface
+     *
+     * The interface through which solidity contracts will interact with pallet-author.mapping
+     */
+    interface AuthorMapping {
+        /**
+         * Add association
+         * Selector: aa5ac585   
+         *
+         * @param nimbus_id The nimbusId to be associated
+         */
+        function add_association(bytes32 nimbus_id) external;
+
+        /**
+         * Update existing association
+         * Selector: d9cef879
+         *
+         * @param old_nimbus_id The old nimbusId to be replaced
+         * @param new_nimbus_id The new nimbusId to be associated
+         */
+        function update_association(bytes32 old_nimbus_id, bytes32 new_nimbus_id) external;
+
+        /**
+         * Clear existing associationg
+         * Selector: 7354c91d
+         *
+         * @param nimbus_id The nimbusId to be cleared
+         */
+        function clear_association(bytes32 nimbus_id) external;
+    }
+
+
+    contract AuthorMappingInstance is AuthorMapping {
+
+        /// The AuthorMapping wrapper at the known pre-compile address.
+        AuthorMapping public author_mapping = AuthorMapping(
+            0x0000000000000000000000000000000000000807
+        );
+
+            function add_association(
+                bytes32 nimbus_id
+            ) override external {
+                author_mapping.add_association(nimbus_id);
+            }
+            function update_association(
+                bytes32 old_nimbus_id,
+                bytes32 new_nimbus_id
+            ) override external {
+                author_mapping.update_association(old_nimbus_id, new_nimbus_id);
+            }
+            function clear_association(
+                bytes32 nimbus_id
+            ) override external {
+                author_mapping.clear_association(nimbus_id);
+            }
+    }`,
+  LocalAssetExtendedErc20Instance: `
+    pragma solidity ^0.8.0;
+
+    /**
+     * @title ERC20 interface
+     * @dev see https://github.com/ethereum/EIPs/issues/20
+     * @dev copied from https://github.com/OpenZeppelin/openzeppelin-contracts
+     */
+    interface LocalAssetExtendedErc20 {
+        
+    /**
+     * @dev Returns the name of the token.
+     * Selector: 06fdde03
+     */
+    function name() external view returns (string memory);
+
+    /**
+     * @dev Returns the symbol of the token.
+     * Selector: 95d89b41
+     */
+    function symbol() external view returns (string memory);
+
+    /**
+     * @dev Returns the decimals places of the token.
+     * Selector: 313ce567
+     */
+    function decimals() external view returns (uint8);
+    
+    /**
+     * @dev Total number of tokens in existence
+     * Selector: 18160ddd
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Gets the balance of the specified address.
+     * Selector: 70a08231
+     * @param who The address to query the balance of.
+     * @return An uint256 representing the amount owned by the passed address.
+     */
+    function balanceOf(address who) external view returns (uint256);
+
+    /**
+     * @dev Function to check the amount of tokens that an owner allowed to a spender.
+     * Selector: dd62ed3e
+     * @param owner address The address which owns the funds.
+     * @param spender address The address which will spend the funds.
+     * @return A uint256 specifying the amount of tokens still available for the spender.
+     */
+    function allowance(address owner, address spender)
+        external view returns (uint256);
+
+    /**
+     * @dev Transfer token for a specified address
+     * Selector: a9059cbb
+     * @param to The address to transfer to.
+     * @param value The amount to be transferred.
+     */
+    function transfer(address to, uint256 value) external returns (bool);
+
+    /**
+     * @dev Approve the passed address to spend the specified amount of tokens on behalf
+     * of msg.sender.
+     * Beware that changing an allowance with this method brings the risk that someone may
+     * use both the old
+     * and the new allowance by unfortunate transaction ordering. One possible solution to
+     * mitigate this race condition is to first reduce the spender's allowance to 0 and set
+     * the desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     * Selector: 095ea7b3
+     * @param spender The address which will spend the funds.
+     * @param value The amount of tokens to be spent.
+     */
+    function approve(address spender, uint256 value)
+        external returns (bool);
+
+    /**
+     * @dev Transfer tokens from one address to another
+     * Selector: 23b872dd
+     * @param from address The address which you want to send tokens from
+     * @param to address The address which you want to transfer to
+     * @param value uint256 the amount of tokens to be transferred
+     */
+    function transferFrom(address from, address to, uint256 value)
+        external returns (bool);
+
+    /**
+     * @dev Mint tokens to an address
+     * Selector: 23b872dd
+     * @param to address The address to which you want to mint tokens
+     * @param value uint256 the amount of tokens to be minted
+     */
+    function mint(address to, uint256 value)
+        external returns (bool);
+
+    /**
+     * @dev Burn tokens from an address
+     * Selector: 23b872dd
+     * @param from address The address from which you want to burn tokens
+     * @param value uint256 the amount of tokens to be burnt
+     */
+    function burn(address from, uint256 value)
+        external returns (bool);
+
+    /**
+     * @dev Freeze an account, preventing it from operating with the asset
+     * Selector: 23b872dd
+     * @param account address The address that you want to freeze
+     */
+    function freeze(address account)
+        external returns (bool);
+
+    /**
+     * @dev Unfreeze an account, letting it from operating againt with the asset
+     * Selector: 23b872dd
+     * @param account address The address that you want to unfreeze
+     */
+    function thaw(address account)
+        external returns (bool);
+
+    /**
+     * @dev Freeze the entire asset operations
+     * Selector: 23b872dd
+     */
+    function freeze_asset()
+        external returns (bool);
+
+    /**
+     * @dev Unfreeze the entire asset operations
+     * Selector: 23b872dd
+     */
+    function thaw_asset()
+        external returns (bool);
+
+    /**
+     * @dev Transfer the ownership of an asset to a new account
+     * Selector: 23b872dd
+     * @param owner address The address of the new owner
+     */
+    function transfer_ownership(address owner)
+        external returns (bool);
+    
+    /**
+     * @dev Specify the issuer, admin and freezer of an asset
+     * Selector: 23b872dd
+     * @param issuer address The address capable of issuing tokens
+     * @param admin address The address capable of burning tokens and unfreezing accounts/assets
+     * @param freezer address The address capable of freezing accounts/asset
+     */
+    function set_team(address issuer, address admin, address freezer)
+        external returns (bool);
+
+    /**
+     * @dev Specify the name, symbol and decimals of your asset
+     * Selector: 23b872dd
+     * @param name string The name of the asset
+     * @param symbol string The symbol of the asset
+     * @param decimals uint8 The number of decimals of your asset
+     */
+    function set_metadata(string calldata name, string calldata symbol, uint8 decimals)
+        external returns (bool);
+
+    /**
+     * @dev Clear the name, symbol and decimals of your asset
+     * Selector: 23b872dd
+     */
+    function clear_metadata()
+        external returns (bool);
+    /**
+     * @dev Event emited when a transfer has been performed.
+     * Selector: ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+     * @param from address The address sending the tokens
+     * @param to address The address receiving the tokens.
+     * @param value uint256 The amount of tokens transfered.
+     */
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 value
+    );
+
+    /**
+     * @dev Event emited when an approval has been registered.
+     * Selector: 8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
+     * @param owner address Owner of the tokens.
+     * @param spender address Allowed spender.
+     * @param value uint256 Amount of tokens approved.
+     */
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+    }
+
+    contract LocalAssetExtendedErc20Instance is LocalAssetExtendedErc20 {
+
+        /// The ierc20 at the known pre-compile address.
+        LocalAssetExtendedErc20 public localasseterc20 = 
+            LocalAssetExtendedErc20(0xffFfFffEDe9001a6f7F4798cCb76ef1E7f664701);
+        address localasseterc20address = 0xffFfFffEDe9001a6f7F4798cCb76ef1E7f664701;
+
+            receive() external payable {
+            // React to receiving ether
+            }
+
+            function set_address_interface(address instance_address) public {
+                localasseterc20 = LocalAssetExtendedErc20(instance_address);
+                localasseterc20address = instance_address;
+            }
+
+            function get_address() public view returns(address) {
+                return localasseterc20address;
+            }
+
+            function name() override external view returns (string memory) {
+                // We nominate our target collator with all the tokens provided
+                return localasseterc20.name();
+            }
+            
+            function symbol() override external view returns (string memory) {
+                // We nominate our target collator with all the tokens provided
+                return localasseterc20.symbol();
+            }
+            
+            function decimals() override external view returns (uint8) {
+                // We nominate our target collator with all the tokens provided
+                return localasseterc20.decimals();
+            }
+
+            function totalSupply() override external view returns (uint256){
+                // We nominate our target collator with all the tokens provided
+                return localasseterc20.totalSupply();
+            }
+            
+            function balanceOf(address who) override external view returns (uint256){
+                // We nominate our target collator with all the tokens provided
+                return localasseterc20.balanceOf(who);
+            }
+            
+            function allowance(
+                address owner,
+                address spender
+            ) override external view returns (uint256){
+                return localasseterc20.allowance(owner, spender);
+            }
+
+            function transfer(address to, uint256 value) override external returns (bool) {
+                return localasseterc20.transfer(to, value);
+            }
+
+            function mint(address to, uint256 value) override external returns (bool) {
+                return localasseterc20.mint(to, value);
+            }
+
+            function burn(address from, uint256 value) override external returns (bool) {
+                return localasseterc20.burn(from, value);
+            }
+
+            function freeze(address account) override external returns (bool) {
+                return localasseterc20.freeze(account);
+            }
+
+            function thaw(address account) override external returns (bool) {
+                return localasseterc20.thaw(account);
+            }
+
+            function freeze_asset() override external returns (bool) {
+                return localasseterc20.freeze_asset();
+            }
+
+            function thaw_asset() override external returns (bool) {
+                return localasseterc20.thaw_asset();
+            }
+
+            function transfer_ownership(address owner) override external returns (bool) {
+                return localasseterc20.transfer_ownership(owner);
+            }
+
+            function set_team(
+                address issuer,
+                address admin,
+                address freezer
+            ) override external returns (bool) {
+                return localasseterc20.set_team(issuer, admin, freezer);
+            }
+
+            function set_metadata(
+                string calldata name,
+                string calldata symbol,
+                uint8 decimals
+            ) override external returns (bool) {
+                return localasseterc20.set_metadata(name, symbol, decimals);
+            }
+
+            function clear_metadata() override external returns (bool) {
+                return localasseterc20.clear_metadata();
+            }
+            
+            function transfer_delegate(address to, uint256 value) external returns (bool) {
+            (bool result, bytes memory data) = localasseterc20address.delegatecall(
+                abi.encodeWithSignature("transfer(address,uint256)", to, value));
+            return result;
+            }
+            
+            function approve(address spender, uint256 value) override external returns (bool) {
+            return localasseterc20.approve(spender, value);
+            }
+
+            function approve_delegate(address spender, uint256 value) external returns (bool) {
+            (bool result, bytes memory data) = localasseterc20address.delegatecall(
+                abi.encodeWithSignature("approve(address,uint256)", spender, value));
+            return result;
+            }
+            
+            function transferFrom(
+                address from,
+                address to,
+                uint256 value)
+            override external returns (bool) {
+                return localasseterc20.transferFrom(from, to, value);
+            }
+            
+            function transferFrom_delegate(
+                address from,
+                address to,
+                uint256 value) external returns (bool) {
+            (bool result, bytes memory data) = localasseterc20address.delegatecall(
+                abi.encodeWithSignature("transferFrom(address,address,uint256)", from, to, value));
+            return result;
+            }
+    }`,
+  TestCallList: `
+      pragma solidity >=0.8.0;
+      
+      contract TestCallList {
+          function call(address target, bytes memory data) public returns (bool, bytes memory) {
+              return target.call(data);
+          }
+      
+          function delegateCall(
+            address target,
+            bytes memory data
+          ) public returns (bool, bytes memory) {
+              return target.delegatecall(data);
+          }
+      }`,
+  Batch: `
+    pragma solidity >=0.8.0;
+
+    contract Batch {
+      function batchSome(
+          address[] memory to,
+          uint256[] memory value,
+          bytes[] memory call_data,
+          uint64[] memory gas_limit
+      ) external {}
+
+      function batchSomeUntilFailure(
+          address[] memory to,
+          uint256[] memory value,
+          bytes[] memory call_data,
+          uint64[] memory gas_limit
+      ) external {}
+
+      function batchAll(
+          address[] memory to,
+          uint256[] memory value,
+          bytes[] memory call_data,
+          uint64[] memory gas_limit
+      ) external {}
+
+      event SubcallSucceeded(uint256 index);
+
+      event SubcallFailed(uint256 index);
     }`,
 };

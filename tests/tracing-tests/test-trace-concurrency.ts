@@ -5,18 +5,17 @@ import { createContract, createContractExecution } from "../util/transactions";
 
 describeDevMoonbeam("Trace filter - Concurrency", (context) => {
   before("Setup: Create 50 blocks with 1 contract loop execution each", async function () {
-    const { contract, rawTx } = await createContract(context.web3, "FiniteLoopContract");
-    await context.createBlock({ transactions: [rawTx] });
+    this.timeout(180000);
+    const { contract, rawTx } = await createContract(context, "FiniteLoopContract");
+    await context.createBlock(rawTx);
 
     for (let i = 0; i < 50; i++) {
-      await context.createBlock({
-        transactions: [
-          await createContractExecution(context.web3, {
-            contract,
-            contractCall: contract.methods.incr(2000),
-          }),
-        ],
-      });
+      await context.createBlock(
+        createContractExecution(context, {
+          contract,
+          contractCall: contract.methods.incr(2000),
+        })
+      );
     }
   });
 
@@ -24,7 +23,6 @@ describeDevMoonbeam("Trace filter - Concurrency", (context) => {
   // It will start a slow query (taking 1s) and will try to execute a fast one after to see if it
   // goes through or wait for the first one to finish
   it.skip("should allow concurrent execution", async function () {
-    this.timeout(10000);
     const queryRange = async (range, index) => {
       const start = Date.now();
       await customWeb3Request(context.web3, "trace_filter", [

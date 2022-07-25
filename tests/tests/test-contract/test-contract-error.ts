@@ -1,14 +1,16 @@
+import "@moonbeam-network/api-augment";
 import { expect } from "chai";
 
 import { TransactionReceipt } from "web3-core";
-import { describeDevMoonbeam } from "../../util/setup-dev-tests";
+import { verifyLatestBlockFees } from "../../util/block";
+import { describeDevMoonbeamAllEthTxTypes } from "../../util/setup-dev-tests";
 
 import { createContract, createContractExecution } from "../../util/transactions";
 
-describeDevMoonbeam("Contract loop error", (context) => {
+describeDevMoonbeamAllEthTxTypes("Contract loop error", (context) => {
   it("should return OutOfGas on inifinite loop call", async function () {
-    const { contract, rawTx } = await createContract(context.web3, "InfiniteContract");
-    await context.createBlock({ transactions: [rawTx] });
+    const { contract, rawTx } = await createContract(context, "InfiniteContract");
+    await context.createBlock(rawTx);
 
     await contract.methods
       .infinite()
@@ -20,11 +22,11 @@ describeDevMoonbeam("Contract loop error", (context) => {
   });
 });
 
-describeDevMoonbeam("Contract loop error", (context) => {
+describeDevMoonbeamAllEthTxTypes("Contract loop error", (context) => {
   it("should fail with OutOfGas on infinite loop transaction", async function () {
-    const { contract, rawTx } = await createContract(context.web3, "InfiniteContract");
-    const infiniteTx = await createContractExecution(
-      context.web3,
+    const { contract, rawTx } = await createContract(context, "InfiniteContract");
+    const infiniteTx = createContractExecution(
+      context,
       {
         contract,
         contractCall: contract.methods.infinite(),
@@ -32,13 +34,29 @@ describeDevMoonbeam("Contract loop error", (context) => {
       { nonce: 1 }
     );
 
-    const { txResults } = await context.createBlock({
-      transactions: [rawTx, infiniteTx],
-    });
+    const { result } = await context.createBlock([rawTx, infiniteTx]);
 
     const receipt: TransactionReceipt = await context.web3.eth.getTransactionReceipt(
-      txResults[1].result
+      result[1].hash
     );
     expect(receipt.status).to.eq(false);
+  });
+});
+
+describeDevMoonbeamAllEthTxTypes("Contract loop error - check fees", (context) => {
+  it("should fail with OutOfGas on infinite loop transaction - check fees", async function () {
+    const { contract, rawTx } = await createContract(context, "InfiniteContract");
+    const infiniteTx = await createContractExecution(
+      context,
+      {
+        contract,
+        contractCall: contract.methods.infinite(),
+      },
+      { nonce: 1 }
+    );
+
+    await context.createBlock(rawTx);
+    await context.createBlock(infiniteTx);
+    await verifyLatestBlockFees(context, expect);
   });
 });
