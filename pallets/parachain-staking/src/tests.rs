@@ -32,7 +32,7 @@ use crate::{
 };
 use frame_support::{assert_noop, assert_ok};
 use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
-use sp_runtime::{traits::Zero, DispatchError, Perbill};
+use sp_runtime::{traits::Zero, DispatchError, Perbill, ModuleError};
 
 // ~~ ROOT ~~
 
@@ -260,11 +260,11 @@ fn cannot_join_candidates_with_more_than_available_balance() {
 		.execute_with(|| {
 			assert_noop!(
 				Stake::join_candidates(Origin::signed(1), 501u128, 1u32, None, 100u32, 10000u32),
-				DispatchError::Module {
+				DispatchError::Module(ModuleError{
 					index: 1,
-					error: 0,
+					error: [0; 4],
 					message: Some("BalanceTooLow")
-				}
+				})
 			);
 		});
 }
@@ -4436,11 +4436,11 @@ fn delegation_tokens_work() {
 		.execute_with(|| {
 			assert_noop!(
 				Stake::delegate(Origin::signed(9), 3, 10, None, 100u32, 100u32),
-				DispatchError::Module {
+				DispatchError::Module(ModuleError{
 					index: 1,
-					error: 0,
+					error: [0; 4],
 					message: Some("BalanceTooLow")
-				}
+				})
 			);
 		});
 }

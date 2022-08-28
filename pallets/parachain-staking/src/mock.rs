@@ -39,6 +39,7 @@ use sp_runtime::{DispatchResult,
 use sp_std::marker::PhantomData;
 use orml_tokens::MultiTokenCurrencyExtended;
 use pallet_vesting_mangata::MultiTokenVestingSchedule;
+use sp_std::convert::{TryFrom, TryInto};
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -99,9 +100,9 @@ parameter_types! {
 	pub const HistoryLimit: u32 = 10u32;
 
 	pub const LiquidityMiningIssuanceVaultId: PalletId = PalletId(*b"py/lqmiv");
-	pub LiquidityMiningIssuanceVault: AccountId = LiquidityMiningIssuanceVaultId::get().into_account();
+	pub LiquidityMiningIssuanceVault: AccountId = LiquidityMiningIssuanceVaultId::get().into_account_truncating();
 	pub const StakingIssuanceVaultId: PalletId = PalletId(*b"py/stkiv");
-	pub StakingIssuanceVault: AccountId = StakingIssuanceVaultId::get().into_account();
+	pub StakingIssuanceVault: AccountId = StakingIssuanceVaultId::get().into_account_truncating();
 
 	pub const TotalCrowdloanAllocation: Balance = 200_000_000;
 	pub const IssuanceCap: Balance = 4_000_000_000;
@@ -184,7 +185,7 @@ parameter_type_with_key! {
 parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const BnbTreasurySubAccDerive: [u8; 4] = *b"bnbt";
-	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
+	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account_truncating();
 	pub const MaxLocks: u32 = 50;
 	pub const MgaTokenId: TokenId = MGA_TOKEN_ID;
 }
