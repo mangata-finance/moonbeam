@@ -43,6 +43,15 @@
 //! To revoke a delegation, call `revoke_delegation` with the collator candidate's account.
 //! To leave the set of delegators and revoke all delegations, call `leave_delegators`.
 
+// TODO
+// An aggregator cannot join as a candidate or delegator
+// An aggregator must accept an aggregation request from a candidate
+// A candidate or delegator cannot join as an aggregator
+// A candidate must be able to remove himself from an aggregator without aggregator's permission
+// An aggregator must be able to remove a candidate from aggregation
+// An aggregator can only have 1 candidate per liquidity token
+
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -1461,6 +1470,7 @@ pub mod pallet {
 		StakingLiquidityTokenAlreadyListed,
 		ExceedMaxCollatorCandidates,
 		ExceedMaxTotalDelegatorsPerCandidate,
+		CandidateNotAggregating,
 		MathError,
 	}
 
@@ -1527,6 +1537,8 @@ pub mod pallet {
 		TotalSelectedSet(u32, u32),
 		/// Set collator commission to this value [old, new]
 		CollatorCommissionSet(Perbill, Perbill),
+		/// A candidate updated aggregator
+		CandidateAggregatorUpdated(T::AccountId, Option<T::AccountId>),
 	}
 
 	#[pallet::hooks]
@@ -1611,10 +1623,26 @@ pub mod pallet {
 	pub type StakingLiquidityTokens<T: Config> =
 		StorageValue<_, BTreeMap<TokenId, Option<(Balance, Balance)>>, ValueQuery>;
 
-	#[pallet::genesis_config]
-	pub struct GenesisConfig<T: Config> {
-		pub candidates: Vec<(T::AccountId, Balance, TokenId)>,
-		pub delegations: Vec<(T::AccountId, T::AccountId, Balance)>,
+	#[pallet::storage]
+	#[pallet::getter(fn get_candidate_aggregator)]
+	/// Points for each collator per round
+	pub type CandidateAggregator<T: Config> =
+		StorageValue<_, BTreeMap<T::AccountId, T::AccountId>, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn get_round_aggregator_info)]
+	pub type RoundAggregatorInfo<T: Config> =
+		StorageMap<_, Twox64Concat, RoundIndex, BTreeMap<T::AccountId, BTreeMap<T::AccountId, Balance>>, OptionQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn get_round_collator_reward_info)]
+	pub type RoundCollatorRewardInfo<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, RoundIndex, Blake2_128Concat, T::AccountId, CollatorRewardInfoType<T::AccountId>, OptionQuery>;
+
+	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
+	pub struct RoundCollatorRewardInfoType<AccountId> {
+		pub collator_reward: Balance,
+		pub delegator_rewards: BTreeMap<AccountId, Balance>,
 	}
 
 	#[cfg(feature = "std")]
@@ -2372,6 +2400,45 @@ pub mod pallet {
 			)?;
 			Ok(().into())
 		}
+
+		// Need request and accept mechanism
+		// Need to ensure that collators can not aggregate to same aggregator using the same liq token
+		// Benchmark on the worst case max candidate count
+		#[pallet::weight(1_000_000_000)]
+		#[transactional]
+		pub fn update_candidate_aggregator(
+			origin: OriginFor<T>,
+			maybe_aggregator: Option<T::AccountId>
+		) -> DispatchResultWithPostInfo {
+			let candidate = ensure_signed(origin)?;
+			ensure!(Self::is_candidate(&candidate), Error::<T>::CandidateDNE);
+
+			CandidateAggregator::<T>::try_mutate(
+				|candidate_aggregator_info| -> DispatchResult {
+
+					match maybe_aggregator {
+						Some(aggregator) => {
+							let _ = candidate_aggregator_info
+										.insert(candidate, aggregator);
+						},
+						None => {
+							ensure!(
+								candidate_aggregator_info
+									.remove(&candidate)
+									.is_some(),
+								Error::<T>::CandidateNotAggregating
+							);
+						}
+					}
+
+					Ok(())
+				},
+			)?;
+			
+			Self::deposit_event(Event::CandidateAggregatorUpdated(candidate, maybe_aggregator));
+			Ok(().into())
+		}
+
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -2447,112 +2514,161 @@ pub mod pallet {
 			let total_issuance =
 				T::Issuance::get_staking_issuance(round_to_payout).unwrap_or(Balance::zero());
 
-			let mint = |amt: Balance, to: T::AccountId| {
-				let amount_transferred: Balance = <T as pallet::Config>::Currency::transfer(
-					T::NativeTokenId::get().into(),
-					&<T as pallet::Config>::StakingIssuanceVault::get(),
-					&to,
-					amt.into(),
-					ExistenceRequirement::AllowDeath,
-				)
-				.map_or(Zero::zero(), |_| amt)
-				.into();
-				Self::deposit_event(Event::Rewarded(to.clone(), amount_transferred));
-			};
-			// only pay out rewards at the end to transfer only total amount due
-			let mut due_rewards: BTreeMap<T::AccountId, Balance> = BTreeMap::new();
-			let mut increase_due_rewards = |amt: Balance, to: T::AccountId| {
-				if let Some(already_due) = due_rewards.get(&to) {
-					let amount = amt.saturating_add(*already_due);
-					due_rewards.insert(to, amount);
-				} else {
-					due_rewards.insert(to, amt);
-				}
-			};
-			let collator_fee = <CollatorCommission<T>>::get();
-			let collator_issuance = collator_fee * total_issuance;
-			for (collator, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
-				let pct_due = Perbill::from_rational(pts, total);
-				let mut amt_due = pct_due * total_issuance;
-				// Take the snapshot of block author and delegations
-				let state = <AtStake<T>>::take(round_to_payout, &collator);
-				if state.delegations.is_empty() {
-					// solo collator with no delegators
-					mint(amt_due, collator.clone());
-				} else {
-					// pay collator first; commission + due_portion
-					let collator_pct = Perbill::from_rational(state.bond, state.total);
-					let commission = pct_due * collator_issuance;
-					amt_due = amt_due.saturating_sub(commission);
-					let collator_reward = (collator_pct * amt_due).saturating_add(commission);
-					mint(collator_reward, collator.clone());
-					// pay delegators due portion
-					for Bond { owner, amount, .. } in state.delegations {
-						let percent = Perbill::from_rational(amount, state.total);
-						let due = percent * amt_due;
-						increase_due_rewards(due, owner.clone());
-						Self::deposit_event(Event::DelegatorDueReward(
-							owner.clone(),
-							collator.clone(),
-							due,
-						));
-					}
+			let round_aggregator_info = RoundAggregatorInfo::<T>::get(round_to_payout);
+			let collator_commission_perbill = <CollatorCommission<T>>::get();
+
+			for (author, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
+				let author_issuance_perbill = Perbill::from_rational(pts, total);
+
+				let author_rewards = author_issuance_perbill.mul_floor(total_issuance);
+
+				match round_aggregator_info.get(author) {
+					Some(aggregator_distribution) => {
+						process_aggregator_with_rewards_and_dist(author, author_rewards, aggregator_distribution)
+					}, 
+					None => process_collator_with_rewards(author, author_rewards),
 				}
 			}
 
-			for (delegator, total_due) in due_rewards {
-				mint(total_due, delegator);
+			let process_collator_with_rewards = |collator, reward| {
+				let state = <AtStake<T>>::take(round_to_payout, &collator);
+				let mut collator_payout_info = RoundCollatorRewardInfoType<T::AccountId>::default(); 
+				if state.delegations.is_empty() {
+					// solo collator with no delegators
+					collator_payout_info.collator_reward = reward;
+					RoundCollatorRewardInfo::<T>::insert(round_to_payout, collator, collator_payout_info);
+				} else {
+					let collator_commission = collator_commission_perbill.mul_floor(reward);
+					let reward_less_commission = reward.saturating_sub(collator_commission);
+
+					let collator_perbill = Perbill::from_rational(state.bond, state.total);
+					let collator_reward_less_commission = collator_perbill.mul_floor(reward_less_commission);
+
+					collator_payout_info.collator_reward = collator_reward_less_commission.saturating_add(collator_commission);
+					
+					match state.delegations.iter().cloned().try_fold(state.bond, |acc, &x| acc.checked_add(x.amount)) {
+						Ok(total) if total<=state.total => {
+							state.delegations.iter().for_each(|delegator_bond|
+								collator_payout_info.delegator_rewards
+									.insert(delegator_bond.owner,
+										multiply_by_rational_with_rounding(
+											reward_less_commission,
+											delegator_bond.amount,
+											state.total,
+											Rounding::Down,
+										)
+										.unwrap_or(Balance::zero())
+									)
+							);
+						},
+						_ => {
+							// unexpected overflow has occured and rewards will now distributed evenly amongst
+							let delegator_count = state.delegations.len();
+							let delegator_reward = reward.saturating_sub(collator_payout_info.collator_reward).checked_div(delegator_count).unwrap_or(Balance::zero());
+							state.delegations.iter().for_each(|delegator_bond|
+								collator_payout_info.delegator_rewards.insert(delegator_bond.owner, delegator_reward)
+							);
+						},
+					}
+
+					RoundCollatorRewardInfo::<T>::insert(round_to_payout, collator, collator_payout_info);
+				}
 			}
+
+			let process_aggregator_with_rewards_and_dist = |aggregator, author_rewards, distribution| {
+				match distribution.values().cloned().try_fold(Balance::zero(), |acc, &x| acc.checked_add(x)) {
+					Ok(aggregator_total_valuation) => {
+						distribution.iter().for_each(|collator, contribution| 
+							process_collator_with_rewards(collator, 
+								multiply_by_rational_with_rounding(
+									author_rewards,
+									contribution,
+									aggregator_total_valuation,
+									Rounding::Down,
+								)
+								.unwrap_or(Balance::zero()))
+						);
+					},
+					Err(_) => {
+						// unexpected overflow has occured and rewards will now distributed evenly amongst
+						let collator_count = distribution.keys().cloned().count();
+						let collator_reward = author_rewards.checked_div(collator_count).unwrap_or(Balance::zero());
+						distribution.keys().for_each(|collator| process_collator_with_rewards(collator, collator_reward));
+					},
+				}
+			}
+
 		}
 
 		/// Compute the top `TotalSelected` candidates in the CandidatePool and return
 		/// a vec of their AccountIds (in the order of selection)
-		pub fn compute_top_candidates() -> Vec<(T::AccountId, Balance)> {
+		pub fn compute_top_candidates() -> (Vec<(T::AccountId, Balance), Vec<(T::AccountId, Balance), BTreeMap<T::AccountId, BTreeMap<T::AccountId, Balance>>)> {
 			let candidates = <CandidatePool<T>>::get().0;
 			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
 
-			// morph amount in candidates to exposure in mga
-			let mut valuated_candidates: Vec<(T::AccountId, Balance)> = candidates
-				.iter()
-				.filter_map(|x| {
-					if let Some(pool_ratio_option) =
-						staking_liquidity_tokens.get(&x.liquidity_token)
-					{
-						if let Some(pool_ratio) = pool_ratio_option {
-							if !pool_ratio.1.is_zero() {
-								Some((
-									x.owner.clone(),
-									multiply_by_rational_with_rounding(
-										x.amount,
-										pool_ratio.0,
-										pool_ratio.1,
-										Rounding::Down,
-									)
-									.unwrap_or(Balance::max_value()),
-								))
-							} else {
-								None
-							}
-						} else {
-							None
+			let aggregator_info = <AggregatorInfo<T>>::get();
+			let mut aggregators_collator_info = BTreeMap<T::AccountId, BTreeMap<T::AccountId, Balance>>::new();
+			let mut valuated_author_candidates_btreemap = BTreeMap<T::AccountId, Balance>::new();
+
+			for candidate_bond in candidate.iter(){
+				match staking_liquidity_tokens.get(&candidate_bond.liquidity_token) {
+					Some(Some(pool_ratio)) if !pool_ratio.1.is_zero() => {
+
+						let collator_valuation = multiply_by_rational_with_rounding(
+							candidate_bond.amount,
+							pool_ratio.0,
+							pool_ratio.1,
+							Rounding::Down,
+						)
+						.unwrap_or(Balance::max_value());
+
+						match aggregator_info.get(&candidate_bond.owner){
+							Some(aggregator) => {
+								valuated_author_candidates_btreemap.entry(aggregator)
+									.and_modify(|current_total_valuation| {
+										aggregators_collator_info.entry(aggregator)
+											.and_modify(|x| x.insert(candidate_bond.owner, collator_valuation))
+											.or_insert(BTreeMap<T::AccountId, Balance>::from([(candidate_bond.owner, collator_valuation)]));
+										*current_total_valuation = *current_total_valuation.saturating_add(collator_valuation)
+									})
+									.or_insert_with(|| {
+										aggregators_collator_info.entry(aggregator)
+											.and_modify(|x| x.insert(candidate_bond.owner, collator_valuation))
+											.or_insert(BTreeMap<T::AccountId, Balance>::from([(candidate_bond.owner, collator_valuation)]));
+										collator_valuation
+									});
+							},
+							None => {let _ = valuated_author_candidates_btreemap.insert(candidate_bond.owner, collator_valuation)},
 						}
-					} else {
-						None
-					}
-				})
-				.collect();
+					},
+					_ => {},
+				}
+			}
+
+			let mut valuated_author_candidates_vec: Vec<T::AccountId, Balance> = valuated_author_candidates_btreemap.iter().cloned().collect::<_>();
+
 			// order candidates by stake (least to greatest so requires `rev()`)
-			valuated_candidates.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+			valuated_author_candidates_vec.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 			let top_n = <TotalSelected<T>>::get() as usize;
 			// choose the top TotalSelected qualified candidates, ordered by stake
-			let mut valuated_collators: Vec<(T::AccountId, Balance)> = valuated_candidates
+			let mut selected_authors: Vec<(T::AccountId, Balance)> = valuated_author_candidates_vec
 				.into_iter()
 				.rev()
 				.take(top_n)
 				.filter(|x| x.1 >= T::MinCollatorStk::get())
 				.collect::<_>();
-			valuated_collators.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-			valuated_collators
+			selected_authors.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+			let mut all_selected_collators = Vec<(T::AccountId, Balance)>::new();
+			for selected_author in selected_authors.iter(){
+				if let Some(aggregator_collator_info) = aggregators_collator_info.get(&selected_author.0) {
+					all_selected_collators.extend_from_slice(&aggregator_collator_info.iter().collect::<_>[..]);
+				} else {
+					all_selected_collators.push(selected_author);
+				}
+			}
+
+			(selected_authors, all_selected_collators, aggregators_collator_info)
 		}
 
 		pub fn staking_liquidity_tokens_snapshot() {
@@ -2572,9 +2688,12 @@ pub mod pallet {
 				(0u32, 0u32, Balance::zero());
 			Self::staking_liquidity_tokens_snapshot();
 			// choose the top TotalSelected qualified candidates, ordered by stake
-			let collators = Self::compute_top_candidates();
+			let (selected_authors, all_selected_collators, aggregators_collator_info) = Self::compute_top_candidates();
+
+			RoundAggregatorInfo::<T>::put(now, aggregators_collator_info);
+			
 			// snapshot exposure for round for weighting reward distribution
-			for collator in collators.iter() {
+			for collator in all_selected_collators.iter() {
 				let state = <CandidateState<T>>::get(&collator.0)
 					.expect("all members of CandidateQ must be candidates");
 				collator_count = collator_count.saturating_add(1u32);
@@ -2588,7 +2707,7 @@ pub mod pallet {
 
 			// insert canonical collator set
 			<SelectedCandidates<T>>::put(
-				collators
+				selected_authors
 					.iter()
 					.cloned()
 					.map(|x| x.0)
