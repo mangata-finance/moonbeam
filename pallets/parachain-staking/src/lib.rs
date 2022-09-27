@@ -2445,15 +2445,15 @@ pub mod pallet {
 
 					match should_be_approved {
 						true => {
-							collator_candidates.iter().for_each(|collator_candidate|{
+							collator_candidates.iter().try_for_each(|collator_candidate|{
 								
 								ensure!(Self::is_candidate(&collator_candidate), Error::<T>::CandidateDNE);
 								ensure!(aggregator_metadata.approved_candidates.insert(collator_candidate),
 									Error::<T>::CandidateAlreadyApprovedByAggregator);
-							});
+							})?;
 						},
 						false => {
-							collator_candidates.iter().for_each(|collator_candidate|{
+							collator_candidates.iter().try_for_each(|collator_candidate|{
 								
 								// Do not propagate the error if there's an error here
 								// Then it means that the aggregator wasn't aggregating for this candidate
@@ -2482,7 +2482,7 @@ pub mod pallet {
 
 								ensure!(aggregator_metadata.approved_candidates.remove(collator_candidate),
 									Error::<T>::CandidateNotApprovedByAggregator);
-							});
+							})?;
 						}
 					}
 
@@ -2512,9 +2512,61 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		#[pallet::weight(1_000_000_000)]
+		#[transactional]
+		pub fn payout_collator_rewards(
+			origin: OriginFor<T>,
+			round: RoundIndex,
+			collator: T::AccountId
+		) -> DispatchResultWithPostInfo {
+			let caller = ensure_signed(origin)?;
+
+			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(round, collator).ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
+
+			Self::payout_reward(collator, collator_payout_info.collator_reward)?;
+
+			let _ = collator_payout_info.delegator_rewards.iter().try_for_each(|d, r| Self::payout_reward(d, r)?)?;
+
+			RoundCollatorRewardInfo::<T>::remove(round, collator);
+			
+			Ok(().into())
+		}
+
+		#[pallet::weight(1_000_000_000)]
+		#[transactional]
+		pub fn payout_delegator_reward(
+			origin: OriginFor<T>,
+			round: RoundIndex,
+			collator: T::AccountId,
+			delegator: T::AccountId
+		) -> DispatchResultWithPostInfo {
+			let caller = ensure_signed(origin)?;
+
+			RoundCollatorRewardInfo::<T>::try_mutate(round, collator,
+				|maybe_collator_payout_info| {
+					let mut collator_payout_info = maybe_collator_payout_info.as_mut().ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
+					let delegator_reward = collator_payout_info.delegator_rewards.remove(delegator).ok_or(Error::<T>::DelegatorRewardsDNE)?;
+					Self::payout_reward(delegator, delegator_reward)?;
+					Ok(())
+			})?;
+			
+			Ok(().into())
+		}
+
 	}
 
 	impl<T: Config> Pallet<T> {
+		pub fn payout_reward(amt: Balance, to: T::AccountId) {
+			let _ = <T as pallet::Config>::Currency::transfer(
+				T::NativeTokenId::get().into(),
+				&<T as pallet::Config>::StakingIssuanceVault::get(),
+				&to,
+				amt.into(),
+				ExistenceRequirement::AllowDeath,
+			)?;
+			Self::deposit_event(Event::Rewarded(to.clone(), amt));
+			Ok(())
+		}
 		pub fn is_delegator(acc: &T::AccountId) -> bool {
 			<DelegatorState<T>>::get(acc).is_some()
 		}
