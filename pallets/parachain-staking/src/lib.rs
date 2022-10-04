@@ -1565,7 +1565,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn total_selected)]
 	/// The total candidates selected every round
-	type TotalSelected<T: Config> = StorageValue<_, u32, ValueQuery>;
+	pub(crate) type TotalSelected<T: Config> = StorageValue<_, u32, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn round)]
@@ -2786,7 +2786,7 @@ pub mod pallet {
 				T::Issuance::get_staking_issuance(round_to_payout).unwrap_or(Balance::zero());
 
 			// unwrap_or_default here is to ensure backward compatibility during the upgrade 
-			let round_aggregator_info = RoundAggregatorInfo::<T>::get(round_to_payout).unwrap_or_default();
+			let round_aggregator_info = RoundAggregatorInfo::<T>::take(round_to_payout).unwrap_or_default();
 			let collator_commission_perbill = <CollatorCommission<T>>::get();
 
 			

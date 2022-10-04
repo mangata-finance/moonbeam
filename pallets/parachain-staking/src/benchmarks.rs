@@ -49,6 +49,18 @@ const MGA_TOKEN_ID: TokenId = 0u32;
 /// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7 
 /// Since we are creating new tokens every time we can simply just use (v, v+1) as the pooled token amounts, to mint v liquidity tokens
 
+pub(crate) fn payout_collator_for_round<T: Config + orml_tokens::Config + pallet_xyk::Config>(n: u32) {
+	let dummy_user: T::AccountId = account("dummy", 0u32, 0u32);
+	let collators: Vec<<T as frame_system::Config>::AccountId> = RoundCollatorRewardInfo::<T>::iter_key_prefix(n).collect();
+
+	for collator in collators.iter(){
+		Pallet::<T>::payout_collator_rewards(
+			RawOrigin::Signed(dummy_user.clone()).into(),
+			n.try_into().unwrap(),
+			collator.clone(),
+		);
+	}
+}
 
 /// Mint v liquidity tokens of token set x to funding account
 fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet_xyk::Config>(
@@ -1357,13 +1369,13 @@ benchmarks! {
 		let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32);
 
 		// // liquidity tokens
-		// let x =30;
+		// let x =100;
 		// // candidate_count
-		// let y =35;
+		// let y =300;
 		// // MaxDelegatorsPerCandidate
-		// let z =12;
+		// let z = 200;
 		// // Total selected
-		// let w =35;
+		// let w = 300;
 
 		assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
 		assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
@@ -1583,6 +1595,8 @@ benchmarks! {
 	verify {
 		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 7u32);
 		assert_eq!(Pallet::<T>::round().current as u32, 7u32);
+		
+		payout_collator_for_round::<T>(5u32);
 		for candidate in selected_candidates.clone() {
 			assert!(!<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance(MGA_TOKEN_ID.into(), &candidate).is_zero());
 		}

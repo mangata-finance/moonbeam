@@ -41,6 +41,8 @@ use orml_tokens::MultiTokenCurrencyExtended;
 use pallet_vesting_mangata::MultiTokenVestingSchedule;
 use sp_std::convert::{TryFrom, TryInto};
 
+use crate::RoundCollatorRewardInfo;
+
 pub type AccountId = u64;
 pub type BlockNumber = u64;
 pub const MGA_TOKEN_ID: TokenId = 0;
@@ -441,6 +443,15 @@ impl ExtBuilder {
 			assert_ok!(Issuance::calculate_and_store_round_issuance(0u32));
 		});
 		ext
+	}
+}
+
+pub(crate) fn payout_collator_for_round(n: u64) {
+
+	let collators: Vec<<Test as frame_system::Config>::AccountId> = RoundCollatorRewardInfo::<Test>::iter_key_prefix(u32::try_from(n).unwrap()).collect();
+
+	for collator in collators.iter(){
+		Stake::payout_collator_rewards(Origin::signed(999), n.try_into().unwrap(), collator.clone());
 	}
 }
 
