@@ -21,16 +21,16 @@
 // 	BalanceOf, Call, CandidateBondChange, CandidateBondRequest, Config, DelegationChange,
 // 	DelegationRequest, Pallet, Range,
 // };
-use crate::{*};
+use crate::*;
 use frame_benchmarking::{account, benchmarks};
 use frame_support::assert_ok;
-use frame_support::traits::{Get, ExistenceRequirement};
+use frame_support::traits::{ExistenceRequirement, Get};
 use frame_system::RawOrigin;
-use sp_runtime::{Perbill, Percent};
-use sp_std::{vec::Vec};
 use orml_tokens::MultiTokenCurrencyExtended;
 use orml_tokens::Pallet as Tokens;
 use pallet_authorship::EventHandler;
+use sp_runtime::{Perbill, Percent};
+use sp_std::vec::Vec;
 
 const DOLLAR: Balance = 1__000_000_000_000_000_000u128;
 const MGA_TOKEN_ID: TokenId = 0u32;
@@ -46,38 +46,51 @@ const MGA_TOKEN_ID: TokenId = 0u32;
 /// For each liquidity token, two additional tokens must be created
 /// (Token n, Token n+1) <=> Token n+2
 /// Starting from n0=5 as the first 4 are taken by the genesis config, but the starting n0 will be determined at the start of each bench by checking tokens
-/// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7 
+/// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7
 /// Since we are creating new tokens every time we can simply just use (v, v+1) as the pooled token amounts, to mint v liquidity tokens
 
-pub(crate) fn payout_collator_for_round<T: Config + orml_tokens::Config + pallet_xyk::Config>(n: u32) {
+pub(crate) fn payout_collator_for_round<T: Config + orml_tokens::Config + pallet_xyk::Config>(
+	n: u32,
+) {
 	let dummy_user: T::AccountId = account("dummy", 0u32, 0u32);
-	let collators: Vec<<T as frame_system::Config>::AccountId> = RoundCollatorRewardInfo::<T>::iter_key_prefix(n).collect();
+	let collators: Vec<<T as frame_system::Config>::AccountId> =
+		RoundCollatorRewardInfo::<T>::iter_key_prefix(n).collect();
 
-	for collator in collators.iter(){
+	for collator in collators.iter() {
 		Pallet::<T>::payout_collator_rewards(
 			RawOrigin::Signed(dummy_user.clone()).into(),
 			n.try_into().unwrap(),
 			collator.clone(),
-			<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get()
+			<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get(),
 		);
 	}
 }
 
 /// Mint v liquidity tokens of token set x to funding account
-fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet_xyk::Config>(
+fn create_non_staking_liquidity_for_funding<
+	T: Config + orml_tokens::Config + pallet_xyk::Config,
+>(
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
-	let x: TokenId = 
-		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::get_next_currency_id().into();
+	let x: TokenId = <orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<
+		T::AccountId,
+	>>::get_next_currency_id()
+	.into();
 	let v = v.unwrap_or(1_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(RawOrigin::Signed(funding_account.clone()).into(), x.into(), v.into(), (x + 1u32).into(), (v + 1).into()));
+	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(
+		RawOrigin::Signed(funding_account.clone()).into(),
+		x.into(),
+		v.into(),
+		(x + 1u32).into(),
+		(v + 1).into()
+	));
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 2u32).into(), &funding_account), v.into());
-	Ok(x+2u32)
+	Ok(x + 2u32)
 }
 
 /// Mint v liquidity tokens of token set x to funding account
@@ -85,16 +98,28 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
-	let x: TokenId = 
-		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::get_next_currency_id().into();
+	let x: TokenId = <orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<
+		T::AccountId,
+	>>::get_next_currency_id()
+	.into();
 	let v = v.unwrap_or(1_000_000 * DOLLAR);
-	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &funding_account, v.into())?;
+	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(
+		MGA_TOKEN_ID.into(),
+		&funding_account,
+		v.into(),
+	)?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(RawOrigin::Signed(funding_account.clone()).into(), MGA_TOKEN_ID.into(), v.into(), (x).into(), (v + 1).into()));
+	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(
+		RawOrigin::Signed(funding_account.clone()).into(),
+		MGA_TOKEN_ID.into(),
+		v.into(),
+		(x).into(),
+		(v + 1).into()
+	));
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 1u32).into(), &funding_account), v.into());
-	Ok(x+1u32)
+	Ok(x + 1u32)
 }
 
 /// Create a funded user.
@@ -111,7 +136,15 @@ fn create_funded_user<T: Config + orml_tokens::Config>(
 	let user = account(string, n, SEED);
 	// log::info!("user: {:?}",user);
 	let v = v.unwrap_or(100 * DOLLAR);
-	assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((token_id).into(), &funding_account, &user, v.into(), ExistenceRequirement::AllowDeath));
+	assert_ok!(
+		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer(
+			(token_id).into(),
+			&funding_account,
+			&user,
+			v.into(),
+			ExistenceRequirement::AllowDeath
+		)
+	);
 	(user, token_id, v)
 }
 
@@ -157,39 +190,65 @@ fn create_funded_collator<T: Config + orml_tokens::Config>(
 	Ok(user)
 }
 
-pub(crate) fn roll_to_round_and_author<T: Config + pallet_session::Config>(n: u32, author: Option<T::AccountId>) {
+pub(crate) fn roll_to_round_and_author<T: Config + pallet_session::Config>(
+	n: u32,
+	author: Option<T::AccountId>,
+) {
 	let current_round: u32 = Pallet::<T>::round().current;
 
 	while !(Pallet::<T>::round().current >= n + current_round as u32 + 1u32) {
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-		if author.clone().is_some(){
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<
+			T,
+		>>::block_number());
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(
+			<frame_system::Pallet<T>>::block_number(),
+		);
+		<frame_system::Pallet<T>>::set_block_number(
+			<frame_system::Pallet<T>>::block_number() + 1u32.into(),
+		);
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
+			<frame_system::Pallet<T>>::block_number(),
+		);
+		if author.clone().is_some() {
 			Pallet::<T>::note_author(author.clone().unwrap().clone());
 		}
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-		if <Pallet::<T> as pallet_session::ShouldEndSession<_>>::should_end_session(<frame_system::Pallet<T>>::block_number()){
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
+			<frame_system::Pallet<T>>::block_number(),
+		);
+		if <Pallet<T> as pallet_session::ShouldEndSession<_>>::should_end_session(
+			<frame_system::Pallet<T>>::block_number(),
+		) {
 			// This doesn't really use pallet_session::Pallet::<T>::current_index()
 			// especially since pallet_session's on_initialize is not triggered (session index will always be 0)
 			// But Staking's start session doesn't care as long as it isn't session 0
-			<Pallet::<T> as pallet_session::SessionManager<_>>::start_session(pallet_session::Pallet::<T>::current_index() as u32 + 1u32);
+			<Pallet<T> as pallet_session::SessionManager<_>>::start_session(
+				pallet_session::Pallet::<T>::current_index() as u32 + 1u32,
+			);
 		}
 	}
 
 	// Assumes round is atleast 3 blocks
 	// Roll to 2 blocks into the given round
-	for _i in 0..2{
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
-		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-		if author.clone().is_some(){
+	for _i in 0..2 {
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<
+			T,
+		>>::block_number());
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(
+			<frame_system::Pallet<T>>::block_number(),
+		);
+		<frame_system::Pallet<T>>::set_block_number(
+			<frame_system::Pallet<T>>::block_number() + 1u32.into(),
+		);
+		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
+			<frame_system::Pallet<T>>::block_number(),
+		);
+		if author.clone().is_some() {
 			Pallet::<T>::note_author(author.clone().unwrap().clone());
 		}
-		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(
+			<frame_system::Pallet<T>>::block_number(),
+		);
 	}
-
 }
 
 const USER_SEED: u32 = 999666;
@@ -214,7 +273,7 @@ benchmarks! {
 	join_candidates {
 		let x in 3..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 1u32);
 		let y in 3..100;
-		
+
 		// Worst Case Complexity is search into a list so \exists full list before call
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(y > liquidity_token_count);
@@ -473,7 +532,7 @@ benchmarks! {
 		liquidity_token_count = liquidity_token_count + 1u32;
 
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
-	
+
 		let more = 10*DOLLAR;
 		let caller: T::AccountId = create_funded_collator::<T>(
 			"collator",
@@ -484,7 +543,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &caller, more.into(), ExistenceRequirement::AllowDeath));
-		
+
 	}: _(RawOrigin::Signed(caller.clone()), more, None)
 	verify {
 		let state = Pallet::<T>::candidate_state(&caller).expect("request bonded more so exists");
@@ -554,7 +613,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &caller, more.into(), ExistenceRequirement::AllowDeath));
-		
+
 		Pallet::<T>::schedule_candidate_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
 			more,
@@ -581,7 +640,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), liquidity_token_count));
 
 		liquidity_token_count = liquidity_token_count + 1u32;
-		
+
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let less = 10*DOLLAR;
@@ -617,7 +676,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), liquidity_token_count));
 
 		liquidity_token_count = liquidity_token_count + 1u32;
-		
+
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let more = 10*DOLLAR;
@@ -630,7 +689,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer((created_liquidity_token).into(), &account("funding", 0u32, 0u32), &caller, more.into(), ExistenceRequirement::AllowDeath));
-		
+
 		Pallet::<T>::schedule_candidate_bond_more(
 			RawOrigin::Signed(caller.clone()).into(),
 			more,
@@ -655,7 +714,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), liquidity_token_count));
 
 		liquidity_token_count = liquidity_token_count + 1u32;
-		
+
 		let candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
 
 		let less = 10*DOLLAR;
@@ -1024,7 +1083,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(RawOrigin::Signed(
 			caller.clone()).into(),
 			collator.clone(),
@@ -1072,7 +1131,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
@@ -1170,7 +1229,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(RawOrigin::Signed(
 			caller.clone()).into(),
 			collator.clone(),
@@ -1216,7 +1275,7 @@ benchmarks! {
 			liquidity_token_count,
 		)?;
 		let (caller, _, v) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-		
+
 		Pallet::<T>::delegate(
 			RawOrigin::Signed(caller.clone()).into(),
 			collator.clone(),
@@ -1306,7 +1365,7 @@ benchmarks! {
 		for i in liquidity_token_count..(x){
 			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
 		}
-		
+
 	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
 	verify {
 		assert!(
@@ -1325,7 +1384,7 @@ benchmarks! {
 		}
 
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x - 1u32));
-		
+
 	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
 	verify {
 		assert!(
@@ -1337,7 +1396,7 @@ benchmarks! {
 	aggregator_update_metadata {
 
 		let x = <<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32; // to account for the two candidates we start with
-		
+
 
 		let start_liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1347,11 +1406,11 @@ benchmarks! {
 
 		let mut candidates: Vec<T::AccountId> = Vec::<T::AccountId>::new();
 
-		
+
 		const SEED: u32 = 0;
 
 		for i in 0u32..x{
-			
+
 			let created_liquidity_token =
 				create_staking_liquidity_for_funding::<T>(None).unwrap();
 
@@ -1379,9 +1438,9 @@ benchmarks! {
 		));
 
 		for i in 0u32..(x){
-			
+
 			let seed = USER_SEED - i;
-			
+
 			let collator: T::AccountId = account("collator", seed, SEED);
 			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
 				collator.clone()).into(),
@@ -1391,9 +1450,9 @@ benchmarks! {
 		}
 
 		for i in 0u32..(x){
-			
+
 			let seed = USER_SEED - i;
-			
+
 			let collator: T::AccountId = account("collator", seed, SEED);
 			assert_eq!(CandidateAggregator::<T>::get()
 				.get(&collator).cloned(),
@@ -1407,11 +1466,11 @@ benchmarks! {
 
 	}: _(RawOrigin::Signed(aggregator.clone()), candidates.clone(), false)
 	verify {
-		
+
 		for i in 0u32..(x){
-			
+
 			let seed = USER_SEED - i;
-			
+
 			let collator = account("collator", seed, SEED);
 			assert_eq!(CandidateAggregator::<T>::get()
 				.get(&collator).cloned(),
@@ -1428,7 +1487,7 @@ benchmarks! {
 	update_candidate_aggregator {
 
 		let x = <<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32; // to account for the two candidates we start with
-		
+
 
 		let start_liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1441,7 +1500,7 @@ benchmarks! {
 		const SEED: u32 = 0;
 
 		for i in 0u32..x{
-			
+
 			let created_liquidity_token =
 				create_staking_liquidity_for_funding::<T>(None).unwrap();
 
@@ -1469,9 +1528,9 @@ benchmarks! {
 		));
 
 		for i in 1u32..(x){
-			
+
 			let seed = USER_SEED - i;
-			
+
 			let collator: T::AccountId = account("collator", seed, SEED);
 			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
 				collator.clone()).into(),
@@ -1481,9 +1540,9 @@ benchmarks! {
 		}
 
 		for i in 1u32..(x){
-			
+
 			let seed = USER_SEED - i;
-			
+
 			let collator: T::AccountId = account("collator", seed, SEED);
 			assert_eq!(CandidateAggregator::<T>::get()
 				.get(&collator).cloned(),
@@ -1517,11 +1576,11 @@ benchmarks! {
 
 	}: _(RawOrigin::Signed(collator_switching.clone()), Some(aggregator.clone()))
 	verify {
-		
+
 		for i in 0u32..(x){
-			
+
 			let seed = USER_SEED - i;
-			
+
 			let collator = account("collator", seed, SEED);
 			assert_eq!(CandidateAggregator::<T>::get()
 				.get(&collator).cloned(),
@@ -1540,7 +1599,7 @@ benchmarks! {
 	payout_collator_rewards {
 
 		let y in 0u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get());
-		
+
 		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
 
@@ -1549,14 +1608,14 @@ benchmarks! {
 
 		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
 		round_collator_reward_info.collator_reward = 1*DOLLAR;
-		
+
 		for i in 0u32..y {
 			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
 			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
 		}
 
 		RoundCollatorRewardInfo::<T>::insert(1000, collator.clone(), round_collator_reward_info);
-		
+
 		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
 		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), y as usize);
 
@@ -1567,11 +1626,11 @@ benchmarks! {
 
 	}
 
-	
+
 	payout_delegator_reward {
 
 		let y in 1u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get());
-		
+
 		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
 
@@ -1580,14 +1639,14 @@ benchmarks! {
 
 		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
 		round_collator_reward_info.collator_reward = 1*DOLLAR;
-		
+
 		for i in 0u32..y {
 			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
 			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
 		}
 
 		RoundCollatorRewardInfo::<T>::insert(1000, collator.clone(), round_collator_reward_info);
-		
+
 		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
 		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), y as usize);
 
@@ -1608,7 +1667,7 @@ benchmarks! {
 	passive_session_change {
 		// Move on by a block
 		// Assuming we start at (say) 0, and that round is atleast 3 blocks.
-		
+
 		<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
@@ -1660,7 +1719,7 @@ benchmarks! {
 		assert!(x > start_liquidity_token_count);
 
 		for i in start_liquidity_token_count..(x - 1u32){
-			
+
 			let created_liquidity_token =
 				create_staking_liquidity_for_funding::<T>(None).unwrap();
 
@@ -1696,7 +1755,7 @@ benchmarks! {
 			)?;
 			candidates.push(collator.clone());
 
-			
+
 			const SEED: u32 = 0;
 			let aggregator: T::AccountId = account("aggregator", seed, SEED);
 			assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
@@ -1716,7 +1775,7 @@ benchmarks! {
 		// Now we will create `z*y` delegators each with `100*DOLLAR` created_liquidity_token tokens
 
 		let mut delegators: Vec<T::AccountId> = Vec::<T::AccountId>::new();
-		
+
 		let current_delegator_count: u32 = delegators.len() as u32;
 
 		for i in current_delegator_count..(z*y){
@@ -1794,7 +1853,7 @@ benchmarks! {
 
 		let selected_author = Pallet::<T>::selected_candidates();
 
-		
+
 		// We would like to move on to the end of round 1
 		let session_to_reach = 5u32;
 
@@ -1822,7 +1881,7 @@ benchmarks! {
 			}
 		}
 
-		
+
 		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 5u32);
 		assert_eq!(Pallet::<T>::round().current as u32, 5u32);
 
@@ -1835,11 +1894,11 @@ benchmarks! {
 
 			if candidate_bond.liquidity_token == created_liquidity_token {
 				assert_eq!(candidate_bond.amount as u128, (z as u128 + 1u128)*100*DOLLAR);
-				
+
 			}
 
 		}
-		
+
 		for author in selected_author.clone() {
 			Pallet::<T>::note_author(author.clone());
 		}
@@ -1880,7 +1939,7 @@ benchmarks! {
 	verify {
 		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 7u32);
 		assert_eq!(Pallet::<T>::round().current as u32, 7u32);
-		
+
 		payout_collator_for_round::<T>(5u32);
 		for author in selected_author.clone() {
 			for candidate in AggregatorMetadata::<T>::get(&author).unwrap().token_collator_map.iter().map(|x| x.1){
