@@ -24,11 +24,11 @@ members = [
 panic = "unwind"
 
 [patch."https://github.com/mangata-finance/mangata-node"]
-pallet-xyk = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop" }
-pallet-issuance = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop" }
-pallet-multipurpose-liquidity = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop" }
-mp-multipurpose-liquidity = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop" }
-mp-traits = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop" }
+pallet-xyk = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop-v0.9.28" }
+pallet-issuance = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop-v0.9.28" }
+pallet-multipurpose-liquidity = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop-v0.9.28" }
+mp-multipurpose-liquidity = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop-v0.9.28" }
+mp-traits = { git = "https://github.com/mangata-finance//mangata-node", branch = "develop-v0.9.28" }
 
 # [patch."https://github.com/mangata-finance/mangata-node"]
 # pallet-xyk = { path = "../mangata-node/pallets/xyk" }
