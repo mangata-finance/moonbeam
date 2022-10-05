@@ -58,6 +58,7 @@ pub(crate) fn payout_collator_for_round<T: Config + orml_tokens::Config + pallet
 			RawOrigin::Signed(dummy_user.clone()).into(),
 			n.try_into().unwrap(),
 			collator.clone(),
+			<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get()
 		);
 	}
 }
@@ -124,14 +125,14 @@ fn create_funded_delegator<T: Config>(
 	collator_delegator_count: u32,
 ) -> Result<T::AccountId, &'static str> {
 	let (user, _, v) = create_funded_user::<T>(string, n, collator_token_id, v);
-	Pallet::<T>::delegate(
+	assert_ok!(Pallet::<T>::delegate(
 		RawOrigin::Signed(user.clone()).into(),
 		collator,
 		v,
 		None,
 		collator_delegator_count,
 		0u32, // first delegation for all calls
-	)?;
+	));
 	Ok(user)
 }
 
@@ -145,14 +146,14 @@ fn create_funded_collator<T: Config + orml_tokens::Config>(
 	liquidity_token_count: u32,
 ) -> Result<T::AccountId, &'static str> {
 	let (user, token_id, v) = create_funded_user::<T>(string, n, token_id, v);
-	Pallet::<T>::join_candidates(
+	assert_ok!(Pallet::<T>::join_candidates(
 		RawOrigin::Signed(user.clone()).into(),
 		v,
 		token_id,
 		None,
 		candidate_count,
 		liquidity_token_count
-	)?;
+	));
 	Ok(user)
 }
 
@@ -681,7 +682,7 @@ benchmarks! {
 	}
 
 	delegate {
-		let x in 3..<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get();
+		let x in 3..(<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get().min(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32));
 		let y in 2..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 
 		let created_liquidity_token =
@@ -727,7 +728,7 @@ benchmarks! {
 			USER_SEED,
 			created_liquidity_token,
 			None,
-			collators.len() as u32 + candidate_count,
+			collators.len() as u32 + candidate_count + 1,
 			liquidity_token_count,
 		)?;
 		// Worst Case Complexity is insertion into an almost full collator
@@ -784,7 +785,7 @@ benchmarks! {
 	}
 
 	execute_leave_delegators {
-		let x in 2..<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get();
+		let x in 2..(<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get().min(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32));
 		let created_liquidity_token =
 			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
 
@@ -1333,6 +1334,273 @@ benchmarks! {
 		);
 	}
 
+	aggregator_update_metadata {
+
+		let x = <<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32; // to account for the two candidates we start with
+		
+
+		let start_liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
+
+		let initial_candidates: Vec<T::AccountId> = Pallet::<T>::candidate_pool().0.into_iter().map(|x| x.owner).collect::<_>();
+		let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		assert_eq!(base_candidate_count, 2);
+
+		let mut candidates: Vec<T::AccountId> = Vec::<T::AccountId>::new();
+
+		
+		const SEED: u32 = 0;
+
+		for i in 0u32..x{
+			
+			let created_liquidity_token =
+				create_staking_liquidity_for_funding::<T>(None).unwrap();
+
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), 1000));
+
+			let seed = USER_SEED - i;
+			let collator = create_funded_collator::<T>(
+				"collator",
+				seed,
+				created_liquidity_token,
+				None,
+				candidates.len() as u32 + base_candidate_count,
+				1000
+			)?;
+
+			candidates.push(collator.clone());
+
+		}
+
+		let aggregator: T::AccountId = account("aggregator", 0u32, SEED);
+		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+			aggregator.clone()).into(),
+			candidates.clone(),
+			true
+		));
+
+		for i in 0u32..(x){
+			
+			let seed = USER_SEED - i;
+			
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+				collator.clone()).into(),
+				Some(aggregator.clone()),
+			));
+
+		}
+
+		for i in 0u32..(x){
+			
+			let seed = USER_SEED - i;
+			
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				Some(aggregator.clone()),
+			);
+
+		}
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().token_collator_map.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().approved_candidates.len(), x as usize);
+
+	}: _(RawOrigin::Signed(aggregator.clone()), candidates.clone(), false)
+	verify {
+		
+		for i in 0u32..(x){
+			
+			let seed = USER_SEED - i;
+			
+			let collator = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				None,
+			);
+
+		}
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator), None);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator), None);
+
+	}
+
+	update_candidate_aggregator {
+
+		let x = <<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32; // to account for the two candidates we start with
+		
+
+		let start_liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
+
+		let initial_candidates: Vec<T::AccountId> = Pallet::<T>::candidate_pool().0.into_iter().map(|x| x.owner).collect::<_>();
+		let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		assert_eq!(base_candidate_count, 2);
+
+		let mut candidates: Vec<T::AccountId> = Vec::<T::AccountId>::new();
+
+		const SEED: u32 = 0;
+
+		for i in 0u32..x{
+			
+			let created_liquidity_token =
+				create_staking_liquidity_for_funding::<T>(None).unwrap();
+
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), 1000));
+
+			let seed = USER_SEED - i;
+			let collator = create_funded_collator::<T>(
+				"collator",
+				seed,
+				created_liquidity_token,
+				None,
+				candidates.len() as u32 + base_candidate_count,
+				1000
+			)?;
+
+			candidates.push(collator.clone());
+
+		}
+
+		let aggregator: T::AccountId = account("aggregator", 0u32, SEED);
+		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+			aggregator.clone()).into(),
+			candidates.clone(),
+			true
+		));
+
+		for i in 1u32..(x){
+			
+			let seed = USER_SEED - i;
+			
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+				collator.clone()).into(),
+				Some(aggregator.clone()),
+			));
+
+		}
+
+		for i in 1u32..(x){
+			
+			let seed = USER_SEED - i;
+			
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				Some(aggregator.clone()),
+			);
+
+		}
+
+		let collator_switching: T::AccountId = account("collator", USER_SEED, SEED);
+		let aggregator_old: T::AccountId = account("aggregator", 1u32, SEED);
+		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+			aggregator_old.clone()).into(),
+			vec![collator_switching.clone()],
+			true
+		));
+
+		assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+			collator_switching.clone()).into(),
+			Some(aggregator_old.clone()),
+		));
+
+		assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator_switching).cloned(),
+				Some(aggregator_old.clone()),
+			);
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().token_collator_map.len(), (x - 1) as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().approved_candidates.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().token_collator_map.len(), 1 as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().approved_candidates.len(), 1 as usize);
+
+	}: _(RawOrigin::Signed(collator_switching.clone()), Some(aggregator.clone()))
+	verify {
+		
+		for i in 0u32..(x){
+			
+			let seed = USER_SEED - i;
+			
+			let collator = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				Some(aggregator.clone()),
+			);
+
+		}
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().token_collator_map.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().approved_candidates.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().token_collator_map.len(), 0 as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().approved_candidates.len(), 1 as usize);
+
+	}
+
+	payout_collator_rewards {
+
+		let y in 0u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get());
+		
+		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
+		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
+
+		const SEED: u32 = 0;
+		let collator: T::AccountId = account("collator", 0u32, SEED);
+
+		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
+		round_collator_reward_info.collator_reward = 1*DOLLAR;
+		
+		for i in 0u32..y {
+			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
+			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
+		}
+
+		RoundCollatorRewardInfo::<T>::insert(1000, collator.clone(), round_collator_reward_info);
+		
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), y as usize);
+
+	}: _(RawOrigin::Signed(collator.clone()), 1000, collator.clone(), y)
+	verify {
+
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator), None);
+
+	}
+
+	
+	payout_delegator_reward {
+
+		let y in 1u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get());
+		
+		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
+		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
+
+		const SEED: u32 = 0;
+		let collator: T::AccountId = account("collator", 0u32, SEED);
+
+		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
+		round_collator_reward_info.collator_reward = 1*DOLLAR;
+		
+		for i in 0u32..y {
+			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
+			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
+		}
+
+		RoundCollatorRewardInfo::<T>::insert(1000, collator.clone(), round_collator_reward_info);
+		
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), y as usize);
+
+		let delegator_target: T::AccountId = account("delegator", USER_SEED, SEED);
+
+	}: _(RawOrigin::Signed(delegator_target.clone()), 1000, collator.clone(), delegator_target.clone())
+	verify {
+
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), (y - 1) as usize);
+
+	}
+
 	// Session Change
 
 	// The session pallet's on initialize is called but should_end_session returns false
@@ -1359,23 +1627,25 @@ benchmarks! {
 
 	active_session_change {
 
-		// liquidity tokens
-		let x in 3..100;
-		// candidate_count
-		let y in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32); // to account for the two candidates we start with
-		// MaxDelegatorsPerCandidate
-		let z in 3..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
-		// Total selected
-		let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32);
-
 		// // liquidity tokens
-		// let x =100;
+		// let x in 3..100;
 		// // candidate_count
-		// let y =300;
+		// let y in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32); // to account for the two candidates we start with
 		// // MaxDelegatorsPerCandidate
-		// let z = 200;
+		// let z in 3..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
+
+		// // Since now an aggregator can have multiple collators each of whose rewards will be written to the storage individually
 		// // Total selected
-		// let w = 300;
+		// let w = y;
+
+		// liquidity tokens
+		let x = 100;
+		// candidate_count
+		let y = 190;
+		// MaxDelegatorsPerCandidate
+		let z = 200;
+		// Total selected
+		let w = 190;
 
 		assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
 		assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
@@ -1425,6 +1695,20 @@ benchmarks! {
 				x
 			)?;
 			candidates.push(collator.clone());
+
+			
+			const SEED: u32 = 0;
+			let aggregator: T::AccountId = account("aggregator", seed, SEED);
+			assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+				aggregator.clone()).into(),
+				vec![collator.clone()],
+				true
+			));
+
+			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+				collator.clone()).into(),
+				Some(aggregator.clone()),
+			));
 		}
 
 		assert_eq!(candidates.len(), y as usize);
@@ -1450,7 +1734,6 @@ benchmarks! {
 
 			assert_ok!(Pallet::<T>::delegate(RawOrigin::Signed(
 				delegator.clone()).into(),
-				// candidates.get(targetted_collator_index as usize).unwrap().clone(),
 				candidates[targetted_collator_index as usize].clone(),
 				100*DOLLAR,
 				None,
@@ -1509,7 +1792,7 @@ benchmarks! {
 			}
 		}
 
-		let selected_candidates = Pallet::<T>::selected_candidates();
+		let selected_author = Pallet::<T>::selected_candidates();
 
 		
 		// We would like to move on to the end of round 1
@@ -1543,7 +1826,7 @@ benchmarks! {
 		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 5u32);
 		assert_eq!(Pallet::<T>::round().current as u32, 5u32);
 
-		assert_eq!(selected_candidates.len(), (w as usize).min(Pallet::<T>::candidate_pool().0.len() as usize));
+		assert_eq!(selected_author.len(), (w as usize).min(Pallet::<T>::candidate_pool().0.len() as usize));
 
 
 		let candidate_pool_state = Pallet::<T>::candidate_pool().0;
@@ -1557,8 +1840,8 @@ benchmarks! {
 
 		}
 		
-		for candidate in selected_candidates.clone() {
-			Pallet::<T>::note_author(candidate.clone());
+		for author in selected_author.clone() {
+			Pallet::<T>::note_author(author.clone());
 		}
 
 		// We would like to move on to the end of round 1
@@ -1587,8 +1870,10 @@ benchmarks! {
 
 		assert!(<Pallet::<T> as pallet_session::ShouldEndSession<_>>::should_end_session(<frame_system::Pallet<T>>::block_number()));
 
-		for candidate in selected_candidates.clone() {
+		for author in selected_author.clone() {
+			for candidate in AggregatorMetadata::<T>::get(&author).unwrap().token_collator_map.iter().map(|x| x.1){
 			assert!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance(MGA_TOKEN_ID.into(), &candidate).is_zero());
+			}
 		}
 
 	}: {<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());}
@@ -1597,8 +1882,10 @@ benchmarks! {
 		assert_eq!(Pallet::<T>::round().current as u32, 7u32);
 		
 		payout_collator_for_round::<T>(5u32);
-		for candidate in selected_candidates.clone() {
+		for author in selected_author.clone() {
+			for candidate in AggregatorMetadata::<T>::get(&author).unwrap().token_collator_map.iter().map(|x| x.1){
 			assert!(!<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance(MGA_TOKEN_ID.into(), &candidate).is_zero());
+			}
 		}
 	}
 

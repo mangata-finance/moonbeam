@@ -451,7 +451,7 @@ pub(crate) fn payout_collator_for_round(n: u64) {
 	let collators: Vec<<Test as frame_system::Config>::AccountId> = RoundCollatorRewardInfo::<Test>::iter_key_prefix(u32::try_from(n).unwrap()).collect();
 
 	for collator in collators.iter(){
-		Stake::payout_collator_rewards(Origin::signed(999), n.try_into().unwrap(), collator.clone());
+		Stake::payout_collator_rewards(Origin::signed(999), n.try_into().unwrap(), collator.clone(), <Test as stake::Config>::MaxDelegatorsPerCandidate::get());
 	}
 }
 

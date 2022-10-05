@@ -1482,6 +1482,7 @@ pub mod pallet {
 		TargettedAggregatorSameAsCurrent,
 		CandidateNotApprovedByAggregator,
 		AggregatorLiquidityTokenTaken,
+		IncorrectRewardDelegatorCount,
 		MathError,
 	}
 
@@ -2558,11 +2559,14 @@ pub mod pallet {
 		pub fn payout_collator_rewards(
 			origin: OriginFor<T>,
 			round: RoundIndex,
-			collator: T::AccountId
+			collator: T::AccountId,
+			delegator_count: u32,
 		) -> DispatchResultWithPostInfo {
 			let caller = ensure_signed(origin)?;
 
 			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(round, collator.clone()).ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
+
+			ensure!(delegator_count as usize >= collator_payout_info.delegator_rewards.keys().cloned().count(), Error::<T>::IncorrectRewardDelegatorCount);
 
 			Self::payout_reward(collator.clone(), collator_payout_info.collator_reward)?;
 
