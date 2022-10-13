@@ -19,12 +19,12 @@ use crate as stake;
 use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate, BondKind, StakingReservesProviderTrait};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, WithdrawReasons},
+	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, WithdrawReasons, tokens::currency::{MultiTokenCurrency}},
 	weights::Weight,
 	PalletId, assert_ok
 };
-use mangata_primitives::Amount;
-use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency, TransferDust};
+use mangata_types::Amount;
+use orml_tokens::{MultiTokenReservableCurrency, TransferDust};
 use orml_traits::parameter_type_with_key;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;

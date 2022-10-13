@@ -28,7 +28,7 @@ sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "m
 pallet-collective = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 
 pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
-mangata-primitives = { git = "https://github.com/mangata-finance/mangata-node", branch = "develop", default-features = false }
+mangata-types = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
 pallet-issuance = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
 mp-multipurpose-liquidity = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
@@ -38,7 +38,7 @@ mp-traits = { default-features = false, git = "https://github.com/mangata-financ
 similar-asserts = "1.1.0"
 
 orml-traits = { default-features = false, version = "0.4.1-dev", git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
-pallet-assets-info = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
+#pallet-assets-info = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
 sp-core = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 sp-io = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 pallet-vesting-mangata = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
