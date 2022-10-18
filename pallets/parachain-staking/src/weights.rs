@@ -384,14 +384,14 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add((Weight::from_ref_time(761_880_000)).saturating_mul(z as u64))
 			// Standard Error: 12_287_000
 			.saturating_add((Weight::from_ref_time(470_042_000)).saturating_mul(w as u64))
-			.saturating_add(T::DbWeight::get().reads((4 as Weight).saturating_mul(x as u64)))
-			.saturating_add(T::DbWeight::get().reads((10 as Weight).saturating_mul(y as u64)))
-			.saturating_add(T::DbWeight::get().reads((51 as Weight).saturating_mul(z as u64)))
-			.saturating_add(T::DbWeight::get().reads((34 as Weight).saturating_mul(w as u64)))
-			.saturating_add(T::DbWeight::get().writes((1 as Weight).saturating_mul(x as u64)))
-			.saturating_add(T::DbWeight::get().writes((9 as Weight).saturating_mul(y as u64)))
-			.saturating_add(T::DbWeight::get().writes((50 as Weight).saturating_mul(z as u64)))
-			.saturating_add(T::DbWeight::get().writes((33 as Weight).saturating_mul(w as u64)))
+			.saturating_add(T::DbWeight::get().reads((4 as u64).saturating_mul(x as u64)))
+			.saturating_add(T::DbWeight::get().reads((10 as u64).saturating_mul(y as u64)))
+			.saturating_add(T::DbWeight::get().reads((51 as u64).saturating_mul(z as u64)))
+			.saturating_add(T::DbWeight::get().reads((34 as u64).saturating_mul(w as u64)))
+			.saturating_add(T::DbWeight::get().writes((1 as u64).saturating_mul(x as u64)))
+			.saturating_add(T::DbWeight::get().writes((9 as u64).saturating_mul(y as u64)))
+			.saturating_add(T::DbWeight::get().writes((50 as u64).saturating_mul(z as u64)))
+			.saturating_add(T::DbWeight::get().writes((33 as u64).saturating_mul(w as u64)))
 	}
 }
 
@@ -580,13 +580,13 @@ impl WeightInfo for () {
 			.saturating_add((Weight::from_ref_time(761_880_000)).saturating_mul(z as u64))
 			// Standard Error: 12_287_000
 			.saturating_add((Weight::from_ref_time(470_042_000)).saturating_mul(w as u64))
-			.saturating_add(RocksDbWeight::get().reads((4 as Weight).saturating_mul(x as u64)))
-			.saturating_add(RocksDbWeight::get().reads((10 as Weight).saturating_mul(y as u64)))
-			.saturating_add(RocksDbWeight::get().reads((51 as Weight).saturating_mul(z as u64)))
-			.saturating_add(RocksDbWeight::get().reads((34 as Weight).saturating_mul(w as u64)))
-			.saturating_add(RocksDbWeight::get().writes((1 as Weight).saturating_mul(x as u64)))
-			.saturating_add(RocksDbWeight::get().writes((9 as Weight).saturating_mul(y as u64)))
-			.saturating_add(RocksDbWeight::get().writes((50 as Weight).saturating_mul(z as u64)))
-			.saturating_add(RocksDbWeight::get().writes((33 as Weight).saturating_mul(w as u64)))
+			.saturating_add(RocksDbWeight::get().reads((4 as u64).saturating_mul(x as u64)))
+			.saturating_add(RocksDbWeight::get().reads((10 as u64).saturating_mul(y as u64)))
+			.saturating_add(RocksDbWeight::get().reads((51 as u64).saturating_mul(z as u64)))
+			.saturating_add(RocksDbWeight::get().reads((34 as u64).saturating_mul(w as u64)))
+			.saturating_add(RocksDbWeight::get().writes((1 as u64).saturating_mul(x as u64)))
+			.saturating_add(RocksDbWeight::get().writes((9 as u64).saturating_mul(y as u64)))
+			.saturating_add(RocksDbWeight::get().writes((50 as u64).saturating_mul(z as u64)))
+			.saturating_add(RocksDbWeight::get().writes((33 as u64).saturating_mul(w as u64)))
 	}
 }

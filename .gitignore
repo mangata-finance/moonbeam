@@ -1,6 +1,6 @@
 # MacOS thing
 **/.DS_Store
-**/.idea
+.idea
 
 # Rust directories
 **/target
