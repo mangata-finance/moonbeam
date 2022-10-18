@@ -4449,11 +4449,6 @@ version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.29#b512eaba85c9b6bdff0723ac375cfa3032c326e2"
 
 [[patch.unused]]
-name = "pallet-multipurpose-liquidity"
-version = "0.1.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop#08504569fccb138254b858cbb16926722019121b"
-
-[[patch.unused]]
 name = "beefy-gadget"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.29#b512eaba85c9b6bdff0723ac375cfa3032c326e2"
@@ -5057,6 +5052,11 @@ source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v
 name = "ver-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.29#b512eaba85c9b6bdff0723ac375cfa3032c326e2"
+
+[[patch.unused]]
+name = "pallet-multipurpose-liquidity"
+version = "0.1.0"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop#08504569fccb138254b858cbb16926722019121b"
 
 [[patch.unused]]
 name = "orml-unknown-tokens"
