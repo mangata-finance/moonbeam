@@ -54,13 +54,13 @@ mod set;
 mod tests;
 
 use frame_support::pallet;
-pub use mangata_primitives::{Balance, TokenId};
-use orml_tokens::{MultiTokenCurrency, MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
+pub use mangata_types::{Balance, TokenId};
+use orml_tokens::{MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
 use pallet_xyk::Valuate;
 
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
-use frame_support::traits::{EstimateNextSessionRotation, ExistenceRequirement, Get};
+use frame_support::traits::{EstimateNextSessionRotation, ExistenceRequirement, Get, tokens::currency::{MultiTokenCurrency}};
 use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
 pub use mp_multipurpose_liquidity::BondKind;
