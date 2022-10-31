@@ -8,10 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa32bdc1-bdfd-4401-aa1d-947f95846d03" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pallets/parachain-staking/src/weights.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/parachain-staking/src/weights.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pallets/parachain-staking/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/parachain-staking/Cargo.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
