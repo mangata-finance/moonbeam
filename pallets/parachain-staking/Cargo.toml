@@ -2,7 +2,7 @@
 name = "parachain-staking"
 authors = ["PureStake"]
 description = "parachain staking pallet for collator selection and reward distribution"
-edition = "2018"
+edition = "2021"
 version = "3.0.0"
 
 [dependencies]
@@ -38,7 +38,6 @@ mp-traits = { default-features = false, git = "https://github.com/mangata-financ
 similar-asserts = "1.1.0"
 
 orml-traits = { default-features = false, version = "0.4.1-dev", git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
-#pallet-assets-info = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
 sp-core = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 sp-io = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 pallet-vesting-mangata = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
@@ -68,4 +67,4 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"frame-benchmarking/runtime-benchmarks",
 ]
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]
