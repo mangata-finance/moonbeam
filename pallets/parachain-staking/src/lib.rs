@@ -1351,7 +1351,7 @@ pub mod pallet {
 			+ MultiTokenReservableCurrency<Self::AccountId>
 			+ MultiTokenCurrencyExtended<Self::AccountId>;
 		/// The origin for monetary governance
-		type MonetaryGovernanceOrigin: EnsureOrigin<Self::Origin>;
+		type MonetaryGovernanceOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 		/// Default number of blocks per round at genesis
 		#[pallet::constant]
 		type BlocksPerRound: Get<u32>;
@@ -1665,7 +1665,7 @@ pub mod pallet {
 				);
 				candidate_count = candidate_count.saturating_add(1u32);
 				if let Err(error) = <Pallet<T>>::join_candidates(
-					T::Origin::from(Some(candidate.clone()).into()),
+					T::RuntimeOrigin::from(Some(candidate.clone()).into()),
 					balance,
 					liquidity_token,
 					None,
@@ -1704,7 +1704,7 @@ pub mod pallet {
 					0u32
 				};
 				if let Err(error) = <Pallet<T>>::delegate(
-					T::Origin::from(Some(delegator.clone()).into()),
+					T::RuntimeOrigin::from(Some(delegator.clone()).into()),
 					target.clone(),
 					balance,
 					None,
