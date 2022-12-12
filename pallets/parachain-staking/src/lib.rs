@@ -65,7 +65,7 @@ use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
 pub use mp_multipurpose_liquidity::BondKind;
 pub use mp_traits::StakingReservesProviderTrait;
-use pallet_collective::GetMembers;
+use pallet_collective_mangata::GetMembers;
 use pallet_issuance::{ComputeIssuance, GetIssuance};
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;

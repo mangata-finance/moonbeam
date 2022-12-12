@@ -25,7 +25,7 @@ sp-arithmetic = { git = "https://github.com/mangata-finance/substrate", branch =
 sp-runtime = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.31", default-features = false }
 sp-std = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.31", default-features = false }
 sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.31", default-features = false }
-pallet-collective = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.31", default-features = false }
+pallet-collective-mangata = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.31", default-features = false }
 
 pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.31" }
 mangata-types = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev-v0.9.31", default-features = false }
