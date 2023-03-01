@@ -2,7 +2,7 @@
 name = "parachain-staking"
 authors = ["PureStake"]
 description = "parachain staking pallet for collator selection and reward distribution"
-edition = "2018"
+edition = "2021"
 version = "3.0.0"
 
 [dependencies]
@@ -25,14 +25,14 @@ sp-arithmetic = { git = "https://github.com/mangata-finance/substrate", branch =
 sp-runtime = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 sp-std = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
-pallet-collective = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
+pallet-collective-mangata = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 
-pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
-mangata-primitives = { git = "https://github.com/mangata-finance/mangata-node", branch = "develop", default-features = false }
+pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
+mangata-types = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
-pallet-issuance = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
-mp-multipurpose-liquidity = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
-mp-traits = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop" }
+pallet-issuance = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
+mp-multipurpose-liquidity = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
+mp-traits = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
 
 [dev-dependencies]
 similar-asserts = "1.1.0"
@@ -67,4 +67,4 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"frame-benchmarking/runtime-benchmarks",
 ]
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]
