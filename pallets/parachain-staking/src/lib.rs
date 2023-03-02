@@ -1636,7 +1636,6 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn staking_liquidity_tokens)]
-	/// Points for each collator per round
 	pub type StakingLiquidityTokens<T: Config> =
 		StorageValue<_, BTreeMap<TokenId, Option<(Balance, Balance)>>, ValueQuery>;
 
@@ -3062,6 +3061,73 @@ pub mod pallet {
 			}
 		}
 
+		
+		pub fn calculate_collators_valuations<'a,I>(valuated_bond_it: I) -> BTreeMap<T::AccountId, Balance> where
+			I: Iterator<Item=(&'a Bond<T::AccountId>, Balance)>,
+			I: Clone,
+		{
+			let aggregator_info = <CandidateAggregator<T>>::get();
+			// collect aggregated bonds
+			let mut valuated_bonds = valuated_bond_it.clone()
+				.filter_map(|(bond, valuation)| {
+					aggregator_info.get(&bond.owner).map(|aggregator| (bond, valuation, aggregator))
+				})
+				.fold(BTreeMap::<T::AccountId, Balance>::new(),|mut acc, (bond, valuation, aggregator)| {
+					acc.entry(aggregator.clone())
+						.and_modify(|total| { *total = total.saturating_add(valuation) })
+						.or_insert_with(|| valuation);
+					acc
+				});
+
+			// extend with non agregated bonds
+			valuated_bonds.extend(
+				valuated_bond_it.filter_map(
+					|(bond, valuation)| if let None = aggregator_info.get(&bond.owner){
+						Some((bond.owner.clone(), valuation))
+					}else{
+						None
+					})
+			);
+
+			valuated_bonds
+		}
+
+		pub fn calculate_aggregators_collator_info<'a, I>(valuated_bond_it: I) -> BTreeMap::<T::AccountId, BTreeMap<T::AccountId, Balance>> where
+			I: Iterator<Item=(&'a Bond<T::AccountId>, Balance)>
+			{
+			let aggregator_info = <CandidateAggregator<T>>::get();
+
+			valuated_bond_it
+				.filter_map(|(bond, valuation)| {
+					aggregator_info.get(&bond.owner).map(|aggregator| (bond, valuation, aggregator))
+				})
+				.fold(BTreeMap::<T::AccountId, BTreeMap<T::AccountId, Balance>>::new(), |mut acc, (bond, valuation, aggregator)| {
+										acc.entry(aggregator.clone())
+											.and_modify(|x| { x.insert( bond.owner.clone(), valuation); } )
+											.or_insert(BTreeMap::from([(bond.owner.clone(), valuation)]));
+										acc
+				})
+		}
+
+		pub fn calculate_valuations_and_aggregation_info() -> (BTreeMap<T::AccountId, Balance>, BTreeMap::<T::AccountId, BTreeMap<T::AccountId, Balance>>){
+			let candidates = <CandidatePool<T>>::get().0;
+
+			let liq_token_to_pool = <StakingLiquidityTokens<T>>::get();
+			let valuated_bond_it = candidates.iter()
+				.filter_map( |bond| {
+					match liq_token_to_pool.get(&bond.liquidity_token) {
+						Some(Some((reserve1, reserve2))) if !reserve1.is_zero() => {
+							multiply_by_rational_with_rounding( bond.amount, *reserve1, *reserve2, Rounding::Down)
+								.map(|val| (bond, val))
+								.or(Some((bond, Balance::max_value())))
+						},
+						_ => { None }
+					}
+				});
+
+			(Self::calculate_collators_valuations(valuated_bond_it.clone()), Self::calculate_aggregators_collator_info(valuated_bond_it.clone()))
+		}
+        //
 		/// Compute the top `TotalSelected` candidates in the CandidatePool and return
 		/// a vec of their AccountIds (in the order of selection)
 		pub fn compute_top_candidates() -> (
@@ -3069,74 +3135,7 @@ pub mod pallet {
 			Vec<(T::AccountId, Balance)>,
 			BTreeMap<T::AccountId, BTreeMap<T::AccountId, Balance>>,
 		) {
-			let candidates = <CandidatePool<T>>::get().0;
-			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
-
-			let aggregator_info = <CandidateAggregator<T>>::get();
-			let mut aggregators_collator_info =
-				BTreeMap::<T::AccountId, BTreeMap<T::AccountId, Balance>>::new();
-			let mut valuated_author_candidates_btreemap = BTreeMap::<T::AccountId, Balance>::new();
-
-			for candidate_bond in candidates.iter() {
-				match staking_liquidity_tokens.get(&candidate_bond.liquidity_token) {
-					Some(Some(pool_ratio)) if !pool_ratio.1.is_zero() => {
-						let collator_valuation = multiply_by_rational_with_rounding(
-							candidate_bond.amount,
-							pool_ratio.0,
-							pool_ratio.1,
-							Rounding::Down,
-						)
-						.unwrap_or(Balance::max_value());
-
-						match aggregator_info.get(&candidate_bond.owner) {
-							Some(aggregator) => {
-								valuated_author_candidates_btreemap
-									.entry(aggregator.clone())
-									.and_modify(|current_total_valuation| {
-										aggregators_collator_info
-											.entry(aggregator.clone())
-											.and_modify(|x| {
-												x.insert(
-													candidate_bond.owner.clone(),
-													collator_valuation,
-												);
-											})
-											.or_insert(BTreeMap::<T::AccountId, Balance>::from([
-												(candidate_bond.owner.clone(), collator_valuation),
-											]));
-										*current_total_valuation = current_total_valuation
-											.saturating_add(collator_valuation);
-									})
-									.or_insert_with(|| {
-										aggregators_collator_info
-											.entry(aggregator.clone())
-											.and_modify(|x| {
-												x.insert(
-													candidate_bond.owner.clone(),
-													collator_valuation,
-												);
-											})
-											.or_insert(BTreeMap::<T::AccountId, Balance>::from([
-												(candidate_bond.owner.clone(), collator_valuation),
-											]));
-										collator_valuation
-									});
-							}
-							None => {
-								let res = valuated_author_candidates_btreemap
-									.insert(candidate_bond.owner.clone(), collator_valuation);
-								if let Some(replaced_candidate) = res {
-									log::error!(
-										"Either duplicate author in candidate pool or candidate is also aggregator: candidate - {:?}",
-										replaced_candidate
-									);
-								}
-							}
-						}
-					}
-					_ => {}
-				}
-			}
+			let (valuated_author_candidates_btreemap, aggregators_collator_info) = Self::calculate_valuations_and_aggregation_info();
 
 			let mut valuated_author_candidates_vec: Vec<(T::AccountId, Balance)> =
 				valuated_author_candidates_btreemap
