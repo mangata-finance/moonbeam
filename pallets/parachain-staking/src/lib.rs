@@ -2618,7 +2618,7 @@ pub mod pallet {
 			collator: T::AccountId,
 			delegator_count: u32,
 		) -> DispatchResultWithPostInfo {
-			let caller = ensure_signed(origin)?;
+			let _caller = ensure_signed(origin)?;
 
 			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(round, collator.clone())
 				.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
@@ -2654,13 +2654,13 @@ pub mod pallet {
 			collator: T::AccountId,
 			delegator: T::AccountId,
 		) -> DispatchResultWithPostInfo {
-			let caller = ensure_signed(origin)?;
+			let _caller = ensure_signed(origin)?;
 
 			RoundCollatorRewardInfo::<T>::try_mutate(
 				round,
 				collator,
 				|maybe_collator_payout_info| -> DispatchResult {
-					let mut collator_payout_info = maybe_collator_payout_info
+					let collator_payout_info = maybe_collator_payout_info
 						.as_mut()
 						.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
 					let delegator_reward = collator_payout_info
@@ -2773,7 +2773,7 @@ pub mod pallet {
 				AggregatorMetadata::<T>::try_mutate(
 					detached_aggregator.clone(),
 					|maybe_aggregator_metadata| -> DispatchResult {
-						let mut aggregator_metadata = maybe_aggregator_metadata
+						let aggregator_metadata = maybe_aggregator_metadata
 							.as_mut()
 							.ok_or(Error::<T>::AggregatorDNE)?;
 						let candidate_state =
@@ -2805,7 +2805,7 @@ pub mod pallet {
 			AggregatorMetadata::<T>::try_mutate(
 				new_aggregator,
 				|maybe_aggregator_metadata| -> DispatchResult {
-					let mut aggregator_metadata = maybe_aggregator_metadata
+					let aggregator_metadata = maybe_aggregator_metadata
 						.as_mut()
 						.ok_or(Error::<T>::AggregatorDNE)?;
 					ensure!(
@@ -2841,7 +2841,7 @@ pub mod pallet {
 			AggregatorMetadata::<T>::try_mutate(
 				prev_aggregator.clone(),
 				|maybe_prev_aggregator_metadata| -> DispatchResult {
-					let mut prev_aggregator_metadata = maybe_prev_aggregator_metadata
+					let prev_aggregator_metadata = maybe_prev_aggregator_metadata
 						.as_mut()
 						.ok_or(Error::<T>::AggregatorDNE)?;
 					let candidate_state =
@@ -3026,7 +3026,7 @@ pub mod pallet {
 
 		fn process_aggregator_with_rewards_and_dist(
 			round_to_payout: u32,
-			aggregator: T::AccountId,
+			_aggregator: T::AccountId,
 			author_rewards: Balance,
 			distribution: &BTreeMap<T::AccountId, Balance>,
 		) {
@@ -3124,7 +3124,7 @@ pub mod pallet {
 				})
 				.fold(
 					BTreeMap::<T::AccountId, Balance>::new(),
-					|mut acc, (bond, valuation, aggregator)| {
+					|mut acc, (_bond, valuation, aggregator)| {
 						acc.entry(aggregator.clone())
 							.and_modify(|total| *total = total.saturating_add(valuation))
 							.or_insert_with(|| valuation);

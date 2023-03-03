@@ -23,7 +23,7 @@
 //! 4. Miscellaneous Property-Based Tests
 
 use crate::mock::{
-	events, last_event, payout_collator_for_round, roll_to, set_author, ExtBuilder,
+	payout_collator_for_round, roll_to, set_author, ExtBuilder,
 	RuntimeEvent as MetaEvent, RuntimeOrigin as Origin, Stake, StakeCurrency, Test,
 };
 
@@ -37,7 +37,7 @@ use frame_support::traits::tokens::currency::MultiTokenCurrency;
 use frame_support::{assert_noop, assert_ok};
 use orml_tokens::MultiTokenReservableCurrency;
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill};
-use std::convert::TryFrom;
+
 
 // ~~ ROOT ~~
 
