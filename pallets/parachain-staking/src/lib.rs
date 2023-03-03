@@ -110,6 +110,13 @@ impl<D: Decode> FromInfiniteZeros for D {
 	}
 }
 
+#[derive(Eq, PartialEq, Encode, Decode, TypeInfo, Debug, Clone)]
+pub enum MetadataUpdateAction {
+	ExtendApprovedCollators,
+	RemoveApprovedCollators,
+}
+
+
 #[pallet]
 pub mod pallet {
 	pub use super::*;
@@ -2523,52 +2530,154 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(1_000_000_000)]
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn aggregator_update_metadata(
 			origin: OriginFor<T>,
 			collator_candidates: Vec<T::AccountId>,
-			should_be_approved: bool,
+			action: MetadataUpdateAction,
 		) -> DispatchResultWithPostInfo {
 			let aggregator = ensure_signed(origin)?;
 
-			ensure!(
-				!Self::is_candidate(&aggregator),
-				Error::<T>::CandidateExists
-			);
-			ensure!(
-				!Self::is_delegator(&aggregator),
-				Error::<T>::DelegatorExists
-			);
+			ensure!( !Self::is_candidate(&aggregator), Error::<T>::CandidateExists);
+			ensure!( !Self::is_delegator(&aggregator), Error::<T>::DelegatorExists);
 
 			AggregatorMetadata::<T>::try_mutate_exists(
 				aggregator.clone(),
 				|maybe_aggregator_metadata| -> DispatchResult {
 					let mut aggregator_metadata = maybe_aggregator_metadata
 						.take()
-						.unwrap_or(AggregatorMetadataType::<T::AccountId>::default());
+						.unwrap_or_default();
 
-					match should_be_approved {
-						true => {
+					match action {
+						MetadataUpdateAction::ExtendApprovedCollators => {
+							collator_candidates.iter().try_for_each(|collator| -> DispatchResult {
+								Self::add_approved_candidate_for_collator_metadata(collator, &mut aggregator_metadata)
+							}
+							)?;
+						}
+						MetadataUpdateAction::RemoveApprovedCollators => {
 							collator_candidates.iter().try_for_each(
-								|collator_candidate| -> DispatchResult {
-									ensure!(
-										Self::is_candidate(&collator_candidate),
-										Error::<T>::CandidateDNE
-									);
-									ensure!(
-										aggregator_metadata
-											.approved_candidates
-											.insert(collator_candidate.clone()),
-										Error::<T>::CandidateAlreadyApprovedByAggregator
-									);
-									Ok(())
+								|collator| -> DispatchResult {
+									Self::remove_approved_candidates_from_collator_metadata(collator, &aggregator, &mut aggregator_metadata)
 								},
 							)?;
 						}
-						false => {
-							collator_candidates.iter().try_for_each(
-								|collator_candidate| -> DispatchResult {
+					}
+
+					if !aggregator_metadata.approved_candidates.is_empty() {
+						*maybe_aggregator_metadata = Some(aggregator_metadata);
+					}
+
+					Ok(())
+				},
+			)?;
+
+			Self::deposit_event(Event::AggregatorMetadataUpdated(aggregator));
+			Ok(().into())
+		}
+
+		// TODO: use more precise benchmark
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
+		#[transactional]
+		pub fn update_candidate_aggregator(
+			origin: OriginFor<T>,
+			maybe_aggregator: Option<T::AccountId>,
+		) -> DispatchResultWithPostInfo {
+			let candidate = ensure_signed(origin)?;
+
+			Self::do_update_candidate_aggregator(&candidate, maybe_aggregator.clone())?;
+
+			Self::deposit_event(Event::CandidateAggregatorUpdated(
+				candidate,
+				maybe_aggregator,
+			));
+			Ok(().into())
+		}
+
+		// TODO: use more precise benchmark
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
+		#[transactional]
+		pub fn payout_collator_rewards(
+			origin: OriginFor<T>,
+			round: RoundIndex,
+			collator: T::AccountId,
+			delegator_count: u32,
+		) -> DispatchResultWithPostInfo {
+			let caller = ensure_signed(origin)?;
+
+			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(round, collator.clone())
+				.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
+
+			ensure!(
+				delegator_count as usize
+					>= collator_payout_info
+						.delegator_rewards
+						.keys()
+						.cloned()
+						.count(),
+				Error::<T>::IncorrectRewardDelegatorCount
+			);
+
+			Self::payout_reward(collator.clone(), collator_payout_info.collator_reward)?;
+
+			let _ = collator_payout_info
+				.delegator_rewards
+				.iter()
+				.try_for_each(|(d, r)| Self::payout_reward(d.clone(), r.clone()))?;
+
+			RoundCollatorRewardInfo::<T>::remove(round, collator.clone());
+
+			Ok(().into())
+		}
+
+		// TODO: use more precise benchmark
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
+		#[transactional]
+		pub fn payout_delegator_reward(
+			origin: OriginFor<T>,
+			round: RoundIndex,
+			collator: T::AccountId,
+			delegator: T::AccountId,
+		) -> DispatchResultWithPostInfo {
+			let caller = ensure_signed(origin)?;
+
+			RoundCollatorRewardInfo::<T>::try_mutate(
+				round,
+				collator,
+				|maybe_collator_payout_info| -> DispatchResult {
+					let mut collator_payout_info = maybe_collator_payout_info
+						.as_mut()
+						.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
+					let delegator_reward = collator_payout_info
+						.delegator_rewards
+						.remove(&delegator)
+						.ok_or(Error::<T>::DelegatorRewardsDNE)?;
+					Self::payout_reward(delegator, delegator_reward)?;
+					Ok(())
+				},
+			)?;
+
+			Ok(().into())
+		}
+	}
+
+	impl<T: Config> Pallet<T> {
+		fn add_approved_candidate_for_collator_metadata(collator_candidate: &T::AccountId, aggregator_metadata: &mut AggregatorMetadataType<T::AccountId>) -> DispatchResult {
+			ensure!(
+				Self::is_candidate(&collator_candidate),
+				Error::<T>::CandidateDNE
+				);
+			ensure!(
+				aggregator_metadata
+				.approved_candidates
+				.insert(collator_candidate.clone()),
+				Error::<T>::CandidateAlreadyApprovedByAggregator
+				);
+			Ok(())
+		}
+
+		fn remove_approved_candidates_from_collator_metadata(collator_candidate: &T::AccountId, aggregator: &T::AccountId, aggregator_metadata: &mut AggregatorMetadataType<T::AccountId>) -> DispatchResult {
 									// Do not propagate the error if there's an error here
 									// Then it means that the aggregator wasn't aggregating for this candidate
 									// Or that the target is no longer a candidate, which can happen if the candidate has left
@@ -2607,108 +2716,9 @@ pub mod pallet {
 										Error::<T>::CandidateNotApprovedByAggregator
 									);
 
-									Ok(())
-								},
-							)?;
-						}
-					}
-
-					if !aggregator_metadata.approved_candidates.is_empty() {
-						*maybe_aggregator_metadata = Some(aggregator_metadata);
-					}
-
-					Ok(())
-				},
-			)?;
-
-			Self::deposit_event(Event::AggregatorMetadataUpdated(aggregator));
-			Ok(().into())
+			Ok(())
 		}
 
-		// Benchmark on the worst case max candidate count
-		#[pallet::weight(1_000_000_000)]
-		#[transactional]
-		pub fn update_candidate_aggregator(
-			origin: OriginFor<T>,
-			maybe_aggregator: Option<T::AccountId>,
-		) -> DispatchResultWithPostInfo {
-			let candidate = ensure_signed(origin)?;
-
-			Self::do_update_candidate_aggregator(&candidate, maybe_aggregator.clone())?;
-
-			Self::deposit_event(Event::CandidateAggregatorUpdated(
-				candidate,
-				maybe_aggregator,
-			));
-			Ok(().into())
-		}
-
-		#[pallet::weight(1_000_000_000)]
-		#[transactional]
-		pub fn payout_collator_rewards(
-			origin: OriginFor<T>,
-			round: RoundIndex,
-			collator: T::AccountId,
-			delegator_count: u32,
-		) -> DispatchResultWithPostInfo {
-			let caller = ensure_signed(origin)?;
-
-			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(round, collator.clone())
-				.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
-
-			ensure!(
-				delegator_count as usize
-					>= collator_payout_info
-						.delegator_rewards
-						.keys()
-						.cloned()
-						.count(),
-				Error::<T>::IncorrectRewardDelegatorCount
-			);
-
-			Self::payout_reward(collator.clone(), collator_payout_info.collator_reward)?;
-
-			let _ = collator_payout_info
-				.delegator_rewards
-				.iter()
-				.try_for_each(|(d, r)| Self::payout_reward(d.clone(), r.clone()))?;
-
-			RoundCollatorRewardInfo::<T>::remove(round, collator.clone());
-
-			Ok(().into())
-		}
-
-		#[pallet::weight(1_000_000_000)]
-		#[transactional]
-		pub fn payout_delegator_reward(
-			origin: OriginFor<T>,
-			round: RoundIndex,
-			collator: T::AccountId,
-			delegator: T::AccountId,
-		) -> DispatchResultWithPostInfo {
-			let caller = ensure_signed(origin)?;
-
-			RoundCollatorRewardInfo::<T>::try_mutate(
-				round,
-				collator,
-				|maybe_collator_payout_info| -> DispatchResult {
-					let mut collator_payout_info = maybe_collator_payout_info
-						.as_mut()
-						.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
-					let delegator_reward = collator_payout_info
-						.delegator_rewards
-						.remove(&delegator)
-						.ok_or(Error::<T>::DelegatorRewardsDNE)?;
-					Self::payout_reward(delegator, delegator_reward)?;
-					Ok(())
-				},
-			)?;
-
-			Ok(().into())
-		}
-	}
-
-	impl<T: Config> Pallet<T> {
 		pub fn payout_reward(to: T::AccountId, amt: Balance) -> DispatchResult {
 			let _ = <T as pallet::Config>::Currency::transfer(
 				T::NativeTokenId::get().into(),
