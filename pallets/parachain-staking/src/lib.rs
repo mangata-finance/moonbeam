@@ -1719,7 +1719,6 @@ pub mod pallet {
 			Self {
 				candidates: vec![],
 				delegations: vec![],
-				..Default::default()
 			}
 		}
 	}

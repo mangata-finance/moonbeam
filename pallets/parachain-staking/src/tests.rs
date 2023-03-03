@@ -23,17 +23,20 @@
 //! 4. Miscellaneous Property-Based Tests
 
 use crate::mock::{
-	payout_collator_for_round, roll_to, set_author, Event as MetaEvent, ExtBuilder, Origin, Stake,
-	StakeCurrency, Test,
+	payout_collator_for_round, roll_to, set_author, RuntimeEvent as MetaEvent, ExtBuilder, RuntimeOrigin as Origin, Stake,
+	StakeCurrency, Test, last_event, events,
 };
+
+
 use crate::{
 	assert_eq_events, assert_event_emitted, assert_last_event, Balance, Bond, CandidateBondChange,
 	CandidateBondRequest, CollatorStatus, DelegationChange, DelegationRequest, DelegatorAdded,
-	Error, Event, PairedOrLiquidityToken, RoundAggregatorInfo, RoundCollatorRewardInfo,
-	RoundCollatorRewardInfoType, TotalSelected,
+	Error, Event, PairedOrLiquidityToken,RoundAggregatorInfo, RoundCollatorRewardInfo,
+	RoundCollatorRewardInfoType, TotalSelected
 };
+use orml_tokens::MultiTokenReservableCurrency;
 use frame_support::{assert_noop, assert_ok};
-use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
+use frame_support::traits::tokens::currency::{MultiTokenCurrency};
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill};
 use std::convert::TryFrom;
 

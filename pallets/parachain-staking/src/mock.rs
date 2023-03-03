@@ -16,36 +16,29 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{
-	pallet, AwardedPts, Balance, BondKind, Config, DispatchError, Points,
-	StakingReservesProviderTrait, TokenId, Valuate,
-};
+use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate, BondKind, StakingReservesProviderTrait};
 use frame_support::{
-	assert_ok, construct_runtime, parameter_types,
-	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, WithdrawReasons,  tokens::currency::{MultiTokenCurrency}},
-	weights::Weight,
-	PalletId,
+	construct_runtime, parameter_types,
+	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, tokens::currency::{MultiTokenCurrency}},
+	PalletId, assert_ok
 };
-use mangata_primitives::Amount;
-use orml_tokens::MultiTokenCurrencyExtended;
-use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency, TransferDust};
-use orml_traits::parameter_type_with_key;
-use pallet_vesting_mangata::MultiTokenVestingSchedule;
-use parity_scale_codec::{Decode, Encode};
 use mangata_types::Amount;
-use orml_tokens::{MultiTokenReservableCurrency, TransferDust};
+use orml_tokens::{MultiTokenReservableCurrency};
+use orml_traits::parameter_type_with_key;
+use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_core::H256;
+use sp_core::{H256};
 use sp_io;
 use sp_runtime::traits::Zero;
-use sp_runtime::{
+use sp_runtime::{DispatchResult,
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
-	DispatchResult, Perbill, Percent, RuntimeDebug,
+	Perbill, Percent, RuntimeDebug,
 };
-use sp_std::convert::{TryFrom, TryInto};
 use sp_std::marker::PhantomData;
-
+use orml_tokens::MultiTokenCurrencyExtended;
+use pallet_vesting_mangata::MultiTokenVestingSchedule;
+use sp_std::convert::{TryFrom, TryInto};
 use crate::RoundCollatorRewardInfo;
 
 pub type AccountId = u64;
@@ -71,7 +64,7 @@ construct_runtime!(
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
+	// pub const MaximumBlockWeight: Weight = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 	pub const SS58Prefix: u8 = 42;
@@ -79,16 +72,16 @@ parameter_types! {
 impl frame_system::Config for Test {
 	type BaseCallFilter = Everything;
 	type DbWeight = ();
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	type Index = u64;
 	type BlockNumber = BlockNumber;
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = BlockHashCount;
 	type Version = ();
 	type PalletInfo = PalletInfo;
@@ -121,8 +114,17 @@ parameter_types! {
 	pub const TGEReleaseBegin: u32 = 100_800u32; // Two weeks into chain start
 }
 
+pub struct ActivedPoolQueryApiMock;
+
+
+impl pallet_issuance::ActivedPoolQueryApi for ActivedPoolQueryApiMock {
+    fn get_pool_activate_amount(_liquidity_token_id: TokenId) -> Option<Balance> {
+        todo!()
+    }
+}
+
 impl pallet_issuance::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type NativeCurrencyId = MgaTokenId;
 	type Tokens = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 	type BlocksPerRound = BlocksPerRound;
@@ -137,24 +139,18 @@ impl pallet_issuance::Config for Test {
 	type ImmediateTGEReleasePercent = ImmediateTGEReleasePercent;
 	type TGEReleasePeriod = TGEReleasePeriod;
 	type TGEReleaseBegin = TGEReleaseBegin;
-	type VestingProvider =
-		TestVestingModule<AccountId, orml_tokens::MultiTokenCurrencyAdapter<Test>, BlockNumber>;
+	type VestingProvider = TestVestingModule<AccountId, orml_tokens::MultiTokenCurrencyAdapter<Test>, BlockNumber>;
 	type WeightInfo = ();
+	type ActivedPoolQueryApiType = ActivedPoolQueryApiMock;
 }
 
-pub struct TestVestingModule<A, C: MultiTokenCurrency<A>, B>(
-	PhantomData<A>,
-	PhantomData<C>,
-	PhantomData<B>,
-);
-impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestingModule<A, C, B> {
+pub struct TestVestingModule<A, C: MultiTokenCurrency<A>, B>(PhantomData<A>,PhantomData<C>,PhantomData<B>);
+impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestingModule<A, C, B>
+{
 	type Currency = C;
 	type Moment = B;
 
-	fn vesting_balance(
-		_who: &A,
-		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
-	) -> Option<<C as MultiTokenCurrency<A>>::Balance> {
+	fn vesting_balance(_who: &A, _token_id: <C as MultiTokenCurrency<A>>::CurrencyId) -> Option<<C as MultiTokenCurrency<A>>::Balance> {
 		None
 	}
 
@@ -165,6 +161,7 @@ impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestin
 		_starting_block: B,
 		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
 	) -> DispatchResult {
+		
 		Ok(())
 	}
 
@@ -181,11 +178,7 @@ impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestin
 	}
 
 	/// Remove a vesting schedule for a given account.
-	fn remove_vesting_schedule(
-		_who: &A,
-		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
-		_schedule_index: u32,
-	) -> DispatchResult {
+	fn remove_vesting_schedule(_who: &A, _token_id: <C as MultiTokenCurrency<A>>::CurrencyId, _schedule_index: u32) -> DispatchResult {
 		Ok(())
 	}
 }
@@ -215,43 +208,38 @@ impl Contains<AccountId> for DustRemovalWhitelist {
 }
 
 impl orml_tokens::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type Amount = Amount;
 	type CurrencyId = TokenId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = TransferDust<Test, TreasuryAccount>;
 	type MaxLocks = MaxLocks;
 	type DustRemovalWhitelist = DustRemovalWhitelist;
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type CurrencyHooks = ();
 }
 
 pub struct TokensStakingPassthrough<T: stake::Config>(PhantomData<T>);
-impl<T: stake::Config> StakingReservesProviderTrait for TokensStakingPassthrough<T> {
+impl<T: stake::Config> StakingReservesProviderTrait for TokensStakingPassthrough<T>{
 	type AccountId = T::AccountId;
 
-	fn can_bond(
-		token_id: TokenId,
-		account_id: &T::AccountId,
-		amount: Balance,
-		_use_balance_from: Option<BondKind>,
-	) -> bool {
+	fn can_bond(token_id: TokenId, account_id: &T::AccountId, amount: Balance, _use_balance_from: Option<BondKind>)
+	-> bool{
 		T::Currency::can_reserve(token_id.into(), &account_id, amount.into())
 	}
 
-	fn bond(
-		token_id: TokenId,
-		account_id: &T::AccountId,
-		amount: Balance,
-		_use_balance_from: Option<BondKind>,
-	) -> DispatchResult {
+	fn bond(token_id: TokenId, account_id: &T::AccountId, amount: Balance, _use_balance_from: Option<BondKind>)
+	-> DispatchResult{
 		T::Currency::reserve(token_id.into(), account_id, amount.into())
 	}
 
-	fn unbond(token_id: TokenId, account_id: &T::AccountId, amount: Balance) -> Balance {
+	fn unbond(token_id: TokenId, account_id: &T::AccountId, amount: Balance) -> Balance{
 		T::Currency::unreserve(token_id.into(), account_id, amount.into()).into()
 	}
 }
+
 
 impl crate::StakingBenchmarkConfig for Test {}
 
@@ -274,7 +262,7 @@ parameter_types! {
 }
 
 impl Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type StakingReservesProvider = TokensStakingPassthrough<Test>;
 	type Currency = orml_tokens::MultiTokenCurrencyAdapter<Test>;
 	type MonetaryGovernanceOrigin = frame_system::EnsureRoot<AccountId>;
@@ -351,7 +339,14 @@ impl Valuate for TestTokenValuator {
 			_ => None,
 		}
 	}
-}
+
+	fn get_reserves(
+			_first_asset_id: TokenId,
+			_second_asset_id: TokenId,
+		) -> Result<(Balance, Balance), DispatchError> {
+			todo!()
+		}
+	}
 
 pub(crate) struct ExtBuilder {
 	// tokens used for staking, these aren't backed in the xyk pallet and are just simply nominal tokens
@@ -450,7 +445,7 @@ impl ExtBuilder {
 		ext.execute_with(|| {
 			System::set_block_number(1);
 
-			if !StakeCurrency::exists(MGA_TOKEN_ID) {
+			if !StakeCurrency::exists(MGA_TOKEN_ID){
 				assert_ok!(StakeCurrency::create(&99999, 100));
 			}
 
@@ -464,8 +459,8 @@ impl ExtBuilder {
 				target_tge - current_issuance
 			));
 
-			assert_ok!(Issuance::finalize_tge(Origin::root()));
-			assert_ok!(Issuance::init_issuance_config(Origin::root()));
+			assert_ok!(Issuance::finalize_tge(RuntimeOrigin::root()));
+			assert_ok!(Issuance::init_issuance_config(RuntimeOrigin::root()));
 			assert_ok!(Issuance::calculate_and_store_round_issuance(0u32));
 		});
 		ext
@@ -478,7 +473,7 @@ pub(crate) fn payout_collator_for_round(n: u64) {
 
 	for collator in collators.iter() {
 		Stake::payout_collator_rewards(
-			Origin::signed(999),
+			RuntimeOrigin::signed(999),
 			n.try_into().unwrap(),
 			collator.clone(),
 			<Test as stake::Config>::MaxDelegatorsPerCandidate::get(),
@@ -506,7 +501,7 @@ pub(crate) fn roll_to(n: u64) {
 	}
 }
 
-pub(crate) fn last_event() -> Event {
+pub(crate) fn last_event() -> RuntimeEvent {
 	System::events().pop().expect("Event expected").event
 }
 
@@ -515,7 +510,7 @@ pub(crate) fn events() -> Vec<pallet::Event<Test>> {
 		.into_iter()
 		.map(|r| r.event)
 		.filter_map(|e| {
-			if let Event::Stake(inner) = e {
+			if let RuntimeEvent::Stake(inner) = e {
 				Some(inner)
 			} else {
 				None
