@@ -1641,7 +1641,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_candidate_aggregator)]
-	/// Points for each collator per round
+	/// Maps collator to its aggregator
 	pub type CandidateAggregator<T: Config> =
 		StorageValue<_, BTreeMap<T::AccountId, T::AccountId>, ValueQuery>;
 
@@ -2732,143 +2732,137 @@ pub mod pallet {
 		pub fn is_selected_candidate(acc: &T::AccountId) -> bool {
 			<SelectedCandidates<T>>::get().binary_search(acc).is_ok()
 		}
+
+		fn remove_aggregator_for_collator(candidate: &T::AccountId) -> DispatchResult {
+			CandidateAggregator::<T>::try_mutate(|candidate_aggregator_info| -> DispatchResult {
+				let detached_aggregator = candidate_aggregator_info
+					.remove(&candidate)
+					.ok_or(Error::<T>::CandidateNotAggregating)?;
+
+				AggregatorMetadata::<T>::try_mutate(
+					detached_aggregator.clone(),
+					|maybe_aggregator_metadata| -> DispatchResult {
+						let mut aggregator_metadata = maybe_aggregator_metadata
+							.as_mut()
+							.ok_or(Error::<T>::AggregatorDNE)?;
+						let candidate_state = <CandidateState<T>>::get(&candidate)
+							.ok_or(Error::<T>::CandidateDNE)?;
+						let res = aggregator_metadata
+							.token_collator_map
+							.remove(&candidate_state.liquidity_token);
+						if res != Some(candidate.clone()) {
+							log::error!(
+								"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
+								candidate,
+								detached_aggregator
+								);
+						}
+
+						Ok(())
+					},
+					)?;
+
+				Ok(())
+			})?;
+			Ok(())
+		}
+
+		fn corelate_collator_with_aggregator(candidate: &T::AccountId, new_aggregator: T::AccountId) -> DispatchResult {
+			AggregatorMetadata::<T>::try_mutate(
+				new_aggregator,
+				|maybe_aggregator_metadata| -> DispatchResult {
+					let mut aggregator_metadata = maybe_aggregator_metadata
+						.as_mut()
+						.ok_or(Error::<T>::AggregatorDNE)?;
+					ensure!(
+						aggregator_metadata
+						.approved_candidates
+						.contains(candidate),
+						Error::<T>::CandidateNotApprovedByAggregator
+						);
+					let candidate_state = <CandidateState<T>>::get(candidate)
+						.ok_or(Error::<T>::CandidateDNE)?;
+					ensure!(
+						aggregator_metadata
+						.token_collator_map
+						.insert(
+							candidate_state.liquidity_token,
+							candidate.clone()
+							)
+						.is_none(),
+						Error::<T>::AggregatorLiquidityTokenTaken
+						);
+
+					Ok(())
+				},
+				)?;
+			Ok(())
+		}
+
+		fn replace_aggregator_for_collator(candidate: &T::AccountId, new_aggregator: T::AccountId, prev_aggregator: T::AccountId) -> DispatchResult {
+
+			ensure!(
+				prev_aggregator != new_aggregator,
+				Error::<T>::TargettedAggregatorSameAsCurrent
+				);
+
+			AggregatorMetadata::<T>::try_mutate(
+				prev_aggregator.clone(),
+				|maybe_prev_aggregator_metadata| -> DispatchResult {
+					let mut prev_aggregator_metadata = maybe_prev_aggregator_metadata.as_mut().ok_or(Error::<T>::AggregatorDNE)?;
+					let candidate_state = <CandidateState<T>>::get(candidate) .ok_or(Error::<T>::CandidateDNE)?;
+					let res = prev_aggregator_metadata
+						.token_collator_map
+						.remove(&candidate_state.liquidity_token);
+					if res != Some(candidate.clone()) {
+						log::error!(
+							"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
+							candidate,
+							prev_aggregator
+							);
+					}
+
+					Self::corelate_collator_with_aggregator(candidate, new_aggregator)?;
+					Ok(())
+				},
+				)?;
+
+			Ok(())
+		}
+
+
+		fn assign_aggregator_for_collator(
+			candidate: &T::AccountId,
+			new_aggregator: T::AccountId,
+			) -> DispatchResult {
+			CandidateAggregator::<T>::try_mutate(|candidate_aggregator_info| -> DispatchResult {
+				match candidate_aggregator_info
+					.insert(candidate.clone(), new_aggregator.clone())
+					{
+						Some(prev_aggregator) => {
+							Self::replace_aggregator_for_collator(candidate, new_aggregator, prev_aggregator)?;
+						}
+						None => {
+							Self::corelate_collator_with_aggregator(candidate, new_aggregator)?;
+						}
+					}
+				Ok(())
+
+			})?;
+			Ok(())
+		}
+
 		pub fn do_update_candidate_aggregator(
 			candidate: &T::AccountId,
 			maybe_aggregator: Option<T::AccountId>,
 		) -> DispatchResult {
 			ensure!(Self::is_candidate(candidate), Error::<T>::CandidateDNE);
 
-			CandidateAggregator::<T>::try_mutate(|candidate_aggregator_info| -> DispatchResult {
-				match maybe_aggregator.clone() {
-					Some(new_aggregator) => {
-						match candidate_aggregator_info
-							.insert(candidate.clone(), new_aggregator.clone())
-						{
-							Some(detached_aggregator) => {
-								ensure!(
-									detached_aggregator != new_aggregator,
-									Error::<T>::TargettedAggregatorSameAsCurrent
-								);
-								AggregatorMetadata::<T>::try_mutate(
-									detached_aggregator.clone(),
-									|maybe_detached_aggregator_metadata| -> DispatchResult {
-										let mut detached_aggregator_metadata =
-											maybe_detached_aggregator_metadata
-												.as_mut()
-												.ok_or(Error::<T>::AggregatorDNE)?;
-										let candidate_state = <CandidateState<T>>::get(candidate)
-											.ok_or(Error::<T>::CandidateDNE)?;
-										let res = detached_aggregator_metadata
-											.token_collator_map
-											.remove(&candidate_state.liquidity_token);
-										if res != Some(candidate.clone()) {
-											log::error!(
-													"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
-													candidate,
-													detached_aggregator
-												);
-										}
-
-										AggregatorMetadata::<T>::try_mutate(
-											new_aggregator,
-											|maybe_new_aggregator_metadata| -> DispatchResult {
-												let mut new_aggregator_metadata =
-													maybe_new_aggregator_metadata
-														.as_mut()
-														.ok_or(Error::<T>::AggregatorDNE)?;
-												ensure!(
-													new_aggregator_metadata
-														.approved_candidates
-														.contains(candidate),
-													Error::<T>::CandidateNotApprovedByAggregator
-												);
-												let candidate_state =
-													<CandidateState<T>>::get(candidate)
-														.ok_or(Error::<T>::CandidateDNE)?;
-												ensure!(
-													new_aggregator_metadata
-														.token_collator_map
-														.insert(
-															candidate_state.liquidity_token,
-															candidate.clone()
-														)
-														.is_none(),
-													Error::<T>::AggregatorLiquidityTokenTaken
-												);
-
-												Ok(())
-											},
-										)?;
-
-										Ok(())
-									},
-								)?;
-							}
-
-							None => {
-								AggregatorMetadata::<T>::try_mutate(
-									new_aggregator,
-									|maybe_aggregator_metadata| -> DispatchResult {
-										let mut aggregator_metadata = maybe_aggregator_metadata
-											.as_mut()
-											.ok_or(Error::<T>::AggregatorDNE)?;
-										ensure!(
-											aggregator_metadata
-												.approved_candidates
-												.contains(candidate),
-											Error::<T>::CandidateNotApprovedByAggregator
-										);
-										let candidate_state = <CandidateState<T>>::get(candidate)
-											.ok_or(Error::<T>::CandidateDNE)?;
-										ensure!(
-											aggregator_metadata
-												.token_collator_map
-												.insert(
-													candidate_state.liquidity_token,
-													candidate.clone()
-												)
-												.is_none(),
-											Error::<T>::AggregatorLiquidityTokenTaken
-										);
-
-										Ok(())
-									},
-								)?;
-							}
-						}
-					}
-					None => {
-						let detached_aggregator = candidate_aggregator_info
-							.remove(&candidate)
-							.ok_or(Error::<T>::CandidateNotAggregating)?;
-
-						AggregatorMetadata::<T>::try_mutate(
-							detached_aggregator.clone(),
-							|maybe_aggregator_metadata| -> DispatchResult {
-								let mut aggregator_metadata = maybe_aggregator_metadata
-									.as_mut()
-									.ok_or(Error::<T>::AggregatorDNE)?;
-								let candidate_state = <CandidateState<T>>::get(&candidate)
-									.ok_or(Error::<T>::CandidateDNE)?;
-								let res = aggregator_metadata
-									.token_collator_map
-									.remove(&candidate_state.liquidity_token);
-								if res != Some(candidate.clone()) {
-									log::error!(
-											"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
-											candidate,
-											detached_aggregator
-										);
-								}
-
-								Ok(())
-							},
-						)?;
-					}
-				}
-
-				Ok(())
-			})?;
+			if let Some(ref new_aggregator) = maybe_aggregator {
+				Self::assign_aggregator_for_collator(candidate,new_aggregator.clone())?;
+			} else {
+				Self::remove_aggregator_for_collator(candidate)?;
+			}
 
 			Self::deposit_event(Event::CandidateAggregatorUpdated(
 				candidate.clone(),
