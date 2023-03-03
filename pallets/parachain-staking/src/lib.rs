@@ -2925,53 +2925,35 @@ pub mod pallet {
 			Ok(())
 		}
 
-		fn pay_stakers(now: RoundIndex) {
-			// payout is now - duration rounds ago => now - duration > 0 else return early
-			let duration = T::RewardPaymentDelay::get();
-			if now < duration {
-				return;
-			}
-			let round_to_payout = now.saturating_sub(duration);
-			let total = <Points<T>>::take(round_to_payout);
-			if total.is_zero() {
-				return;
-			}
-			let total_issuance =
-				T::Issuance::get_staking_issuance(round_to_payout).unwrap_or(Balance::zero());
-
-			// unwrap_or_default here is to ensure backward compatibility during the upgrade
-			let round_aggregator_info =
-				RoundAggregatorInfo::<T>::take(round_to_payout).unwrap_or_default();
+		fn process_collator_with_rewards(round_to_payout: u32, collator: T::AccountId, reward: Balance ) {
+			let state = <AtStake<T>>::take(round_to_payout, &collator);
 			let collator_commission_perbill = <CollatorCommission<T>>::get();
-
-			let process_collator_with_rewards = |collator, reward| {
-				let state = <AtStake<T>>::take(round_to_payout, &collator);
-				let mut collator_payout_info =
-					RoundCollatorRewardInfoType::<T::AccountId>::default();
-				if state.delegations.is_empty() {
-					// solo collator with no delegators
-					collator_payout_info.collator_reward = reward;
-					RoundCollatorRewardInfo::<T>::insert(
-						round_to_payout,
-						collator,
-						collator_payout_info,
+			let mut collator_payout_info =
+				RoundCollatorRewardInfoType::<T::AccountId>::default();
+			if state.delegations.is_empty() {
+				// solo collator with no delegators
+				collator_payout_info.collator_reward = reward;
+				RoundCollatorRewardInfo::<T>::insert(
+					round_to_payout,
+					collator,
+					collator_payout_info,
 					);
-				} else {
-					let collator_commission = collator_commission_perbill.mul_floor(reward);
-					let reward_less_commission = reward.saturating_sub(collator_commission);
+			} else {
+				let collator_commission = collator_commission_perbill.mul_floor(reward);
+				let reward_less_commission = reward.saturating_sub(collator_commission);
 
-					let collator_perbill = Perbill::from_rational(state.bond, state.total);
-					let collator_reward_less_commission =
-						collator_perbill.mul_floor(reward_less_commission);
+				let collator_perbill = Perbill::from_rational(state.bond, state.total);
+				let collator_reward_less_commission =
+					collator_perbill.mul_floor(reward_less_commission);
 
-					collator_payout_info.collator_reward =
-						collator_reward_less_commission.saturating_add(collator_commission);
+				collator_payout_info.collator_reward =
+					collator_reward_less_commission.saturating_add(collator_commission);
 
-					match state
-						.delegations
-						.iter()
-						.cloned()
-						.try_fold(state.bond, |acc, x| acc.checked_add(x.amount))
+				match state
+					.delegations
+					.iter()
+					.cloned()
+					.try_fold(state.bond, |acc, x| acc.checked_add(x.amount))
 					{
 						Some(total) if total <= state.total => {
 							state.delegations.iter().for_each(|delegator_bond| {
@@ -2982,9 +2964,9 @@ pub mod pallet {
 										delegator_bond.amount,
 										state.total,
 										Rounding::Down,
-									)
+										)
 									.unwrap_or(Balance::zero()),
-								);
+									);
 							});
 						}
 						_ => {
@@ -3002,47 +2984,64 @@ pub mod pallet {
 						}
 					}
 
-					RoundCollatorRewardInfo::<T>::insert(
-						round_to_payout,
-						collator,
-						collator_payout_info,
+				RoundCollatorRewardInfo::<T>::insert(
+					round_to_payout,
+					collator,
+					collator_payout_info,
 					);
-				}
-			};
+			}
+		}
 
-			let process_aggregator_with_rewards_and_dist =
-				|aggregator, author_rewards, distribution: &BTreeMap<T::AccountId, Balance>| {
-					match distribution
-						.values()
-						.cloned()
-						.try_fold(Balance::zero(), |acc, x| acc.checked_add(x))
-					{
-						Some(aggregator_total_valuation) => {
-							distribution.iter().for_each(|(collator, contribution)| {
-								process_collator_with_rewards(
-									collator.clone(),
-									multiply_by_rational_with_rounding(
-										author_rewards,
-										contribution.clone(),
-										aggregator_total_valuation,
-										Rounding::Down,
+		fn process_aggregator_with_rewards_and_dist(round_to_payout: u32, aggregator: T::AccountId, author_rewards: Balance, distribution: &BTreeMap<T::AccountId, Balance> ){
+			match distribution
+				.values()
+				.cloned()
+				.try_fold(Balance::zero(), |acc, x| acc.checked_add(x))
+				{
+					Some(aggregator_total_valuation) => {
+						distribution.iter().for_each(|(collator, contribution)| {
+							Self::process_collator_with_rewards(
+								round_to_payout,
+								collator.clone(),
+								multiply_by_rational_with_rounding(
+									author_rewards,
+									contribution.clone(),
+									aggregator_total_valuation,
+									Rounding::Down,
 									)
-									.unwrap_or(Balance::zero()),
+								.unwrap_or(Balance::zero()),
 								)
-							});
-						}
-						None => {
-							// unexpected overflow has occured and rewards will now distributed evenly amongst
-							let collator_count = distribution.keys().cloned().count() as u128;
-							let collator_reward = author_rewards
-								.checked_div(collator_count)
-								.unwrap_or(Balance::zero());
-							distribution.keys().for_each(|collator| {
-								process_collator_with_rewards(collator.clone(), collator_reward)
-							});
-						}
+						});
 					}
-				};
+					None => {
+						// unexpected overflow has occured and rewards will now distributed evenly amongst
+						let collator_count = distribution.keys().cloned().count() as u128;
+						let collator_reward = author_rewards
+							.checked_div(collator_count)
+							.unwrap_or(Balance::zero());
+						distribution.keys().for_each(|collator| {
+							Self::process_collator_with_rewards(round_to_payout, collator.clone(), collator_reward)
+						});
+					}
+				}
+		}
+
+		fn pay_stakers(now: RoundIndex) {
+			// payout is now - duration rounds ago => now - duration > 0 else return early
+			let duration = T::RewardPaymentDelay::get();
+			if now < duration {
+				return;
+			}
+			let round_to_payout = now.saturating_sub(duration);
+			let total = <Points<T>>::take(round_to_payout);
+			if total.is_zero() {
+				return;
+			}
+			let total_issuance =
+				T::Issuance::get_staking_issuance(round_to_payout).unwrap_or(Balance::zero());
+
+			// unwrap_or_default here is to ensure backward compatibility during the upgrade
+			let round_aggregator_info = RoundAggregatorInfo::<T>::take(round_to_payout).unwrap_or_default();
 
 			for (author, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
 				let author_issuance_perbill = Perbill::from_rational(pts, total);
@@ -3050,12 +3049,13 @@ pub mod pallet {
 				let author_rewards = author_issuance_perbill.mul_floor(total_issuance);
 
 				match round_aggregator_info.get(&author) {
-					Some(aggregator_distribution) => process_aggregator_with_rewards_and_dist(
+					Some(aggregator_distribution) => Self::process_aggregator_with_rewards_and_dist(
+						round_to_payout,
 						author,
 						author_rewards,
 						aggregator_distribution,
 					),
-					None => process_collator_with_rewards(author, author_rewards),
+					None => Self::process_collator_with_rewards(round_to_payout, author, author_rewards),
 				}
 			}
 		}
