@@ -3142,7 +3142,7 @@ pub mod pallet {
 					.collect::<_>();
 
 			// order candidates by stake (least to greatest so requires `rev()`)
-			valuated_author_candidates_vec.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+			valuated_author_candidates_vec.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 			let top_n = <TotalSelected<T>>::get() as usize;
 			// choose the top TotalSelected qualified candidates, ordered by stake
 			let mut selected_authors: Vec<(T::AccountId, Balance)> = valuated_author_candidates_vec
@@ -3151,7 +3151,7 @@ pub mod pallet {
 				.take(top_n)
 				.filter(|x| x.1 >= T::MinCollatorStk::get())
 				.collect::<_>();
-			selected_authors.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+			selected_authors.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
 			let mut all_selected_collators = Vec::<(T::AccountId, Balance)>::new();
 			for selected_author in selected_authors.iter() {
