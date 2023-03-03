@@ -23,15 +23,16 @@
 //! 4. Miscellaneous Property-Based Tests
 
 use crate::mock::{
-	roll_to, set_author, Event as MetaEvent, ExtBuilder, Origin, Stake, StakeCurrency, Test,
+	roll_to, set_author, RuntimeEvent as MetaEvent, ExtBuilder, RuntimeOrigin as Origin, Stake, StakeCurrency, Test,
 };
 use crate::{
 	assert_eq_events, assert_event_emitted, assert_last_event, Bond, CandidateBondChange,
 	CandidateBondRequest, CollatorStatus, DelegationChange, DelegationRequest, DelegatorAdded,
 	Error, Event, PairedOrLiquidityToken,
 };
+use orml_tokens::MultiTokenReservableCurrency;
 use frame_support::{assert_noop, assert_ok};
-use orml_tokens::{MultiTokenCurrency, MultiTokenReservableCurrency};
+use frame_support::traits::tokens::currency::{MultiTokenCurrency};
 use sp_runtime::{traits::Zero, DispatchError, Perbill, ModuleError};
 
 // ~~ ROOT ~~
@@ -3899,7 +3900,7 @@ fn candidate_pool_updates_when_total_counted_changes() {
 				let pool = Stake::candidate_pool();
 				for candidate in pool.0 {
 					if candidate.owner == account {
-						
+
 						println!("Stake::candidate_state(candidate.owner): {:?}", Stake::candidate_state(candidate.owner));
 						assert_eq!(candidate.amount, bond);
 					}
@@ -4275,7 +4276,7 @@ fn adding_removing_staking_token_works() {
 			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+
 			// Add 3 as a staking token
 			assert_ok!(Stake::add_staking_liquidity_token(Origin::root(), PairedOrLiquidityToken::Liquidity(3u32), 100u32));
 			assert_ok!(Stake::join_candidates(Origin::signed(3), 10u128, 3u32, None, 100u32, 10000u32));
@@ -4289,7 +4290,7 @@ fn adding_removing_staking_token_works() {
 			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+
 			roll_to(5);
 
 			// Check that 3 gets valuated and others don't
@@ -4306,7 +4307,7 @@ fn adding_removing_staking_token_works() {
 			assert_noop!(Stake::join_candidates(Origin::signed(5), 10u128, 5u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			assert_noop!(Stake::join_candidates(Origin::signed(6), 10u128, 6u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
 			assert_noop!(Stake::join_candidates(Origin::signed(7), 10u128, 7u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+
 			// Adding same liquidity token doesn't work
 			assert_noop!(
 				Stake::add_staking_liquidity_token(
@@ -4334,7 +4335,7 @@ fn adding_removing_staking_token_works() {
 			));
 			// Candidate cannot join using it.
 			assert_noop!(Stake::join_candidates(Origin::signed(10), 10u128, 3u32, None, 100u32, 10000u32), Error::<Test>::StakingLiquidityTokenNotListed);
-			
+
 			roll_to(10);
 
 			// Removed token is no longer valuated
