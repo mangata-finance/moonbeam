@@ -1910,7 +1910,8 @@ pub mod pallet {
 				Error::<T>::TooLowCurrentStakingLiquidityTokensCount
 			);
 			ensure!(
-				staking_liquidity_tokens.contains_key(&liquidity_token),
+				staking_liquidity_tokens.contains_key(&liquidity_token)
+					|| liquidity_token == T::NativeTokenId::get(),
 				Error::<T>::StakingLiquidityTokenNotListed
 			);
 			ensure!(
@@ -2531,6 +2532,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		#[pallet::call_index(23)]
 		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn aggregator_update_metadata(
@@ -2592,6 +2594,7 @@ pub mod pallet {
 		}
 
 		// TODO: use more precise benchmark
+		#[pallet::call_index(24)]
 		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn update_candidate_aggregator(
@@ -2610,6 +2613,7 @@ pub mod pallet {
 		}
 
 		// TODO: use more precise benchmark
+		#[pallet::call_index(25)]
 		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn payout_collator_rewards(
@@ -2646,6 +2650,7 @@ pub mod pallet {
 		}
 
 		// TODO: use more precise benchmark
+		#[pallet::call_index(26)]
 		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn payout_delegator_reward(
@@ -3179,18 +3184,22 @@ pub mod pallet {
 
 			let liq_token_to_pool = <StakingLiquidityTokens<T>>::get();
 			let valuated_bond_it = candidates.iter().filter_map(|bond| {
-				match liq_token_to_pool.get(&bond.liquidity_token) {
-					Some(Some((reserve1, reserve2))) if !reserve1.is_zero() => {
-						multiply_by_rational_with_rounding(
-							bond.amount,
-							*reserve1,
-							*reserve2,
-							Rounding::Down,
-						)
-						.map(|val| (bond, val))
-						.or(Some((bond, Balance::max_value())))
+				if bond.liquidity_token == T::NativeTokenId::get() {
+					Some((bond, bond.amount))
+				} else {
+					match liq_token_to_pool.get(&bond.liquidity_token) {
+						Some(Some((reserve1, reserve2))) if !reserve1.is_zero() => {
+							multiply_by_rational_with_rounding(
+								bond.amount,
+								*reserve1,
+								*reserve2,
+								Rounding::Down,
+							)
+							.map(|val| (bond, val))
+							.or(Some((bond, Balance::max_value())))
+						}
+						_ => None,
 					}
-					_ => None,
 				}
 			});
 

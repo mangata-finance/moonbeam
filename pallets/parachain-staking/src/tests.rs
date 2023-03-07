@@ -23,8 +23,8 @@
 //! 4. Miscellaneous Property-Based Tests
 
 use crate::mock::{
-	payout_collator_for_round, roll_to, set_author, ExtBuilder,
-	RuntimeEvent as MetaEvent, RuntimeOrigin as Origin, Stake, StakeCurrency, Test,
+	payout_collator_for_round, roll_to, set_author, ExtBuilder, RuntimeEvent as MetaEvent,
+	RuntimeOrigin as Origin, Stake, StakeCurrency, Test, MGA_TOKEN_ID,
 };
 
 use crate::{
@@ -37,7 +37,6 @@ use frame_support::traits::tokens::currency::MultiTokenCurrency;
 use frame_support::{assert_noop, assert_ok};
 use orml_tokens::MultiTokenReservableCurrency;
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill};
-
 
 // ~~ ROOT ~~
 
@@ -5595,5 +5594,74 @@ fn payouts_with_aggregators_work() {
 				.collect::<_>();
 			assert_eq!(collator_info_reward_info.collator_reward, 91);
 			assert_eq!(collator_info_reward_info_delegators, [(10, 61)]);
+		});
+}
+
+#[test]
+fn can_join_candidates_and_be_selected_with_native_token() {
+	ExtBuilder::default()
+		.with_default_staking_token(vec![
+			(1, 1000),
+			(2, 1000),
+			(3, 1000),
+			(4, 1000),
+			(5, 1000),
+			(6, 1000),
+			(7, 33),
+			(8, 33),
+			(9, 33),
+		])
+		.with_default_token_candidates(vec![(1, 100), (2, 90), (3, 80), (4, 70), (5, 60), (6, 50)])
+		.build()
+		.execute_with(|| {
+			roll_to(8);
+
+			let expected = vec![
+				Event::CollatorChosen(2, 1, 100),
+				Event::CollatorChosen(2, 2, 90),
+				Event::CollatorChosen(2, 3, 80),
+				Event::CollatorChosen(2, 4, 70),
+				Event::CollatorChosen(2, 5, 60),
+				Event::NewRound(5, 1, 5, 400),
+			];
+			assert_eq_events!(expected);
+
+			assert_ok!(Stake::join_candidates(
+				Origin::signed(99999),
+				1_000_000u128,
+				0u32,
+				None,
+				6u32,
+				10000u32
+			));
+			assert_last_event!(MetaEvent::Stake(Event::JoinedCollatorCandidates(
+				99999,
+				1_000_000u128,
+				1_000_000u128,
+			)));
+
+			roll_to(9);
+
+			let expected = vec![
+				Event::CollatorChosen(2, 1, 100),
+				Event::CollatorChosen(2, 2, 90),
+				Event::CollatorChosen(2, 3, 80),
+				Event::CollatorChosen(2, 4, 70),
+				Event::CollatorChosen(2, 5, 60),
+				Event::NewRound(5, 1, 5, 400),
+				Event::JoinedCollatorCandidates(99999, 1000000, 1000000),
+				Event::CollatorChosen(3, 1, 100),
+				Event::CollatorChosen(3, 2, 90),
+				Event::CollatorChosen(3, 3, 80),
+				Event::CollatorChosen(3, 4, 70),
+				Event::CollatorChosen(3, 99999, 1000000),
+				Event::NewRound(10, 2, 5, 1000340),
+			];
+			assert_eq_events!(expected);
+
+			assert_eq!(
+				StakeCurrency::reserved_balance(MGA_TOKEN_ID, &99999),
+				1_000_000u128
+			);
 		});
 }

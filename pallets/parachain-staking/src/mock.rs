@@ -499,7 +499,8 @@ pub(crate) fn payout_collator_for_round(n: u64) {
 			n.try_into().unwrap(),
 			collator.clone(),
 			<Test as stake::Config>::MaxDelegatorsPerCandidate::get(),
-		).unwrap();
+		)
+		.unwrap();
 	}
 }
 
