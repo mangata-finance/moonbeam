@@ -491,7 +491,17 @@ impl ExtBuilder {
 
 pub(crate) fn payout_collator_for_round(n: u64) {
 	let collators: Vec<<Test as frame_system::Config>::AccountId> =
-		RoundCollatorRewardInfo::<Test>::iter_key_prefix(u32::try_from(n).unwrap()).collect();
+		RoundCollatorRewardInfo::<Test>::iter_keys()
+			.filter_map(|(account, round)| {
+				if round == (n as u32) {
+					Some(account)
+				} else {
+					None
+				}
+			})
+			.collect();
+	println!("{:?}", collators);
+	// u32::try_from(n).unwrap()).collect();
 
 	for collator in collators.iter() {
 		Stake::payout_collator_rewards(

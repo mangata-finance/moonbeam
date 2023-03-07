@@ -1677,10 +1677,10 @@ pub mod pallet {
 	#[pallet::getter(fn get_round_collator_reward_info)]
 	pub type RoundCollatorRewardInfo<T: Config> = StorageDoubleMap<
 		_,
-		Twox64Concat,
-		RoundIndex,
 		Blake2_128Concat,
 		T::AccountId,
+		Twox64Concat,
+		RoundIndex,
 		RoundCollatorRewardInfoType<T::AccountId>,
 		OptionQuery,
 	>;
@@ -2624,7 +2624,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let _caller = ensure_signed(origin)?;
 
-			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(round, collator.clone())
+			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(collator.clone(), round)
 				.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
 
 			ensure!(
@@ -2644,7 +2644,7 @@ pub mod pallet {
 				.iter()
 				.try_for_each(|(d, r)| Self::payout_reward(d.clone(), r.clone()))?;
 
-			RoundCollatorRewardInfo::<T>::remove(round, collator.clone());
+			RoundCollatorRewardInfo::<T>::remove(collator.clone(), round);
 
 			Ok(().into())
 		}
@@ -2662,8 +2662,8 @@ pub mod pallet {
 			let _caller = ensure_signed(origin)?;
 
 			RoundCollatorRewardInfo::<T>::try_mutate(
-				round,
 				collator,
+				round,
 				|maybe_collator_payout_info| -> DispatchResult {
 					let collator_payout_info = maybe_collator_payout_info
 						.as_mut()
@@ -2971,8 +2971,8 @@ pub mod pallet {
 				// solo collator with no delegators
 				collator_payout_info.collator_reward = reward;
 				RoundCollatorRewardInfo::<T>::insert(
-					round_to_payout,
 					collator,
+					round_to_payout,
 					collator_payout_info,
 				);
 			} else {
@@ -3022,8 +3022,8 @@ pub mod pallet {
 				}
 
 				RoundCollatorRewardInfo::<T>::insert(
-					round_to_payout,
 					collator,
+					round_to_payout,
 					collator_payout_info,
 				);
 			}

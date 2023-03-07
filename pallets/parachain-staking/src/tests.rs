@@ -5555,7 +5555,7 @@ fn payouts_with_aggregators_work() {
 
 			let collator_info_reward_info: RoundCollatorRewardInfoType<
 				<Test as frame_system::Config>::AccountId,
-			> = RoundCollatorRewardInfo::<Test>::get(2, 1).unwrap();
+			> = RoundCollatorRewardInfo::<Test>::get(1, 2).unwrap();
 			let collator_info_reward_info_delegators: Vec<(
 				<Test as frame_system::Config>::AccountId,
 				Balance,
@@ -5583,7 +5583,7 @@ fn payouts_with_aggregators_work() {
 
 			let collator_info_reward_info: RoundCollatorRewardInfoType<
 				<Test as frame_system::Config>::AccountId,
-			> = RoundCollatorRewardInfo::<Test>::get(2, 3).unwrap();
+			> = RoundCollatorRewardInfo::<Test>::get(3, 2).unwrap();
 			let collator_info_reward_info_delegators: Vec<(
 				<Test as frame_system::Config>::AccountId,
 				Balance,
