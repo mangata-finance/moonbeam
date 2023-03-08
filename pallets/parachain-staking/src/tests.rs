@@ -23,22 +23,21 @@
 //! 4. Miscellaneous Property-Based Tests
 
 use crate::mock::{
-	payout_collator_for_round, roll_to, set_author, RuntimeEvent as MetaEvent, ExtBuilder, RuntimeOrigin as Origin, Stake,
-	StakeCurrency, Test, last_event, events,
+	payout_collator_for_round, roll_to, set_author, ExtBuilder,
+	RuntimeEvent as MetaEvent, RuntimeOrigin as Origin, Stake, StakeCurrency, Test,
 };
-
 
 use crate::{
 	assert_eq_events, assert_event_emitted, assert_last_event, Balance, Bond, CandidateBondChange,
 	CandidateBondRequest, CollatorStatus, DelegationChange, DelegationRequest, DelegatorAdded,
-	Error, Event, PairedOrLiquidityToken,RoundAggregatorInfo, RoundCollatorRewardInfo,
-	RoundCollatorRewardInfoType, TotalSelected
+	Error, Event, MetadataUpdateAction, PairedOrLiquidityToken, RoundAggregatorInfo,
+	RoundCollatorRewardInfo, RoundCollatorRewardInfoType, TotalSelected,
 };
-use orml_tokens::MultiTokenReservableCurrency;
+use frame_support::traits::tokens::currency::MultiTokenCurrency;
 use frame_support::{assert_noop, assert_ok};
-use frame_support::traits::tokens::currency::{MultiTokenCurrency};
+use orml_tokens::MultiTokenReservableCurrency;
 use sp_runtime::{traits::Zero, DispatchError, ModuleError, Perbill};
-use std::convert::TryFrom;
+
 
 // ~~ ROOT ~~
 
@@ -5322,7 +5321,7 @@ fn token_valuations_works_with_aggregators() {
 			assert_ok!(Stake::aggregator_update_metadata(
 				Origin::signed(4),
 				vec![1, 2],
-				true
+				MetadataUpdateAction::ExtendApprovedCollators
 			));
 			assert_ok!(Stake::update_candidate_aggregator(
 				Origin::signed(1),
@@ -5434,7 +5433,7 @@ fn round_aggregator_info_is_updated() {
 			assert_ok!(Stake::aggregator_update_metadata(
 				Origin::signed(4),
 				vec![1, 2],
-				true
+				MetadataUpdateAction::ExtendApprovedCollators
 			));
 			assert_ok!(Stake::update_candidate_aggregator(
 				Origin::signed(1),
@@ -5518,7 +5517,7 @@ fn payouts_with_aggregators_work() {
 			assert_ok!(Stake::aggregator_update_metadata(
 				Origin::signed(4),
 				vec![1, 2],
-				true
+				MetadataUpdateAction::ExtendApprovedCollators
 			));
 			assert_ok!(Stake::update_candidate_aggregator(
 				Origin::signed(1),

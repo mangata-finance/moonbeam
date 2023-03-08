@@ -70,7 +70,9 @@ use pallet_xyk::Valuate;
 
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
-use frame_support::traits::{EstimateNextSessionRotation, ExistenceRequirement, Get, tokens::currency::{MultiTokenCurrency}};
+use frame_support::traits::{
+	tokens::currency::MultiTokenCurrency, EstimateNextSessionRotation, ExistenceRequirement, Get,
+};
 use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
 pub use mp_multipurpose_liquidity::BondKind;
@@ -108,6 +110,12 @@ impl<D: Decode> FromInfiniteZeros for D {
 	fn from_zeros() -> Self::Output {
 		D::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes()).unwrap()
 	}
+}
+
+#[derive(Eq, PartialEq, Encode, Decode, TypeInfo, Debug, Clone)]
+pub enum MetadataUpdateAction {
+	ExtendApprovedCollators,
+	RemoveApprovedCollators,
 }
 
 #[pallet]
@@ -1636,13 +1644,12 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn staking_liquidity_tokens)]
-	/// Points for each collator per round
 	pub type StakingLiquidityTokens<T: Config> =
 		StorageValue<_, BTreeMap<TokenId, Option<(Balance, Balance)>>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_candidate_aggregator)]
-	/// Points for each collator per round
+	/// Maps collator to its aggregator
 	pub type CandidateAggregator<T: Config> =
 		StorageValue<_, BTreeMap<T::AccountId, T::AccountId>, ValueQuery>;
 
@@ -2524,12 +2531,12 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(1_000_000_000)]
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn aggregator_update_metadata(
 			origin: OriginFor<T>,
 			collator_candidates: Vec<T::AccountId>,
-			should_be_approved: bool,
+			action: MetadataUpdateAction,
 		) -> DispatchResultWithPostInfo {
 			let aggregator = ensure_signed(origin)?;
 
@@ -2545,70 +2552,28 @@ pub mod pallet {
 			AggregatorMetadata::<T>::try_mutate_exists(
 				aggregator.clone(),
 				|maybe_aggregator_metadata| -> DispatchResult {
-					let mut aggregator_metadata = maybe_aggregator_metadata
-						.take()
-						.unwrap_or(AggregatorMetadataType::<T::AccountId>::default());
+					let mut aggregator_metadata =
+						maybe_aggregator_metadata.take().unwrap_or_default();
 
-					match should_be_approved {
-						true => {
+					match action {
+						MetadataUpdateAction::ExtendApprovedCollators => {
 							collator_candidates.iter().try_for_each(
-								|collator_candidate| -> DispatchResult {
-									ensure!(
-										Self::is_candidate(&collator_candidate),
-										Error::<T>::CandidateDNE
-									);
-									ensure!(
-										aggregator_metadata
-											.approved_candidates
-											.insert(collator_candidate.clone()),
-										Error::<T>::CandidateAlreadyApprovedByAggregator
-									);
-									Ok(())
+								|collator| -> DispatchResult {
+									Self::add_approved_candidate_for_collator_metadata(
+										collator,
+										&mut aggregator_metadata,
+									)
 								},
 							)?;
 						}
-						false => {
+						MetadataUpdateAction::RemoveApprovedCollators => {
 							collator_candidates.iter().try_for_each(
-								|collator_candidate| -> DispatchResult {
-									// Do not propagate the error if there's an error here
-									// Then it means that the aggregator wasn't aggregating for this candidate
-									// Or that the target is no longer a candidate, which can happen if the candidate has left
-									// removing all his aggregation details except for approvals from various aggregators
-									let _ =
-										CandidateAggregator::<T>::try_mutate(
-											|candidate_aggregator_map| -> DispatchResult {
-												let collator_candidate_state =
-													<CandidateState<T>>::get(&collator_candidate)
-														.ok_or(Error::<T>::CandidateDNE)?;
-												ensure!(Some(aggregator.clone()) == candidate_aggregator_map.remove(collator_candidate),
-											Error::<T>::CandidateNotAggregatingUnderAggregator);
-
-												// If CandidateAggregator has the aggregator listed under this candidate then
-												// the aggregator metadata will have this candidate listed under its liquidity token
-												let res =
-													aggregator_metadata.token_collator_map.remove(
-														&collator_candidate_state.liquidity_token,
-													);
-												if res != Some(collator_candidate.clone()) {
-													log::error!(
-												"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
-												collator_candidate,
-												aggregator
-											);
-												}
-
-												Ok(())
-											},
-										);
-
-									ensure!(
-										aggregator_metadata
-											.approved_candidates
-											.remove(collator_candidate),
-										Error::<T>::CandidateNotApprovedByAggregator
-									);
-
-									Ok(())
+								|collator| -> DispatchResult {
+									Self::remove_approved_candidates_from_collator_metadata(
+										collator,
+										&aggregator,
+										&mut aggregator_metadata,
+									)
 								},
 							)?;
 						}
@@ -2626,8 +2591,8 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		// Benchmark on the worst case max candidate count
-		#[pallet::weight(1_000_000_000)]
+		// TODO: use more precise benchmark
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn update_candidate_aggregator(
 			origin: OriginFor<T>,
@@ -2644,7 +2609,8 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(1_000_000_000)]
+		// TODO: use more precise benchmark
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn payout_collator_rewards(
 			origin: OriginFor<T>,
@@ -2652,7 +2618,7 @@ pub mod pallet {
 			collator: T::AccountId,
 			delegator_count: u32,
 		) -> DispatchResultWithPostInfo {
-			let caller = ensure_signed(origin)?;
+			let _caller = ensure_signed(origin)?;
 
 			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(round, collator.clone())
 				.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
@@ -2679,7 +2645,8 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(1_000_000_000)]
+		// TODO: use more precise benchmark
+		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		pub fn payout_delegator_reward(
 			origin: OriginFor<T>,
@@ -2687,13 +2654,13 @@ pub mod pallet {
 			collator: T::AccountId,
 			delegator: T::AccountId,
 		) -> DispatchResultWithPostInfo {
-			let caller = ensure_signed(origin)?;
+			let _caller = ensure_signed(origin)?;
 
 			RoundCollatorRewardInfo::<T>::try_mutate(
 				round,
 				collator,
 				|maybe_collator_payout_info| -> DispatchResult {
-					let mut collator_payout_info = maybe_collator_payout_info
+					let collator_payout_info = maybe_collator_payout_info
 						.as_mut()
 						.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
 					let delegator_reward = collator_payout_info
@@ -2710,6 +2677,69 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
+		fn add_approved_candidate_for_collator_metadata(
+			collator_candidate: &T::AccountId,
+			aggregator_metadata: &mut AggregatorMetadataType<T::AccountId>,
+		) -> DispatchResult {
+			ensure!(
+				Self::is_candidate(&collator_candidate),
+				Error::<T>::CandidateDNE
+			);
+			ensure!(
+				aggregator_metadata
+					.approved_candidates
+					.insert(collator_candidate.clone()),
+				Error::<T>::CandidateAlreadyApprovedByAggregator
+			);
+			Ok(())
+		}
+
+		fn remove_approved_candidates_from_collator_metadata(
+			collator_candidate: &T::AccountId,
+			aggregator: &T::AccountId,
+			aggregator_metadata: &mut AggregatorMetadataType<T::AccountId>,
+		) -> DispatchResult {
+			// Do not propagate the error if there's an error here
+			// Then it means that the aggregator wasn't aggregating for this candidate
+			// Or that the target is no longer a candidate, which can happen if the candidate has left
+			// removing all his aggregation details except for approvals from various aggregators
+			let _ = CandidateAggregator::<T>::try_mutate(
+				|candidate_aggregator_map| -> DispatchResult {
+					let collator_candidate_state = <CandidateState<T>>::get(&collator_candidate)
+						.ok_or(Error::<T>::CandidateDNE)?;
+					ensure!(
+						Some(aggregator.clone())
+							== candidate_aggregator_map.remove(collator_candidate),
+						Error::<T>::CandidateNotAggregatingUnderAggregator
+					);
+
+					// If CandidateAggregator has the aggregator listed under this candidate then
+					// the aggregator metadata will have this candidate listed under its liquidity token
+					let res = aggregator_metadata
+						.token_collator_map
+						.remove(&collator_candidate_state.liquidity_token);
+					if res != Some(collator_candidate.clone()) {
+						log::error!(
+							"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
+							collator_candidate,
+							aggregator
+						);
+					}
+
+					Ok(())
+				},
+			);
+
+			ensure!(
+				aggregator_metadata
+					.approved_candidates
+					.remove(collator_candidate),
+				Error::<T>::CandidateNotApprovedByAggregator
+			);
+
+			Ok(())
+		}
+
 		pub fn payout_reward(to: T::AccountId, amt: Balance) -> DispatchResult {
 			let _ = <T as pallet::Config>::Currency::transfer(
 				T::NativeTokenId::get().into(),
@@ -2733,143 +2763,141 @@ pub mod pallet {
 		pub fn is_selected_candidate(acc: &T::AccountId) -> bool {
 			<SelectedCandidates<T>>::get().binary_search(acc).is_ok()
 		}
+
+		fn remove_aggregator_for_collator(candidate: &T::AccountId) -> DispatchResult {
+			CandidateAggregator::<T>::try_mutate(|candidate_aggregator_info| -> DispatchResult {
+				let detached_aggregator = candidate_aggregator_info
+					.remove(&candidate)
+					.ok_or(Error::<T>::CandidateNotAggregating)?;
+
+				AggregatorMetadata::<T>::try_mutate(
+					detached_aggregator.clone(),
+					|maybe_aggregator_metadata| -> DispatchResult {
+						let aggregator_metadata = maybe_aggregator_metadata
+							.as_mut()
+							.ok_or(Error::<T>::AggregatorDNE)?;
+						let candidate_state =
+							<CandidateState<T>>::get(&candidate).ok_or(Error::<T>::CandidateDNE)?;
+						let res = aggregator_metadata
+							.token_collator_map
+							.remove(&candidate_state.liquidity_token);
+						if res != Some(candidate.clone()) {
+							log::error!(
+								"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
+								candidate,
+								detached_aggregator
+								);
+						}
+
+						Ok(())
+					},
+				)?;
+
+				Ok(())
+			})?;
+			Ok(())
+		}
+
+		fn corelate_collator_with_aggregator(
+			candidate: &T::AccountId,
+			new_aggregator: T::AccountId,
+		) -> DispatchResult {
+			AggregatorMetadata::<T>::try_mutate(
+				new_aggregator,
+				|maybe_aggregator_metadata| -> DispatchResult {
+					let aggregator_metadata = maybe_aggregator_metadata
+						.as_mut()
+						.ok_or(Error::<T>::AggregatorDNE)?;
+					ensure!(
+						aggregator_metadata.approved_candidates.contains(candidate),
+						Error::<T>::CandidateNotApprovedByAggregator
+					);
+					let candidate_state =
+						<CandidateState<T>>::get(candidate).ok_or(Error::<T>::CandidateDNE)?;
+					ensure!(
+						aggregator_metadata
+							.token_collator_map
+							.insert(candidate_state.liquidity_token, candidate.clone())
+							.is_none(),
+						Error::<T>::AggregatorLiquidityTokenTaken
+					);
+
+					Ok(())
+				},
+			)?;
+			Ok(())
+		}
+
+		fn replace_aggregator_for_collator(
+			candidate: &T::AccountId,
+			new_aggregator: T::AccountId,
+			prev_aggregator: T::AccountId,
+		) -> DispatchResult {
+			ensure!(
+				prev_aggregator != new_aggregator,
+				Error::<T>::TargettedAggregatorSameAsCurrent
+			);
+
+			AggregatorMetadata::<T>::try_mutate(
+				prev_aggregator.clone(),
+				|maybe_prev_aggregator_metadata| -> DispatchResult {
+					let prev_aggregator_metadata = maybe_prev_aggregator_metadata
+						.as_mut()
+						.ok_or(Error::<T>::AggregatorDNE)?;
+					let candidate_state =
+						<CandidateState<T>>::get(candidate).ok_or(Error::<T>::CandidateDNE)?;
+					let res = prev_aggregator_metadata
+						.token_collator_map
+						.remove(&candidate_state.liquidity_token);
+					if res != Some(candidate.clone()) {
+						log::error!(
+							"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
+							candidate,
+							prev_aggregator
+						);
+					}
+
+					Self::corelate_collator_with_aggregator(candidate, new_aggregator)?;
+					Ok(())
+				},
+			)?;
+
+			Ok(())
+		}
+
+		fn assign_aggregator_for_collator(
+			candidate: &T::AccountId,
+			new_aggregator: T::AccountId,
+		) -> DispatchResult {
+			CandidateAggregator::<T>::try_mutate(|candidate_aggregator_info| -> DispatchResult {
+				match candidate_aggregator_info.insert(candidate.clone(), new_aggregator.clone()) {
+					Some(prev_aggregator) => {
+						Self::replace_aggregator_for_collator(
+							candidate,
+							new_aggregator,
+							prev_aggregator,
+						)?;
+					}
+					None => {
+						Self::corelate_collator_with_aggregator(candidate, new_aggregator)?;
+					}
+				}
+				Ok(())
+			})?;
+			Ok(())
+		}
+
 		pub fn do_update_candidate_aggregator(
 			candidate: &T::AccountId,
 			maybe_aggregator: Option<T::AccountId>,
 		) -> DispatchResult {
 			ensure!(Self::is_candidate(candidate), Error::<T>::CandidateDNE);
 
-			CandidateAggregator::<T>::try_mutate(|candidate_aggregator_info| -> DispatchResult {
-				match maybe_aggregator.clone() {
-					Some(new_aggregator) => {
-						match candidate_aggregator_info
-							.insert(candidate.clone(), new_aggregator.clone())
-						{
-							Some(detached_aggregator) => {
-								ensure!(
-									detached_aggregator != new_aggregator,
-									Error::<T>::TargettedAggregatorSameAsCurrent
-								);
-								AggregatorMetadata::<T>::try_mutate(
-									detached_aggregator.clone(),
-									|maybe_detached_aggregator_metadata| -> DispatchResult {
-										let mut detached_aggregator_metadata =
-											maybe_detached_aggregator_metadata
-												.as_mut()
-												.ok_or(Error::<T>::AggregatorDNE)?;
-										let candidate_state = <CandidateState<T>>::get(candidate)
-											.ok_or(Error::<T>::CandidateDNE)?;
-										let res = detached_aggregator_metadata
-											.token_collator_map
-											.remove(&candidate_state.liquidity_token);
-										if res != Some(candidate.clone()) {
-											log::error!(
-													"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
-													candidate,
-													detached_aggregator
-												);
-										}
-
-										AggregatorMetadata::<T>::try_mutate(
-											new_aggregator,
-											|maybe_new_aggregator_metadata| -> DispatchResult {
-												let mut new_aggregator_metadata =
-													maybe_new_aggregator_metadata
-														.as_mut()
-														.ok_or(Error::<T>::AggregatorDNE)?;
-												ensure!(
-													new_aggregator_metadata
-														.approved_candidates
-														.contains(candidate),
-													Error::<T>::CandidateNotApprovedByAggregator
-												);
-												let candidate_state =
-													<CandidateState<T>>::get(candidate)
-														.ok_or(Error::<T>::CandidateDNE)?;
-												ensure!(
-													new_aggregator_metadata
-														.token_collator_map
-														.insert(
-															candidate_state.liquidity_token,
-															candidate.clone()
-														)
-														.is_none(),
-													Error::<T>::AggregatorLiquidityTokenTaken
-												);
-
-												Ok(())
-											},
-										)?;
-
-										Ok(())
-									},
-								)?;
-							}
-
-							None => {
-								AggregatorMetadata::<T>::try_mutate(
-									new_aggregator,
-									|maybe_aggregator_metadata| -> DispatchResult {
-										let mut aggregator_metadata = maybe_aggregator_metadata
-											.as_mut()
-											.ok_or(Error::<T>::AggregatorDNE)?;
-										ensure!(
-											aggregator_metadata
-												.approved_candidates
-												.contains(candidate),
-											Error::<T>::CandidateNotApprovedByAggregator
-										);
-										let candidate_state = <CandidateState<T>>::get(candidate)
-											.ok_or(Error::<T>::CandidateDNE)?;
-										ensure!(
-											aggregator_metadata
-												.token_collator_map
-												.insert(
-													candidate_state.liquidity_token,
-													candidate.clone()
-												)
-												.is_none(),
-											Error::<T>::AggregatorLiquidityTokenTaken
-										);
-
-										Ok(())
-									},
-								)?;
-							}
-						}
-					}
-					None => {
-						let detached_aggregator = candidate_aggregator_info
-							.remove(&candidate)
-							.ok_or(Error::<T>::CandidateNotAggregating)?;
-
-						AggregatorMetadata::<T>::try_mutate(
-							detached_aggregator.clone(),
-							|maybe_aggregator_metadata| -> DispatchResult {
-								let mut aggregator_metadata = maybe_aggregator_metadata
-									.as_mut()
-									.ok_or(Error::<T>::AggregatorDNE)?;
-								let candidate_state = <CandidateState<T>>::get(&candidate)
-									.ok_or(Error::<T>::CandidateDNE)?;
-								let res = aggregator_metadata
-									.token_collator_map
-									.remove(&candidate_state.liquidity_token);
-								if res != Some(candidate.clone()) {
-									log::error!(
-											"Inconsistent aggregator metadata: candidate - {:?}, aggregator - {:?}",
-											candidate,
-											detached_aggregator
-										);
-								}
-
-								Ok(())
-							},
-						)?;
-					}
-				}
-
-				Ok(())
-			})?;
+			if let Some(ref new_aggregator) = maybe_aggregator {
+				Self::assign_aggregator_for_collator(candidate, new_aggregator.clone())?;
+			} else {
+				Self::remove_aggregator_for_collator(candidate)?;
+			}
 
 			Self::deposit_event(Event::CandidateAggregatorUpdated(
 				candidate.clone(),
@@ -2926,6 +2954,119 @@ pub mod pallet {
 			Ok(())
 		}
 
+		fn process_collator_with_rewards(
+			round_to_payout: u32,
+			collator: T::AccountId,
+			reward: Balance,
+		) {
+			let state = <AtStake<T>>::take(round_to_payout, &collator);
+			let collator_commission_perbill = <CollatorCommission<T>>::get();
+			let mut collator_payout_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
+			if state.delegations.is_empty() {
+				// solo collator with no delegators
+				collator_payout_info.collator_reward = reward;
+				RoundCollatorRewardInfo::<T>::insert(
+					round_to_payout,
+					collator,
+					collator_payout_info,
+				);
+			} else {
+				let collator_commission = collator_commission_perbill.mul_floor(reward);
+				let reward_less_commission = reward.saturating_sub(collator_commission);
+
+				let collator_perbill = Perbill::from_rational(state.bond, state.total);
+				let collator_reward_less_commission =
+					collator_perbill.mul_floor(reward_less_commission);
+
+				collator_payout_info.collator_reward =
+					collator_reward_less_commission.saturating_add(collator_commission);
+
+				match state
+					.delegations
+					.iter()
+					.cloned()
+					.try_fold(state.bond, |acc, x| acc.checked_add(x.amount))
+				{
+					Some(total) if total <= state.total => {
+						state.delegations.iter().for_each(|delegator_bond| {
+							collator_payout_info.delegator_rewards.insert(
+								delegator_bond.owner.clone(),
+								multiply_by_rational_with_rounding(
+									reward_less_commission,
+									delegator_bond.amount,
+									state.total,
+									Rounding::Down,
+								)
+								.unwrap_or(Balance::zero()),
+							);
+						});
+					}
+					_ => {
+						// unexpected overflow has occured and rewards will now distributed evenly amongst
+						let delegator_count = state.delegations.len() as u128;
+						let delegator_reward = reward
+							.saturating_sub(collator_payout_info.collator_reward)
+							.checked_div(delegator_count.into())
+							.unwrap_or(Balance::zero());
+						state.delegations.iter().for_each(|delegator_bond| {
+							collator_payout_info
+								.delegator_rewards
+								.insert(delegator_bond.owner.clone(), delegator_reward);
+						});
+					}
+				}
+
+				RoundCollatorRewardInfo::<T>::insert(
+					round_to_payout,
+					collator,
+					collator_payout_info,
+				);
+			}
+		}
+
+		fn process_aggregator_with_rewards_and_dist(
+			round_to_payout: u32,
+			_aggregator: T::AccountId,
+			author_rewards: Balance,
+			distribution: &BTreeMap<T::AccountId, Balance>,
+		) {
+			match distribution
+				.values()
+				.cloned()
+				.try_fold(Balance::zero(), |acc, x| acc.checked_add(x))
+			{
+				Some(aggregator_total_valuation) => {
+					distribution.iter().for_each(|(collator, contribution)| {
+						Self::process_collator_with_rewards(
+							round_to_payout,
+							collator.clone(),
+							multiply_by_rational_with_rounding(
+								author_rewards,
+								contribution.clone(),
+								aggregator_total_valuation,
+								Rounding::Down,
+							)
+							.unwrap_or(Balance::zero()),
+						)
+					});
+				}
+				None => {
+					// unexpected overflow has occured and rewards will now distributed evenly amongst
+					let collator_count = distribution.keys().cloned().count() as u128;
+					let collator_reward = author_rewards
+						.checked_div(collator_count)
+						.unwrap_or(Balance::zero());
+					distribution.keys().for_each(|collator| {
+						Self::process_collator_with_rewards(
+							round_to_payout,
+							collator.clone(),
+							collator_reward,
+						)
+					});
+				}
+			}
+		}
+
 		fn pay_stakers(now: RoundIndex) {
 			// payout is now - duration rounds ago => now - duration > 0 else return early
 			let duration = T::RewardPaymentDelay::get();
@@ -2943,107 +3084,6 @@ pub mod pallet {
 			// unwrap_or_default here is to ensure backward compatibility during the upgrade
 			let round_aggregator_info =
 				RoundAggregatorInfo::<T>::take(round_to_payout).unwrap_or_default();
-			let collator_commission_perbill = <CollatorCommission<T>>::get();
-
-			let process_collator_with_rewards = |collator, reward| {
-				let state = <AtStake<T>>::take(round_to_payout, &collator);
-				let mut collator_payout_info =
-					RoundCollatorRewardInfoType::<T::AccountId>::default();
-				if state.delegations.is_empty() {
-					// solo collator with no delegators
-					collator_payout_info.collator_reward = reward;
-					RoundCollatorRewardInfo::<T>::insert(
-						round_to_payout,
-						collator,
-						collator_payout_info,
-					);
-				} else {
-					let collator_commission = collator_commission_perbill.mul_floor(reward);
-					let reward_less_commission = reward.saturating_sub(collator_commission);
-
-					let collator_perbill = Perbill::from_rational(state.bond, state.total);
-					let collator_reward_less_commission =
-						collator_perbill.mul_floor(reward_less_commission);
-
-					collator_payout_info.collator_reward =
-						collator_reward_less_commission.saturating_add(collator_commission);
-
-					match state
-						.delegations
-						.iter()
-						.cloned()
-						.try_fold(state.bond, |acc, x| acc.checked_add(x.amount))
-					{
-						Some(total) if total <= state.total => {
-							state.delegations.iter().for_each(|delegator_bond| {
-								collator_payout_info.delegator_rewards.insert(
-									delegator_bond.owner.clone(),
-									multiply_by_rational_with_rounding(
-										reward_less_commission,
-										delegator_bond.amount,
-										state.total,
-										Rounding::Down,
-									)
-									.unwrap_or(Balance::zero()),
-								);
-							});
-						}
-						_ => {
-							// unexpected overflow has occured and rewards will now distributed evenly amongst
-							let delegator_count = state.delegations.len() as u128;
-							let delegator_reward = reward
-								.saturating_sub(collator_payout_info.collator_reward)
-								.checked_div(delegator_count.into())
-								.unwrap_or(Balance::zero());
-							state.delegations.iter().for_each(|delegator_bond| {
-								collator_payout_info
-									.delegator_rewards
-									.insert(delegator_bond.owner.clone(), delegator_reward);
-							});
-						}
-					}
-
-					RoundCollatorRewardInfo::<T>::insert(
-						round_to_payout,
-						collator,
-						collator_payout_info,
-					);
-				}
-			};
-
-			let process_aggregator_with_rewards_and_dist =
-				|aggregator, author_rewards, distribution: &BTreeMap<T::AccountId, Balance>| {
-					match distribution
-						.values()
-						.cloned()
-						.try_fold(Balance::zero(), |acc, x| acc.checked_add(x))
-					{
-						Some(aggregator_total_valuation) => {
-							distribution.iter().for_each(|(collator, contribution)| {
-								process_collator_with_rewards(
-									collator.clone(),
-									multiply_by_rational_with_rounding(
-										author_rewards,
-										contribution.clone(),
-										aggregator_total_valuation,
-										Rounding::Down,
-									)
-									.unwrap_or(Balance::zero()),
-								)
-							});
-						}
-						None => {
-							// unexpected overflow has occured and rewards will now distributed evenly amongst
-							let collator_count = distribution.keys().cloned().count() as u128;
-							let collator_reward = author_rewards
-								.checked_div(collator_count)
-								.unwrap_or(Balance::zero());
-							distribution.keys().for_each(|collator| {
-								process_collator_with_rewards(collator.clone(), collator_reward)
-							});
-						}
-					}
-				};
 
 			for (author, pts) in <AwardedPts<T>>::drain_prefix(round_to_payout) {
 				let author_issuance_perbill = Perbill::from_rational(pts, total);
@@ -3051,16 +3091,115 @@ pub mod pallet {
 				let author_rewards = author_issuance_perbill.mul_floor(total_issuance);
 
 				match round_aggregator_info.get(&author) {
-					Some(aggregator_distribution) => process_aggregator_with_rewards_and_dist(
-						author,
-						author_rewards,
-						aggregator_distribution,
-					),
-					None => process_collator_with_rewards(author, author_rewards),
+					Some(aggregator_distribution) => {
+						Self::process_aggregator_with_rewards_and_dist(
+							round_to_payout,
+							author,
+							author_rewards,
+							aggregator_distribution,
+						)
+					}
+					None => {
+						Self::process_collator_with_rewards(round_to_payout, author, author_rewards)
+					}
 				}
 			}
 		}
 
+		pub fn calculate_collators_valuations<'a, I>(
+			valuated_bond_it: I,
+		) -> BTreeMap<T::AccountId, Balance>
+		where
+			I: Iterator<Item = (&'a Bond<T::AccountId>, Balance)>,
+			I: Clone,
+		{
+			let aggregator_info = <CandidateAggregator<T>>::get();
+			// collect aggregated bonds
+			let mut valuated_bonds = valuated_bond_it
+				.clone()
+				.filter_map(|(bond, valuation)| {
+					aggregator_info
+						.get(&bond.owner)
+						.map(|aggregator| (bond, valuation, aggregator))
+				})
+				.fold(
+					BTreeMap::<T::AccountId, Balance>::new(),
+					|mut acc, (_bond, valuation, aggregator)| {
+						acc.entry(aggregator.clone())
+							.and_modify(|total| *total = total.saturating_add(valuation))
+							.or_insert_with(|| valuation);
+						acc
+					},
+				);
+
+			// extend with non agregated bonds
+			valuated_bonds.extend(valuated_bond_it.filter_map(|(bond, valuation)| {
+				if let None = aggregator_info.get(&bond.owner) {
+					Some((bond.owner.clone(), valuation))
+				} else {
+					None
+				}
+			}));
+
+			valuated_bonds
+		}
+
+		pub fn calculate_aggregators_collator_info<'a, I>(
+			valuated_bond_it: I,
+		) -> BTreeMap<T::AccountId, BTreeMap<T::AccountId, Balance>>
+		where
+			I: Iterator<Item = (&'a Bond<T::AccountId>, Balance)>,
+		{
+			let aggregator_info = <CandidateAggregator<T>>::get();
+
+			valuated_bond_it
+				.filter_map(|(bond, valuation)| {
+					aggregator_info
+						.get(&bond.owner)
+						.map(|aggregator| (bond, valuation, aggregator))
+				})
+				.fold(
+					BTreeMap::<T::AccountId, BTreeMap<T::AccountId, Balance>>::new(),
+					|mut acc, (bond, valuation, aggregator)| {
+						acc.entry(aggregator.clone())
+							.and_modify(|x| {
+								x.insert(bond.owner.clone(), valuation);
+							})
+							.or_insert(BTreeMap::from([(bond.owner.clone(), valuation)]));
+						acc
+					},
+				)
+		}
+
+		pub fn calculate_valuations_and_aggregation_info() -> (
+			BTreeMap<T::AccountId, Balance>,
+			BTreeMap<T::AccountId, BTreeMap<T::AccountId, Balance>>,
+		) {
+			let candidates = <CandidatePool<T>>::get().0;
+
+			let liq_token_to_pool = <StakingLiquidityTokens<T>>::get();
+			let valuated_bond_it = candidates.iter().filter_map(|bond| {
+				match liq_token_to_pool.get(&bond.liquidity_token) {
+					Some(Some((reserve1, reserve2))) if !reserve1.is_zero() => {
+						multiply_by_rational_with_rounding(
+							bond.amount,
+							*reserve1,
+							*reserve2,
+							Rounding::Down,
+						)
+						.map(|val| (bond, val))
+						.or(Some((bond, Balance::max_value())))
+					}
+					_ => None,
+				}
+			});
+
+			(
+				Self::calculate_collators_valuations(valuated_bond_it.clone()),
+				Self::calculate_aggregators_collator_info(valuated_bond_it.clone()),
+			)
+		}
+		//
 		/// Compute the top `TotalSelected` candidates in the CandidatePool and return
 		/// a vec of their AccountIds (in the order of selection)
 		pub fn compute_top_candidates() -> (
@@ -3068,74 +3207,8 @@ pub mod pallet {
 			Vec<(T::AccountId, Balance)>,
 			BTreeMap<T::AccountId, BTreeMap<T::AccountId, Balance>>,
 		) {
-			let candidates = <CandidatePool<T>>::get().0;
-			let staking_liquidity_tokens = <StakingLiquidityTokens<T>>::get();
-
-			let aggregator_info = <CandidateAggregator<T>>::get();
-			let mut aggregators_collator_info =
-				BTreeMap::<T::AccountId, BTreeMap<T::AccountId, Balance>>::new();
-			let mut valuated_author_candidates_btreemap = BTreeMap::<T::AccountId, Balance>::new();
-
-			for candidate_bond in candidates.iter() {
-				match staking_liquidity_tokens.get(&candidate_bond.liquidity_token) {
-					Some(Some(pool_ratio)) if !pool_ratio.1.is_zero() => {
-						let collator_valuation = multiply_by_rational_with_rounding(
-							candidate_bond.amount,
-							pool_ratio.0,
-							pool_ratio.1,
-							Rounding::Down,
-						)
-						.unwrap_or(Balance::max_value());
-
-						match aggregator_info.get(&candidate_bond.owner) {
-							Some(aggregator) => {
-								valuated_author_candidates_btreemap
-									.entry(aggregator.clone())
-									.and_modify(|current_total_valuation| {
-										aggregators_collator_info
-											.entry(aggregator.clone())
-											.and_modify(|x| {
-												x.insert(
-													candidate_bond.owner.clone(),
-													collator_valuation,
-												);
-											})
-											.or_insert(BTreeMap::<T::AccountId, Balance>::from([
-												(candidate_bond.owner.clone(), collator_valuation),
-											]));
-										*current_total_valuation = current_total_valuation
-											.saturating_add(collator_valuation);
-									})
-									.or_insert_with(|| {
-										aggregators_collator_info
-											.entry(aggregator.clone())
-											.and_modify(|x| {
-												x.insert(
-													candidate_bond.owner.clone(),
-													collator_valuation,
-												);
-											})
-											.or_insert(BTreeMap::<T::AccountId, Balance>::from([
-												(candidate_bond.owner.clone(), collator_valuation),
-											]));
-										collator_valuation
-									});
-							}
-							None => {
-								let res = valuated_author_candidates_btreemap
-									.insert(candidate_bond.owner.clone(), collator_valuation);
-								if let Some(replaced_candidate) = res {
-									log::error!(
-										"Either duplicate author in candidate pool or candidate is also aggregator: candidate - {:?}",
-										replaced_candidate
-									);
-								}
-							}
-						}
-					}
-					_ => {}
-				}
-			}
+			let (valuated_author_candidates_btreemap, aggregators_collator_info) =
+				Self::calculate_valuations_and_aggregation_info();
 
 			let mut valuated_author_candidates_vec: Vec<(T::AccountId, Balance)> =
 				valuated_author_candidates_btreemap
@@ -3143,7 +3216,7 @@ pub mod pallet {
 					.collect::<_>();
 
 			// order candidates by stake (least to greatest so requires `rev()`)
-			valuated_author_candidates_vec.sort_unstable_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+			valuated_author_candidates_vec.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 			let top_n = <TotalSelected<T>>::get() as usize;
 			// choose the top TotalSelected qualified candidates, ordered by stake
 			let mut selected_authors: Vec<(T::AccountId, Balance)> = valuated_author_candidates_vec
@@ -3152,7 +3225,7 @@ pub mod pallet {
 				.take(top_n)
 				.filter(|x| x.1 >= T::MinCollatorStk::get())
 				.collect::<_>();
-			selected_authors.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+			selected_authors.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
 			let mut all_selected_collators = Vec::<(T::AccountId, Balance)>::new();
 			for selected_author in selected_authors.iter() {
