@@ -276,6 +276,7 @@ parameter_types! {
 	pub const MinSelectedCandidates: u32 = 5;
 	pub const MaxCollatorCandidates: u32 = 10;
 	pub const MaxDelegatorsPerCandidate: u32 = 4;
+	pub const DefaultPayoutLimit: u32 = 15;
 	pub const MaxTotalDelegatorsPerCandidate: u32 = 10;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
@@ -299,6 +300,7 @@ impl Config for Test {
 	type MaxCollatorCandidates = MaxCollatorCandidates;
 	type MaxTotalDelegatorsPerCandidate = MaxTotalDelegatorsPerCandidate;
 	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
+	type DefaultPayoutLimit = DefaultPayoutLimit;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
 	type MinCollatorStk = MinCollatorStk;
@@ -504,13 +506,7 @@ pub(crate) fn payout_collator_for_round(n: u64) {
 	// u32::try_from(n).unwrap()).collect();
 
 	for collator in collators.iter() {
-		Stake::payout_collator_rewards(
-			RuntimeOrigin::signed(999),
-			n.try_into().unwrap(),
-			collator.clone(),
-			<Test as stake::Config>::MaxDelegatorsPerCandidate::get(),
-		)
-		.unwrap();
+		Stake::payout_collator_rewards(RuntimeOrigin::signed(999), collator.clone(), None).unwrap();
 	}
 }
 

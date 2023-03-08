@@ -118,6 +118,12 @@ pub enum MetadataUpdateAction {
 	RemoveApprovedCollators,
 }
 
+#[derive(Eq, PartialEq, Encode, Decode, TypeInfo, Debug, Clone)]
+pub enum PayoutRounds {
+	All,
+	Partial(Vec<RoundIndex>),
+}
+
 #[pallet]
 pub mod pallet {
 	pub use super::*;
@@ -1407,6 +1413,8 @@ pub mod pallet {
 		/// Maximum delegators counted per candidate
 		#[pallet::constant]
 		type MaxDelegatorsPerCandidate: Get<u32>;
+		#[pallet::constant]
+		type DefaultPayoutLimit: Get<u32>;
 		/// Maximum delegations per delegator
 		#[pallet::constant]
 		type MaxDelegationsPerDelegator: Get<u32>;
@@ -1553,7 +1561,9 @@ pub mod pallet {
 		/// Delegator, Collator, Due reward (as per counted delegation for collator)
 		DelegatorDueReward(T::AccountId, T::AccountId, Balance),
 		/// Paid the account (delegator or collator) the balance as liquid rewards
-		Rewarded(T::AccountId, Balance),
+		Rewarded(RoundIndex, T::AccountId, Balance),
+		/// Notify about reward periods that has been paid (collator, payout rounds, any rewards left)
+		CollatorRewardsDistributed(T::AccountId, PayoutRounds),
 		/// Staking expectations set
 		StakeExpectationsSet(Balance, Balance, Balance),
 		/// Set total selected candidates to this value [old, new]
@@ -2612,46 +2622,58 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		// TODO: use more precise benchmark
+		/// This extrinsic should be used to distribute rewards for collator and assodiated
+		/// delegators. As round rewards are processed in random order its impossible predict
+		/// how many delegators (and assodiated transfer extrinsic calls) will be required so
+		/// worst case scenario (delegators_count = MaxCollatorCandidates) is assumed.
+		///
+		/// params:
+		/// - collator - account id
+		/// - limit - number of rewards periods that should be processed within extrinsic. Note
+		/// that limit assumes worst case scenario of (delegators_count = MaxCollatorCandidates)
+		/// so as a result, `min_limit` or more session round rewards may be distributed
 		#[pallet::call_index(25)]
-		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
+		#[pallet::weight(limit.unwrap_or(T::DefaultPayoutLimit::get()) * <T as Config>::WeightInfo::payout_collator_rewards())]
 		#[transactional]
 		pub fn payout_collator_rewards(
 			origin: OriginFor<T>,
-			round: RoundIndex,
 			collator: T::AccountId,
-			delegator_count: u32,
+			limit: Option<u32>,
 		) -> DispatchResultWithPostInfo {
 			let _caller = ensure_signed(origin)?;
 
-			let collator_payout_info = RoundCollatorRewardInfo::<T>::get(collator.clone(), round)
-				.ok_or(Error::<T>::CollatorRoundRewardsDNE)?;
+			let mut rounds = Vec::<RoundIndex>::new();
 
-			ensure!(
-				delegator_count as usize
-					>= collator_payout_info
-						.delegator_rewards
-						.keys()
-						.cloned()
-						.count(),
-				Error::<T>::IncorrectRewardDelegatorCount
-			);
+			for (round, info) in RoundCollatorRewardInfo::<T>::iter_prefix(collator.clone())
+				.take(limit.unwrap_or(T::DefaultPayoutLimit::get()) as usize)
+			{
+				Self::payout_reward(round, collator.clone(), info.collator_reward)?;
+				let _ = info
+					.delegator_rewards
+					.iter()
+					.try_for_each(|(d, r)| Self::payout_reward(round, d.clone(), r.clone()))?;
+				RoundCollatorRewardInfo::<T>::remove(collator.clone(), round);
+				rounds.push(round);
+			}
 
-			Self::payout_reward(collator.clone(), collator_payout_info.collator_reward)?;
+			if let Some(_) = RoundCollatorRewardInfo::<T>::iter_prefix(collator.clone()).next() {
+				Self::deposit_event(Event::CollatorRewardsDistributed(
+					collator,
+					PayoutRounds::Partial(rounds),
+				));
+			} else {
+				Self::deposit_event(Event::CollatorRewardsDistributed(
+					collator,
+					PayoutRounds::All,
+				));
+			}
 
-			let _ = collator_payout_info
-				.delegator_rewards
-				.iter()
-				.try_for_each(|(d, r)| Self::payout_reward(d.clone(), r.clone()))?;
-
-			RoundCollatorRewardInfo::<T>::remove(collator.clone(), round);
-
+			// possibly use PostDispatchInfo.actual_weight to return
 			Ok(().into())
 		}
 
-		// TODO: use more precise benchmark
 		#[pallet::call_index(26)]
-		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
+		#[pallet::weight(<T as Config>::WeightInfo::payout_delegator_reward())]
 		#[transactional]
 		pub fn payout_delegator_reward(
 			origin: OriginFor<T>,
@@ -2672,7 +2694,7 @@ pub mod pallet {
 						.delegator_rewards
 						.remove(&delegator)
 						.ok_or(Error::<T>::DelegatorRewardsDNE)?;
-					Self::payout_reward(delegator, delegator_reward)?;
+					Self::payout_reward(round, delegator, delegator_reward)?;
 					Ok(())
 				},
 			)?;
@@ -2745,7 +2767,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		pub fn payout_reward(to: T::AccountId, amt: Balance) -> DispatchResult {
+		pub fn payout_reward(round: RoundIndex, to: T::AccountId, amt: Balance) -> DispatchResult {
 			let _ = <T as pallet::Config>::Currency::transfer(
 				T::NativeTokenId::get().into(),
 				&<T as pallet::Config>::StakingIssuanceVault::get(),
@@ -2753,7 +2775,7 @@ pub mod pallet {
 				amt.into(),
 				ExistenceRequirement::AllowDeath,
 			)?;
-			Self::deposit_event(Event::Rewarded(to.clone(), amt));
+			Self::deposit_event(Event::Rewarded(round, to.clone(), amt));
 			Ok(())
 		}
 		pub fn is_delegator(acc: &T::AccountId) -> bool {
