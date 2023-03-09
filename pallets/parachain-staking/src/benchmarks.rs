@@ -51,7 +51,7 @@ const MGA_TOKEN_ID: TokenId = 0u32;
 
 
 /// Mint v liquidity tokens of token set x to funding account
-fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet_xyk::Config>(
+fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
@@ -61,14 +61,14 @@ fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pa
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(RawOrigin::Signed(funding_account.clone()).into(), x.into(), v.into(), (x + 1u32).into(), (v + 1).into()));
+	assert!(<T::PoolCreateApi as PoolCreateApi>::pool_create(funding_account.clone(), x.into(), v.into(), (x + 1u32).into(), (v + 1).into()).is_some());
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 2u32).into(), &funding_account), v.into());
 	Ok(x+2u32)
 }
 
 /// Mint v liquidity tokens of token set x to funding account
-fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet_xyk::Config>(
+fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
@@ -78,7 +78,7 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(RawOrigin::Signed(funding_account.clone()).into(), MGA_TOKEN_ID.into(), v.into(), (x).into(), (v + 1).into()));
+	assert!(<T::PoolCreateApi as PoolCreateApi>::pool_create(funding_account.clone(), MGA_TOKEN_ID.into(), v.into(), (x).into(), (v + 1).into()).is_some());
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 1u32).into(), &funding_account), v.into());
 	Ok(x+1u32)
@@ -1365,9 +1365,8 @@ benchmarks! {
 		// // Total selected
 		// let w =35;
 
-		assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
-		assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
-		assert_ok!(<pallet_issuance::Pallet<T>>::calculate_and_store_round_issuance(0u32));
+		<T::Issuance as ComputeIssuance>::initialize();
+		<T::Issuance as ComputeIssuance>::compute_issuance(0u32);
 
 		assert_ok!(Pallet::<T>::set_total_selected(RawOrigin::Root.into(), w));
 

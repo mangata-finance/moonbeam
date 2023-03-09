@@ -54,19 +54,16 @@ mod set;
 mod tests;
 
 use frame_support::pallet;
-pub use mangata_types::{Balance, TokenId};
+pub use mangata_types::{Balance, TokenId, multipurpose_liquidity::BondKind};
+pub use mangata_support::traits::{Valuate, ComputeIssuance, GetIssuance,StakingReservesProviderTrait, PoolCreateApi};
 use orml_tokens::{MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
-use pallet_xyk::Valuate;
 
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
 use frame_support::traits::{EstimateNextSessionRotation, ExistenceRequirement, Get, tokens::currency::{MultiTokenCurrency}};
 use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
-pub use mp_multipurpose_liquidity::BondKind;
-pub use mp_traits::StakingReservesProviderTrait;
 use pallet_collective_mangata::GetMembers;
-use pallet_issuance::{ComputeIssuance, GetIssuance};
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_arithmetic::per_things::Rounding;
@@ -1332,8 +1329,9 @@ pub mod pallet {
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait StakingBenchmarkConfig:
-		orml_tokens::Config + pallet_xyk::Config + pallet_session::Config + pallet_issuance::Config
+		orml_tokens::Config + pallet_session::Config
 	{
+		type PoolCreateApi: PoolCreateApi<AccountId = Self::AccountId>;
 	}
 
 	#[cfg(not(feature = "runtime-benchmarks"))]
