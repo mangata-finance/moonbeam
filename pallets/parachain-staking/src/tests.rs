@@ -5702,3 +5702,222 @@ fn can_join_candidates_and_be_selected_with_native_token() {
 			);
 		});
 }
+
+#[test]
+fn test_claiming_rewards_for_more_periods_than_asked_due_to_optimization_based_on_delegators_count() {
+	ExtBuilder::default()
+		.with_staking_tokens(vec![
+			(999, 280, 0),
+			(1, 20, 1),
+			(2, 20, 1),
+			(3, 20, 1),
+			(4, 20, 1),
+			(5, 30, 1),
+			(6, 30, 1),
+			(7, 30, 1),
+			(8, 30, 1),
+		])
+		.with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
+		.with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
+		.build()
+		.execute_with(|| {
+			set_author(1, 1, 1);
+			set_author(1, 2, 1);
+			set_author(1, 3, 1);
+			set_author(1, 4, 1);
+			roll_to(6);
+			set_author(2, 1, 1);
+			set_author(2, 2, 1);
+			set_author(2, 3, 1);
+			set_author(2, 4, 1);
+			roll_to(21);
+
+			assert_eq!(2, RoundCollatorRewardInfo::<Test>::iter_prefix(2).count());
+
+			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 2, Some(1)).unwrap();
+
+			let expected_events = vec![
+				Event::CollatorChosen(2, 1, 140),
+				Event::CollatorChosen(2, 2, 20),
+				Event::CollatorChosen(2, 3, 20),
+				Event::CollatorChosen(2, 4, 20),
+				Event::NewRound(5, 1, 4, 200),
+				Event::CollatorChosen(3, 1, 140),
+				Event::CollatorChosen(3, 2, 20),
+				Event::CollatorChosen(3, 3, 20),
+				Event::CollatorChosen(3, 4, 20),
+				Event::NewRound(10, 2, 4, 200),
+				Event::CollatorChosen(4, 1, 140),
+				Event::CollatorChosen(4, 2, 20),
+				Event::CollatorChosen(4, 3, 20),
+				Event::CollatorChosen(4, 4, 20),
+				Event::NewRound(15, 3, 4, 200),
+				Event::CollatorChosen(5, 1, 140),
+				Event::CollatorChosen(5, 2, 20),
+				Event::CollatorChosen(5, 3, 20),
+				Event::CollatorChosen(5, 4, 20),
+				Event::NewRound(20, 4, 4, 200),
+				Event::Rewarded(1, 2, 76),
+				Event::Rewarded(2, 2, 76),
+				Event::CollatorRewardsDistributed(2, PayoutRounds::All),
+			];
+			assert_eq_events!(expected_events);
+		});
+}
+
+#[test]
+fn test_claiming_rewards_for_exactly_one_period_when_delegators_count_is_equal_to_max_available() {
+	ExtBuilder::default()
+		.with_staking_tokens(vec![
+			(999, 280, 0),
+			(1, 20, 1),
+			(2, 20, 1),
+			(3, 20, 1),
+			(4, 20, 1),
+			(5, 30, 1),
+			(6, 30, 1),
+			(7, 30, 1),
+			(8, 30, 1),
+		])
+		.with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
+		.with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
+		.build()
+		.execute_with(|| {
+			set_author(1, 1, 1);
+			set_author(1, 2, 1);
+			set_author(1, 3, 1);
+			set_author(1, 4, 1);
+			roll_to(6);
+			set_author(2, 1, 1);
+			set_author(2, 2, 1);
+			set_author(2, 3, 1);
+			set_author(2, 4, 1);
+			roll_to(21);
+
+			println!("rewards {:?}", RoundCollatorRewardInfo::<Test>::iter().collect::<Vec<_>>());
+			assert_eq!(2, RoundCollatorRewardInfo::<Test>::iter_prefix(1).count());
+
+			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 1, Some(1)).unwrap();
+
+			let expected_events = vec![
+				Event::CollatorChosen(2, 1, 140),
+				Event::CollatorChosen(2, 2, 20),
+				Event::CollatorChosen(2, 3, 20),
+				Event::CollatorChosen(2, 4, 20),
+				Event::NewRound(5, 1, 4, 200),
+				Event::CollatorChosen(3, 1, 140),
+				Event::CollatorChosen(3, 2, 20),
+				Event::CollatorChosen(3, 3, 20),
+				Event::CollatorChosen(3, 4, 20),
+				Event::NewRound(10, 2, 4, 200),
+				Event::CollatorChosen(4, 1, 140),
+				Event::CollatorChosen(4, 2, 20),
+				Event::CollatorChosen(4, 3, 20),
+				Event::CollatorChosen(4, 4, 20),
+				Event::NewRound(15, 3, 4, 200),
+				Event::CollatorChosen(5, 1, 140),
+				Event::CollatorChosen(5, 2, 20),
+				Event::CollatorChosen(5, 3, 20),
+				Event::CollatorChosen(5, 4, 20),
+				Event::NewRound(20, 4, 4, 200),
+				Event::Rewarded(1, 1, 23),
+				Event::Rewarded(1, 5, 13),
+				Event::Rewarded(1, 6, 13),
+				Event::Rewarded(1, 7, 13),
+				Event::Rewarded(1, 8, 13),
+				Event::CollatorRewardsDistributed(1, PayoutRounds::Partial(vec![1])),
+			];
+			assert_eq_events!(expected_events);
+		});
+}
+
+#[test]
+fn test_claiming_rewards_for_all_periods_in_pesimistic_scenario_with_max_delegators_for_exactly_n_blocks(){
+	ExtBuilder::default()
+		.with_staking_tokens(vec![
+			(999, 280, 0),
+			(1, 20, 1),
+			(2, 20, 1),
+			(3, 20, 1),
+			(4, 20, 1),
+			(5, 30, 1),
+			(6, 30, 1),
+			(7, 30, 1),
+			(8, 30, 1),
+		])
+		.with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
+		.with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
+		.build()
+		.execute_with(|| {
+			set_author(1, 1, 1);
+			set_author(1, 2, 1);
+			set_author(1, 3, 1);
+			set_author(1, 4, 1);
+			roll_to(6);
+			set_author(2, 1, 1);
+			set_author(2, 2, 1);
+			set_author(2, 3, 1);
+			set_author(2, 4, 1);
+			roll_to(21);
+
+			println!("rewards {:?}", RoundCollatorRewardInfo::<Test>::iter().collect::<Vec<_>>());
+			assert_eq!(2, RoundCollatorRewardInfo::<Test>::iter_prefix(1).count());
+
+			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 1, Some(2)).unwrap();
+
+			let expected_events = vec![
+				Event::CollatorChosen(2, 1, 140),
+				Event::CollatorChosen(2, 2, 20),
+				Event::CollatorChosen(2, 3, 20),
+				Event::CollatorChosen(2, 4, 20),
+				Event::NewRound(5, 1, 4, 200),
+				Event::CollatorChosen(3, 1, 140),
+				Event::CollatorChosen(3, 2, 20),
+				Event::CollatorChosen(3, 3, 20),
+				Event::CollatorChosen(3, 4, 20),
+				Event::NewRound(10, 2, 4, 200),
+				Event::CollatorChosen(4, 1, 140),
+				Event::CollatorChosen(4, 2, 20),
+				Event::CollatorChosen(4, 3, 20),
+				Event::CollatorChosen(4, 4, 20),
+				Event::NewRound(15, 3, 4, 200),
+				Event::CollatorChosen(5, 1, 140),
+				Event::CollatorChosen(5, 2, 20),
+				Event::CollatorChosen(5, 3, 20),
+				Event::CollatorChosen(5, 4, 20),
+				Event::NewRound(20, 4, 4, 200),
+				Event::Rewarded(1, 1, 23),
+				Event::Rewarded(1, 5, 13),
+				Event::Rewarded(1, 6, 13),
+				Event::Rewarded(1, 7, 13),
+				Event::Rewarded(1, 8, 13),
+				Event::Rewarded(2, 1, 23),
+				Event::Rewarded(2, 5, 13),
+				Event::Rewarded(2, 6, 13),
+				Event::Rewarded(2, 7, 13),
+				Event::Rewarded(2, 8, 13),
+				Event::CollatorRewardsDistributed(1, PayoutRounds::All),
+			];
+			assert_eq_events!(expected_events);
+		});
+}
+
+#[test]
+fn test_triggre_error_when_there_are_no_rewards_to_payout(){
+	ExtBuilder::default()
+		.with_staking_tokens(vec![
+			(999, 280, 0),
+			(1, 20, 1),
+		])
+		// .with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
+		// .with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
+		.build()
+		.execute_with(|| {
+
+		assert_noop!(
+			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 33, None),
+			Error::<Test>::CollatorRoundRewardsDNE
+		);
+
+		});
+}

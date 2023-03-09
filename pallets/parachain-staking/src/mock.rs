@@ -502,8 +502,6 @@ pub(crate) fn payout_collator_for_round(n: u64) {
 				}
 			})
 			.collect();
-	println!("{:?}", collators);
-	// u32::try_from(n).unwrap()).collect();
 
 	for collator in collators.iter() {
 		Stake::payout_collator_rewards(RuntimeOrigin::signed(999), collator.clone(), None).unwrap();
@@ -519,6 +517,7 @@ pub(crate) fn roll_to(n: u64) {
 		System::on_initialize(System::block_number());
 		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
+		println!("BLOCK NR: {} ",System::block_number() );
 		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number())
 		{
 			if System::block_number().is_zero() {

@@ -62,6 +62,7 @@ mod mock;
 mod set;
 #[cfg(test)]
 mod tests;
+use sp_runtime::SaturatedConversion;
 
 use frame_support::{pallet, transactional};
 pub use mangata_types::{Balance, TokenId};
@@ -123,6 +124,7 @@ pub enum PayoutRounds {
 	All,
 	Partial(Vec<RoundIndex>),
 }
+
 
 #[pallet]
 pub mod pallet {
@@ -2623,15 +2625,15 @@ pub mod pallet {
 		}
 
 		/// This extrinsic should be used to distribute rewards for collator and assodiated
-		/// delegators. As round rewards are processed in random order its impossible predict
-		/// how many delegators (and assodiated transfer extrinsic calls) will be required so
-		/// worst case scenario (delegators_count = MaxCollatorCandidates) is assumed.
+		/// delegators. As round rewards are processed in random order its impossible predict 
+		/// how many delegators (and assodiated transfer extrinsic calls) will be required so 
+		/// worst case scenario (delegators_count = MaxCollatorCandidates) is assumed. 
 		///
 		/// params:
 		/// - collator - account id
 		/// - limit - number of rewards periods that should be processed within extrinsic. Note
-		/// that limit assumes worst case scenario of (delegators_count = MaxCollatorCandidates)
-		/// so as a result, `min_limit` or more session round rewards may be distributed
+		/// that limit assumes worst case scenario of (delegators_count = MaxCollatorCandidates) 
+		/// so as a result, `limit` or more session round rewards may be distributed
 		#[pallet::call_index(25)]
 		#[pallet::weight(limit.unwrap_or(T::DefaultPayoutLimit::get()) * <T as Config>::WeightInfo::payout_collator_rewards())]
 		#[transactional]
@@ -2641,37 +2643,66 @@ pub mod pallet {
 			limit: Option<u32>,
 		) -> DispatchResultWithPostInfo {
 			let _caller = ensure_signed(origin)?;
-
+			
 			let mut rounds = Vec::<RoundIndex>::new();
 
-			for (round, info) in RoundCollatorRewardInfo::<T>::iter_prefix(collator.clone())
-				.take(limit.unwrap_or(T::DefaultPayoutLimit::get()) as usize)
-			{
+			let limit = limit.unwrap_or(T::DefaultPayoutLimit::get());
+			let mut payouts_left =  limit * (T::MaxDelegationsPerDelegator::get() + 1) ;
+
+			for (id, (round, info)) in RoundCollatorRewardInfo::<T>::iter_prefix(collator.clone()).enumerate() {
+
+				if payouts_left < (info.delegator_rewards.len() as u32 + 1u32){
+					break;
+				}
+
 				Self::payout_reward(round, collator.clone(), info.collator_reward)?;
+				payouts_left -= 1u32;
+
 				let _ = info
 					.delegator_rewards
 					.iter()
 					.try_for_each(|(d, r)| Self::payout_reward(round, d.clone(), r.clone()))?;
 				RoundCollatorRewardInfo::<T>::remove(collator.clone(), round);
 				rounds.push(round);
+
+				payouts_left = payouts_left.checked_sub(info.delegator_rewards.len() as u32).unwrap_or_default();
+
+				if (id as u32).checked_add(1u32).unwrap_or(u32::MAX) > limit {
+					// We can optimize number of rounds that can be processed as extrinsic weight
+					// was benchmarked assuming that collator have delegators count == T::MaxDelegatorsPerCandidate
+					// so if there are less or no delegators, we can use remaining weight for
+					// processing following block, the only extra const is single iteration that
+					// consumes 1 storage read. We can compensate that by sacrificing single transfer tx
+					// 
+					// esitmated weight or payout_collator_rewards extrinsic with limit parm set to 1 is
+					// 1 storage read + (MaxDelegatorsPerCollator + 1) * transfer weight
+					//
+					// so if collator does not have any delegators only 1 transfer was actually
+					// executed leaving MaxDelegatorsPerCollator spare. We can use that remaining
+					// weight to payout rewards for following rounds. Each extra round requires:
+					// - 1 storage read (iteration)
+					// - N <= MaxDelegatorsPerCandidate transfers (depending on collators count)
+					//
+					// we can compansate storage read with 1 transfer and try to process following
+					// round if there are enought transfers left
+					payouts_left = payouts_left.checked_sub(1).unwrap_or_default();
+				}
 			}
+			
+			ensure!(!rounds.is_empty(), Error::<T>::CollatorRoundRewardsDNE);
 
 			if let Some(_) = RoundCollatorRewardInfo::<T>::iter_prefix(collator.clone()).next() {
-				Self::deposit_event(Event::CollatorRewardsDistributed(
-					collator,
-					PayoutRounds::Partial(rounds),
-				));
+				Self::deposit_event(Event::CollatorRewardsDistributed(collator, PayoutRounds::Partial(rounds)));
 			} else {
-				Self::deposit_event(Event::CollatorRewardsDistributed(
-					collator,
-					PayoutRounds::All,
-				));
+				Self::deposit_event(Event::CollatorRewardsDistributed(collator, PayoutRounds::All));
 			}
 
-			// possibly use PostDispatchInfo.actual_weight to return
+			// possibly use PostDispatchInfo.actual_weight to return refund caller if delegators
+			// count was lower than assumed upper bound
 			Ok(().into())
 		}
 
+		// TODO: use more precise benchmark
 		#[pallet::call_index(26)]
 		#[pallet::weight(<T as Config>::WeightInfo::payout_delegator_reward())]
 		#[transactional]
@@ -3363,6 +3394,7 @@ pub mod pallet {
 			if !session_index.is_zero() {
 				let n = <frame_system::Pallet<T>>::block_number().saturating_add(One::one());
 				let mut round = <Round<T>>::get();
+				println!("ROUND FINISHED {}", round.current.saturated_into::<u64>());
 				// mutate round
 				round.update(n);
 				// pay all stakers for T::RewardPaymentDelay rounds ago
