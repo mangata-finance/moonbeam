@@ -16,29 +16,35 @@
 
 //! Test utilities
 use crate as stake;
-use crate::{pallet, AwardedPts, Balance, Config, DispatchError, Points, TokenId, Valuate, BondKind, StakingReservesProviderTrait};
+use crate::{
+	pallet, AwardedPts, Balance, BondKind, Config, DispatchError, Points,
+	StakingReservesProviderTrait, TokenId, Valuate,
+};
 use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{Contains, Everything, GenesisBuild, OnFinalize, OnInitialize, tokens::currency::{MultiTokenCurrency}},
-	PalletId, assert_ok
+	assert_ok, construct_runtime, parameter_types,
+	traits::{
+		tokens::currency::MultiTokenCurrency, Contains, Everything, GenesisBuild, OnFinalize,
+		OnInitialize,
+	},
+	PalletId,
 };
 use mangata_types::Amount;
-use orml_tokens::{MultiTokenReservableCurrency};
+use orml_tokens::MultiTokenCurrencyExtended;
+use orml_tokens::MultiTokenReservableCurrency;
 use orml_traits::parameter_type_with_key;
+use pallet_vesting_mangata::MultiTokenVestingSchedule;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_core::{H256};
+use sp_core::H256;
 use sp_io;
 use sp_runtime::traits::Zero;
-use sp_runtime::{DispatchResult,
+use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
-	Perbill, Percent, RuntimeDebug,
+	DispatchResult, Perbill, Percent, RuntimeDebug,
 };
-use sp_std::marker::PhantomData;
-use orml_tokens::MultiTokenCurrencyExtended;
-use pallet_vesting_mangata::MultiTokenVestingSchedule;
 use sp_std::convert::{TryFrom, TryInto};
+use sp_std::marker::PhantomData;
 
 pub type AccountId = u64;
 pub type BlockNumber = u64;
@@ -115,11 +121,10 @@ parameter_types! {
 
 pub struct ActivedPoolQueryApiMock;
 
-
 impl pallet_issuance::ActivedPoolQueryApi for ActivedPoolQueryApiMock {
-    fn get_pool_activate_amount(_liquidity_token_id: TokenId) -> Option<Balance> {
-        todo!()
-    }
+	fn get_pool_activate_amount(_liquidity_token_id: TokenId) -> Option<Balance> {
+		todo!()
+	}
 }
 
 impl pallet_issuance::Config for Test {
@@ -138,18 +143,25 @@ impl pallet_issuance::Config for Test {
 	type ImmediateTGEReleasePercent = ImmediateTGEReleasePercent;
 	type TGEReleasePeriod = TGEReleasePeriod;
 	type TGEReleaseBegin = TGEReleaseBegin;
-	type VestingProvider = TestVestingModule<AccountId, orml_tokens::MultiTokenCurrencyAdapter<Test>, BlockNumber>;
+	type VestingProvider =
+		TestVestingModule<AccountId, orml_tokens::MultiTokenCurrencyAdapter<Test>, BlockNumber>;
 	type WeightInfo = ();
 	type ActivedPoolQueryApiType = ActivedPoolQueryApiMock;
 }
 
-pub struct TestVestingModule<A, C: MultiTokenCurrency<A>, B>(PhantomData<A>,PhantomData<C>,PhantomData<B>);
-impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestingModule<A, C, B>
-{
+pub struct TestVestingModule<A, C: MultiTokenCurrency<A>, B>(
+	PhantomData<A>,
+	PhantomData<C>,
+	PhantomData<B>,
+);
+impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestingModule<A, C, B> {
 	type Currency = C;
 	type Moment = B;
 
-	fn vesting_balance(_who: &A, _token_id: <C as MultiTokenCurrency<A>>::CurrencyId) -> Option<<C as MultiTokenCurrency<A>>::Balance> {
+	fn vesting_balance(
+		_who: &A,
+		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
+	) -> Option<<C as MultiTokenCurrency<A>>::Balance> {
 		None
 	}
 
@@ -160,7 +172,6 @@ impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestin
 		_starting_block: B,
 		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
 	) -> DispatchResult {
-		
 		Ok(())
 	}
 
@@ -177,7 +188,11 @@ impl<A, C: MultiTokenCurrency<A>, B> MultiTokenVestingSchedule<A> for TestVestin
 	}
 
 	/// Remove a vesting schedule for a given account.
-	fn remove_vesting_schedule(_who: &A, _token_id: <C as MultiTokenCurrency<A>>::CurrencyId, _schedule_index: u32) -> DispatchResult {
+	fn remove_vesting_schedule(
+		_who: &A,
+		_token_id: <C as MultiTokenCurrency<A>>::CurrencyId,
+		_schedule_index: u32,
+	) -> DispatchResult {
 		Ok(())
 	}
 }
@@ -221,24 +236,31 @@ impl orml_tokens::Config for Test {
 }
 
 pub struct TokensStakingPassthrough<T: stake::Config>(PhantomData<T>);
-impl<T: stake::Config> StakingReservesProviderTrait for TokensStakingPassthrough<T>{
+impl<T: stake::Config> StakingReservesProviderTrait for TokensStakingPassthrough<T> {
 	type AccountId = T::AccountId;
 
-	fn can_bond(token_id: TokenId, account_id: &T::AccountId, amount: Balance, _use_balance_from: Option<BondKind>)
-	-> bool{
+	fn can_bond(
+		token_id: TokenId,
+		account_id: &T::AccountId,
+		amount: Balance,
+		_use_balance_from: Option<BondKind>,
+	) -> bool {
 		T::Currency::can_reserve(token_id.into(), &account_id, amount.into())
 	}
 
-	fn bond(token_id: TokenId, account_id: &T::AccountId, amount: Balance, _use_balance_from: Option<BondKind>)
-	-> DispatchResult{
+	fn bond(
+		token_id: TokenId,
+		account_id: &T::AccountId,
+		amount: Balance,
+		_use_balance_from: Option<BondKind>,
+	) -> DispatchResult {
 		T::Currency::reserve(token_id.into(), account_id, amount.into())
 	}
 
-	fn unbond(token_id: TokenId, account_id: &T::AccountId, amount: Balance) -> Balance{
+	fn unbond(token_id: TokenId, account_id: &T::AccountId, amount: Balance) -> Balance {
 		T::Currency::unreserve(token_id.into(), account_id, amount.into()).into()
 	}
 }
-
 
 impl crate::StakingBenchmarkConfig for Test {}
 
@@ -340,12 +362,12 @@ impl Valuate for TestTokenValuator {
 	}
 
 	fn get_reserves(
-			_first_asset_id: TokenId,
-			_second_asset_id: TokenId,
-		) -> Result<(Balance, Balance), DispatchError> {
-			todo!()
-		}
+		_first_asset_id: TokenId,
+		_second_asset_id: TokenId,
+	) -> Result<(Balance, Balance), DispatchError> {
+		todo!()
 	}
+}
 
 pub(crate) struct ExtBuilder {
 	// tokens used for staking, these aren't backed in the xyk pallet and are just simply nominal tokens
@@ -444,7 +466,7 @@ impl ExtBuilder {
 		ext.execute_with(|| {
 			System::set_block_number(1);
 
-			if !StakeCurrency::exists(MGA_TOKEN_ID){
+			if !StakeCurrency::exists(MGA_TOKEN_ID) {
 				assert_ok!(StakeCurrency::create(&99999, 100));
 			}
 
@@ -452,8 +474,12 @@ impl ExtBuilder {
 			let target_tge = 2_000_000_000u128;
 			assert!(current_issuance <= target_tge);
 
-			assert_ok!(StakeCurrency::mint(MGA_TOKEN_ID, &99999, target_tge - current_issuance));
-			
+			assert_ok!(StakeCurrency::mint(
+				MGA_TOKEN_ID,
+				&99999,
+				target_tge - current_issuance
+			));
+
 			assert_ok!(Issuance::finalize_tge(RuntimeOrigin::root()));
 			assert_ok!(Issuance::init_issuance_config(RuntimeOrigin::root()));
 			assert_ok!(Issuance::calculate_and_store_round_issuance(0u32));

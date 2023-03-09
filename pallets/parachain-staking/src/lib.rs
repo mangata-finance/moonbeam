@@ -54,13 +54,17 @@ mod set;
 mod tests;
 
 use frame_support::pallet;
-pub use mangata_types::{Balance, TokenId, multipurpose_liquidity::BondKind};
-pub use mangata_support::traits::{Valuate, ComputeIssuance, GetIssuance,StakingReservesProviderTrait, PoolCreateApi};
+pub use mangata_support::traits::{
+	ComputeIssuance, GetIssuance, PoolCreateApi, StakingReservesProviderTrait, Valuate,
+};
+pub use mangata_types::{multipurpose_liquidity::BondKind, Balance, TokenId};
 use orml_tokens::{MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
 
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
-use frame_support::traits::{EstimateNextSessionRotation, ExistenceRequirement, Get, tokens::currency::{MultiTokenCurrency}};
+use frame_support::traits::{
+	tokens::currency::MultiTokenCurrency, EstimateNextSessionRotation, ExistenceRequirement, Get,
+};
 use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
 use pallet_collective_mangata::GetMembers;
@@ -1328,9 +1332,7 @@ pub mod pallet {
 	type RewardPoint = u32;
 
 	#[cfg(feature = "runtime-benchmarks")]
-	pub trait StakingBenchmarkConfig:
-		orml_tokens::Config + pallet_session::Config
-	{
+	pub trait StakingBenchmarkConfig: orml_tokens::Config + pallet_session::Config {
 		type PoolCreateApi: PoolCreateApi<AccountId = Self::AccountId>;
 	}
 
