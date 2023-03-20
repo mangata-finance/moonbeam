@@ -5130,11 +5130,6 @@ version = "0.10.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#5e9b877075d8f8dc196b0ede1f4dbf97427cdde8"
 
 [[patch.unused]]
-name = "pallet-multipurpose-liquidity"
-version = "0.1.0"
-source = "git+https://github.com/mangata-finance//mangata-node?branch=develop#58103bac96a28ff32316da3298b4f382d718d938"
-
-[[patch.unused]]
 name = "beefy-gadget"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#5e9b877075d8f8dc196b0ede1f4dbf97427cdde8"
@@ -5688,3 +5683,8 @@ source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#5
 name = "try-runtime-cli"
 version = "0.10.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#5e9b877075d8f8dc196b0ede1f4dbf97427cdde8"
+
+[[patch.unused]]
+name = "pallet-multipurpose-liquidity"
+version = "0.1.0"
+source = "git+https://github.com/mangata-finance//mangata-node?branch=develop#58103bac96a28ff32316da3298b4f382d718d938"
