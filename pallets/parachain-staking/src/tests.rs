@@ -5704,7 +5704,8 @@ fn can_join_candidates_and_be_selected_with_native_token() {
 }
 
 #[test]
-fn test_claiming_rewards_for_more_periods_than_asked_due_to_optimization_based_on_delegators_count() {
+fn test_claiming_rewards_for_more_periods_than_asked_due_to_optimization_based_on_delegators_count()
+{
 	ExtBuilder::default()
 		.with_staking_tokens(vec![
 			(999, 280, 0),
@@ -5718,7 +5719,7 @@ fn test_claiming_rewards_for_more_periods_than_asked_due_to_optimization_based_o
 			(8, 30, 1),
 		])
 		.with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
-		.with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
+		.with_delegations(vec![(5, 1, 30), (6, 1, 30), (7, 1, 30), (8, 1, 30)])
 		.build()
 		.execute_with(|| {
 			set_author(1, 1, 1);
@@ -5734,7 +5735,8 @@ fn test_claiming_rewards_for_more_periods_than_asked_due_to_optimization_based_o
 
 			assert_eq!(2, RoundCollatorRewardInfo::<Test>::iter_prefix(2).count());
 
-			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 2, Some(1)).unwrap();
+			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 2, Some(1))
+				.unwrap();
 
 			let expected_events = vec![
 				Event::CollatorChosen(2, 1, 140),
@@ -5780,7 +5782,7 @@ fn test_claiming_rewards_for_exactly_one_period_when_delegators_count_is_equal_t
 			(8, 30, 1),
 		])
 		.with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
-		.with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
+		.with_delegations(vec![(5, 1, 30), (6, 1, 30), (7, 1, 30), (8, 1, 30)])
 		.build()
 		.execute_with(|| {
 			set_author(1, 1, 1);
@@ -5794,10 +5796,14 @@ fn test_claiming_rewards_for_exactly_one_period_when_delegators_count_is_equal_t
 			set_author(2, 4, 1);
 			roll_to(21);
 
-			println!("rewards {:?}", RoundCollatorRewardInfo::<Test>::iter().collect::<Vec<_>>());
+			println!(
+				"rewards {:?}",
+				RoundCollatorRewardInfo::<Test>::iter().collect::<Vec<_>>()
+			);
 			assert_eq!(2, RoundCollatorRewardInfo::<Test>::iter_prefix(1).count());
 
-			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 1, Some(1)).unwrap();
+			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 1, Some(1))
+				.unwrap();
 
 			let expected_events = vec![
 				Event::CollatorChosen(2, 1, 140),
@@ -5832,7 +5838,8 @@ fn test_claiming_rewards_for_exactly_one_period_when_delegators_count_is_equal_t
 }
 
 #[test]
-fn test_claiming_rewards_for_all_periods_in_pesimistic_scenario_with_max_delegators_for_exactly_n_blocks(){
+fn test_claiming_rewards_for_all_periods_in_pesimistic_scenario_with_max_delegators_for_exactly_n_blocks(
+) {
 	ExtBuilder::default()
 		.with_staking_tokens(vec![
 			(999, 280, 0),
@@ -5846,7 +5853,7 @@ fn test_claiming_rewards_for_all_periods_in_pesimistic_scenario_with_max_delegat
 			(8, 30, 1),
 		])
 		.with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
-		.with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
+		.with_delegations(vec![(5, 1, 30), (6, 1, 30), (7, 1, 30), (8, 1, 30)])
 		.build()
 		.execute_with(|| {
 			set_author(1, 1, 1);
@@ -5860,10 +5867,14 @@ fn test_claiming_rewards_for_all_periods_in_pesimistic_scenario_with_max_delegat
 			set_author(2, 4, 1);
 			roll_to(21);
 
-			println!("rewards {:?}", RoundCollatorRewardInfo::<Test>::iter().collect::<Vec<_>>());
+			println!(
+				"rewards {:?}",
+				RoundCollatorRewardInfo::<Test>::iter().collect::<Vec<_>>()
+			);
 			assert_eq!(2, RoundCollatorRewardInfo::<Test>::iter_prefix(1).count());
 
-			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 1, Some(2)).unwrap();
+			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 1, Some(2))
+				.unwrap();
 
 			let expected_events = vec![
 				Event::CollatorChosen(2, 1, 140),
@@ -5903,21 +5914,16 @@ fn test_claiming_rewards_for_all_periods_in_pesimistic_scenario_with_max_delegat
 }
 
 #[test]
-fn test_triggre_error_when_there_are_no_rewards_to_payout(){
+fn test_triggre_error_when_there_are_no_rewards_to_payout() {
 	ExtBuilder::default()
-		.with_staking_tokens(vec![
-			(999, 280, 0),
-			(1, 20, 1),
-		])
+		.with_staking_tokens(vec![(999, 280, 0), (1, 20, 1)])
 		// .with_default_token_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20)])
 		// .with_delegations(vec![(5, 1, 30), (6,1,30), (7,1,30), (8,1,30),   ])
 		.build()
 		.execute_with(|| {
-
-		assert_noop!(
-			Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 33, None),
-			Error::<Test>::CollatorRoundRewardsDNE
-		);
-
+			assert_noop!(
+				Stake::payout_collator_rewards(crate::mock::RuntimeOrigin::signed(999), 33, None),
+				Error::<Test>::CollatorRoundRewardsDNE
+			);
 		});
 }

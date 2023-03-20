@@ -332,7 +332,7 @@ impl Valuate for TestTokenValuator {
 	fn get_liquidity_token_mga_pool(
 		_liquidity_token_id: Self::CurrencyId,
 	) -> Result<(Self::CurrencyId, Self::CurrencyId), DispatchError> {
-		unimplemented!("Not required in tests!")
+		Ok((0_u32, 1_u32))
 	}
 
 	fn valuate_liquidity_token(
@@ -517,7 +517,7 @@ pub(crate) fn roll_to(n: u64) {
 		System::on_initialize(System::block_number());
 		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
-		println!("BLOCK NR: {} ",System::block_number() );
+		println!("BLOCK NR: {} ", System::block_number());
 		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number())
 		{
 			if System::block_number().is_zero() {
