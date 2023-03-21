@@ -1808,8 +1808,14 @@ pub mod pallet {
 				staking_liquidity_tokens.contains_key(&liquidity_token),
 				Error::<T>::StakingLiquidityTokenNotListed
 			);
+
+			let valuation = T::StakingLiquidityTokenValuator::valuate_liquidity_token(
+				liquidity_token.into(),
+				bond.into(),
+			);
+
 			ensure!(
-				bond >= T::MinCandidateStk::get(),
+				valuation >= T::MinCandidateStk::get().into(),
 				Error::<T>::CandidateBondBelowMin
 			);
 			let mut candidates = <CandidatePool<T>>::get();
