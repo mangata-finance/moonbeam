@@ -20,6 +20,18 @@
 //! uses direct delegation. Delegators choose exactly who they delegate and with what stake.
 //! This is different from `frame/pallet-staking` where delegators approval vote and run Phragmen.
 //!
+//! ### Actors
+//! There are multiple functions that can be distinguished:
+//! - Collator Candidate - depending on managed stake can or can not bo chosen as collator
+//! - Delegator - delegates to collator candidate, if that collator candidate will become
+//! collator delegator is eligible for proportional part of the rewards that collator receives for
+//! building blocks
+//! - Aggregator - A collator candiate may choose to aggregate under an aggregator. If this aggregator
+//! gets selected then he becomes an author/collator representing the collator candidates aggregating under him.
+//! If a collator candidate does not choose to aggregate under an aggregator and gets selected, then he
+//! himself becomes the author/collator. Any account that is not delegator or candidate can become
+//! aggregator
+//!
 //! ### Rules
 //! There is a new round every `<Round<T>>::get().length` blocks.
 //!
@@ -45,22 +57,38 @@
 //!
 //!
 //! # Aggregation
-//! Aggregation feature allows for delegating under single candidate(A) but with many different liquidity
-//! tokens. At the moment every candidate has some specific liquidity token assigned that can be
-//! used for delegations `[Pallet::join_candidates]`. Single candidate = single liquidity token. If collator/candidate
-//! wants to enable more tokens for people to delegate with that can be done only using aggregation feature:
-//! - new candidacy(B) needs to be submitted (with that particular liq token id) `[Pallet::join_candidates]`
-//! - candidate (B) needs to be enabled/approved by candidate (A) using `[Pallet::aggregator_update_metadata]`
-//! - candidate (B) needs to assign himself to candidate (A) that he wants to delegate under `[Pallet::update_candidate_aggregator]`
+//! Aggregation feature allows increasing single candidate total stake/valuation(aggregator stake) by assosiating 
+//! other candidates stake with aggregator candidate. Each candidate needs to bond different
+//! liquidity token
+//! ```
+//!                            ####################
+//!               -------------#  Aggregator A    #-------------
+//!              |             #                  #             |
+//!              |             ####################             |
+//!              |                       |                      |         
+//!              |                       |                      |         
+//!              |                       |                      |         
+//!              |                       |                      |         
+//!              |                       |                      |         
+//!              |                       |                      |         
+//!      ####################  ####################  ####################
+//!      #  Candidate B     #  #  Candidate C     #  #  Candidate D     #
+//!      # token: MGX:TUR   #  # token: MGX:IMBU  #  # token: MGX:MOVR  #
+//!      ####################  ####################  ####################
+//! ```
+//! 
+//! If candidate decides to aggregate under Aggregator it cannot be chosen to be collator(the
+//! candidate), instead aggregator account can be selected (even though its not present on
+//! candidates list).
 //!
-//! Now people can delegate multiple liquidity tokens to multiple candidates but all on behalf
-//! single collator.
-//!
-//! ** Once candidate decides to aggregate under some other candidate it wont be chosen as collator,
-//! only top level(those who don't aggregate under someone else) candidates can be chosen**
+//!```
+//!                        candidate B MGX valuation
+//! Candidate B rewards = ------------------------------------ * Collator A total staking rewards
+//!                        candidate ( B + C + D) valuation
+//!```
 //!
 //! Extrinsics:
-//! - `[Pallet::aggregator_update_metadata]` - enable/disable candidates for delegation
+//! - `[Pallet::aggregator_update_metadata]` - enable/disable candidates for aggregation
 //! - `[Pallet::update_candidate_aggregator]` - assign aggregator for candidate
 //!
 //! ## Candidate selection mechanism
@@ -69,7 +97,7 @@
 //! liquidity tokens. And X MGX:KSM liquidity token is convertible to Y `MGX` and Z `KSM`. Then X
 //! MGX:KSM tokens has valuation of Y.
 //! - If candidate allows for staking native tokens number of native tokens == candidate valuation.
-//! - for aggregator(A) each aggregation account (such that agregates under A) is valuted in MGX and
+//! - for aggregator(A) each aggregation account (such that aggregates under A) is valuated in MGX and
 //! sumed.
 //! - Candidates that aggregates under some other account cannot be selected as collators (but the
 //! account they aggregate under can)
