@@ -276,6 +276,7 @@ parameter_types! {
 	pub const MinSelectedCandidates: u32 = 5;
 	pub const MaxCollatorCandidates: u32 = 10;
 	pub const MaxDelegatorsPerCandidate: u32 = 4;
+	pub const DefaultPayoutLimit: u32 = 15;
 	pub const MaxTotalDelegatorsPerCandidate: u32 = 10;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
@@ -299,6 +300,7 @@ impl Config for Test {
 	type MaxCollatorCandidates = MaxCollatorCandidates;
 	type MaxTotalDelegatorsPerCandidate = MaxTotalDelegatorsPerCandidate;
 	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
+	type DefaultPayoutLimit = DefaultPayoutLimit;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
 	type MinCollatorStk = MinCollatorStk;
@@ -330,7 +332,7 @@ impl Valuate for TestTokenValuator {
 	fn get_liquidity_token_mga_pool(
 		_liquidity_token_id: Self::CurrencyId,
 	) -> Result<(Self::CurrencyId, Self::CurrencyId), DispatchError> {
-		unimplemented!("Not required in tests!")
+		Ok((0_u32, 1_u32))
 	}
 
 	fn valuate_liquidity_token(
@@ -491,15 +493,18 @@ impl ExtBuilder {
 
 pub(crate) fn payout_collator_for_round(n: u64) {
 	let collators: Vec<<Test as frame_system::Config>::AccountId> =
-		RoundCollatorRewardInfo::<Test>::iter_key_prefix(u32::try_from(n).unwrap()).collect();
+		RoundCollatorRewardInfo::<Test>::iter_keys()
+			.filter_map(|(account, round)| {
+				if round == (n as u32) {
+					Some(account)
+				} else {
+					None
+				}
+			})
+			.collect();
 
 	for collator in collators.iter() {
-		Stake::payout_collator_rewards(
-			RuntimeOrigin::signed(999),
-			n.try_into().unwrap(),
-			collator.clone(),
-			<Test as stake::Config>::MaxDelegatorsPerCandidate::get(),
-		).unwrap();
+		Stake::payout_collator_rewards(RuntimeOrigin::signed(999), collator.clone(), None).unwrap();
 	}
 }
 
@@ -512,6 +517,7 @@ pub(crate) fn roll_to(n: u64) {
 		System::on_initialize(System::block_number());
 		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
+		println!("BLOCK NR: {} ", System::block_number());
 		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number())
 		{
 			if System::block_number().is_zero() {

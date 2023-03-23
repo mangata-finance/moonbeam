@@ -1598,8 +1598,6 @@ benchmarks! {
 
 	payout_collator_rewards {
 
-		let y in 0u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get());
-
 		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
 
@@ -1609,7 +1607,7 @@ benchmarks! {
 		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
 		round_collator_reward_info.collator_reward = 1*DOLLAR;
 
-		for i in 0u32..y {
+		for i in 0u32..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get() {
 			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
 			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
 		}
@@ -1629,8 +1627,6 @@ benchmarks! {
 
 	payout_delegator_reward {
 
-		let y in 1u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get());
-
 		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
 		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
 
@@ -1640,7 +1636,7 @@ benchmarks! {
 		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
 		round_collator_reward_info.collator_reward = 1*DOLLAR;
 
-		for i in 0u32..y {
+		for i in 0u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get()) {
 			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
 			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
 		}
