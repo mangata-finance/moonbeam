@@ -334,9 +334,9 @@ impl Valuate for TestTokenValuator {
 
 	fn valuate_liquidity_token(
 		_liquidity_token_id: Self::CurrencyId,
-		_liquidity_token_amount: Self::Balance,
+		liquidity_token_amount: Self::Balance,
 	) -> Self::Balance {
-		unimplemented!("Not required in tests!")
+		liquidity_token_amount
 	}
 
 	fn scale_liquidity_by_mga_valuation(
