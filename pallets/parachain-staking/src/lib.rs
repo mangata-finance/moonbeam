@@ -57,8 +57,8 @@
 //!
 //!
 //! # Aggregation
-//! Aggregation feature allows increasing single candidate total stake/valuation(aggregator stake) by assosiating 
-//! other candidates stake with aggregator candidate. Each candidate needs to bond different
+//! Aggregation feature allows accumulating stake in different liquidity tokens under single aggregator account
+//! by assosiating several candidates stake with that (aggregator) account. Each candidate needs to bond different
 //! liquidity token
 //! ```
 //!                            ####################
@@ -83,7 +83,7 @@
 //!
 //!```
 //!                        candidate B MGX valuation
-//! Candidate B rewards = ------------------------------------ * Collator A total staking rewards
+//! Candidate B rewards = ------------------------------------ * Aggregator A total staking rewards
 //!                        candidate ( B + C + D) valuation
 //!```
 //!
@@ -114,14 +114,6 @@
 //! - [`Pallet::payout_delegator_reward`] - backup solution for withdrawing rewards when collator
 //! is not available.
 //!
-//! An aggregator must accept an aggregation request from a candidate
-//! A candidate or delegator cannot join as an aggregator
-//! A candidate must be able to remove himself from an aggregator without aggregator's permission
-//! An aggregator must be able to remove a candidate from aggregation
-//! An aggregator can only have 1 candidate per liquidity token
-//! Remove candidate aggregator info upon execute_leave_candidates
-//! Maybe warn about candidate not having unique token during session change processing ???????
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "runtime-benchmarks")]
