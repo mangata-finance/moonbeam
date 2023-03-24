@@ -265,7 +265,7 @@ benchmarks! {
 		}
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), y - 1));
 
@@ -304,7 +304,7 @@ benchmarks! {
 		let x in 3..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 1u32);
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -340,7 +340,7 @@ benchmarks! {
 		let x in 2..(<<T as Config>::MaxTotalDelegatorsPerCandidate as Get<u32>>::get());
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -413,7 +413,7 @@ benchmarks! {
 	cancel_leave_candidates {
 		let x in 3..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 1u32);
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -456,7 +456,7 @@ benchmarks! {
 
 	go_offline {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -480,7 +480,7 @@ benchmarks! {
 
 	go_online {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -506,7 +506,7 @@ benchmarks! {
 
 	schedule_candidate_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -542,7 +542,7 @@ benchmarks! {
 
 	schedule_candidate_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -576,7 +576,7 @@ benchmarks! {
 
 	execute_candidate_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -616,7 +616,7 @@ benchmarks! {
 
 	execute_candidate_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -652,7 +652,7 @@ benchmarks! {
 
 	cancel_candidate_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -690,7 +690,7 @@ benchmarks! {
 
 	cancel_candidate_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -728,7 +728,7 @@ benchmarks! {
 		let y in 2..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -794,7 +794,7 @@ benchmarks! {
 
 	schedule_leave_delegators {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -829,7 +829,7 @@ benchmarks! {
 	execute_leave_delegators {
 		let x in 2..<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get();
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -880,7 +880,7 @@ benchmarks! {
 
 	cancel_leave_delegators {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -915,7 +915,7 @@ benchmarks! {
 
 	schedule_revoke_delegation {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -957,7 +957,7 @@ benchmarks! {
 
 	schedule_delegator_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1002,7 +1002,7 @@ benchmarks! {
 	schedule_delegator_bond_less {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1047,7 +1047,7 @@ benchmarks! {
 	execute_revoke_delegation {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1095,7 +1095,7 @@ benchmarks! {
 
 	execute_delegator_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1145,7 +1145,7 @@ benchmarks! {
 	execute_delegator_bond_less {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1193,7 +1193,7 @@ benchmarks! {
 
 	cancel_revoke_delegation {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1239,7 +1239,7 @@ benchmarks! {
 	cancel_delegator_bond_more {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1291,7 +1291,7 @@ benchmarks! {
 
 	cancel_delegator_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
