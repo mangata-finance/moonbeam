@@ -58,7 +58,7 @@ fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 		T::AccountId,
 	>>::get_next_currency_id()
 	.into();
-	let v = v.unwrap_or(1_000_000 * DOLLAR);
+	let v = v.unwrap_or(1_000_000_000_000_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
@@ -84,7 +84,7 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 		T::AccountId,
 	>>::get_next_currency_id()
 	.into();
-	let v = v.unwrap_or(1_000_000 * DOLLAR);
+	let v = v.unwrap_or(1_000_000_000_000_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(
 		MGA_TOKEN_ID.into(),
 		&funding_account,
@@ -118,7 +118,7 @@ fn create_funded_user<T: Config + orml_tokens::Config>(
 	const SEED: u32 = 0;
 	let user = account(string, n, SEED);
 	// log::info!("user: {:?}",user);
-	let v = v.unwrap_or(100 * DOLLAR);
+	let v = v.unwrap_or(1_000_000_000 * DOLLAR);
 	assert_ok!(
 		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer(
 			(token_id).into(),
