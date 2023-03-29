@@ -3331,7 +3331,7 @@ pub mod pallet {
 			let liq_token_to_pool = <StakingLiquidityTokens<T>>::get();
 			let valuated_bond_it = candidates.iter().filter_map(|bond| {
 				if bond.liquidity_token == T::NativeTokenId::get() {
-					Some((bond, bond.amount))
+					Some((bond, bond.amount.checked_div(2).unwrap_or_default()))
 				} else {
 					match liq_token_to_pool.get(&bond.liquidity_token) {
 						Some(Some((reserve1, reserve2))) if !reserve1.is_zero() => {

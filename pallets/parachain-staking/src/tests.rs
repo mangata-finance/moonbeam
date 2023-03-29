@@ -5691,8 +5691,8 @@ fn can_join_candidates_and_be_selected_with_native_token() {
 				Event::CollatorChosen(3, 2, 90),
 				Event::CollatorChosen(3, 3, 80),
 				Event::CollatorChosen(3, 4, 70),
-				Event::CollatorChosen(3, 99999, 1000000),
-				Event::NewRound(10, 2, 5, 1000340),
+				Event::CollatorChosen(3, 99999, 500000),
+				Event::NewRound(10, 2, 5, 500340),
 			];
 			assert_eq_events!(expected);
 
