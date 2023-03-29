@@ -33,7 +33,6 @@ orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://
 
 [dev-dependencies]
 similar-asserts = "1.1.0"
-
 orml-traits = { default-features = false, version = "0.4.1-dev", git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
 sp-core = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 sp-io = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }

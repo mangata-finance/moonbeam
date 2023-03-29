@@ -18,7 +18,7 @@
 use crate as stake;
 use crate::{
 	pallet, AwardedPts, Balance, BondKind, Config, DispatchError, Points,
-	StakingReservesProviderTrait, TokenId, Valuate,
+	StakingReservesProviderTrait, TokenId, Valuate, ComputeIssuance, GetIssuance
 };
 use frame_support::{
 	assert_ok, construct_runtime, parameter_types,
@@ -63,7 +63,6 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Stake: stake::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Issuance: pallet_issuance::{Pallet, Storage, Event<T>},
 	}
 );
 
@@ -117,36 +116,42 @@ parameter_types! {
 	pub const ImmediateTGEReleasePercent: Percent = Percent::from_percent(20);
 	pub const TGEReleasePeriod: u32 = 5_256_000u32; // 2 years
 	pub const TGEReleaseBegin: u32 = 100_800u32; // Two weeks into chain start
+
+	pub const TARGET_TGE:u128 = 2_000_000_000u128;
+
 }
 
-pub struct ActivedPoolQueryApiMock;
+pub struct MockIssuance;
+impl ComputeIssuance for MockIssuance {
+	fn initialize() {
 
-impl pallet_issuance::ActivedPoolQueryApi for ActivedPoolQueryApiMock {
-	fn get_pool_activate_amount(_liquidity_token_id: TokenId) -> Option<Balance> {
-		todo!()
+	}
+
+	fn compute_issuance(_n: u32) {
+		let staking_issuance = Self::get_staking_issuance(_n).unwrap();
+
+		StakeCurrency::mint(
+			MGA_TOKEN_ID.into(),
+			&StakingIssuanceVault::get(),
+			staking_issuance.into(),
+		);
 	}
 }
 
-impl pallet_issuance::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-	type NativeCurrencyId = MgaTokenId;
-	type Tokens = orml_tokens::MultiTokenCurrencyAdapter<Test>;
-	type BlocksPerRound = BlocksPerRound;
-	type HistoryLimit = HistoryLimit;
-	type LiquidityMiningIssuanceVault = LiquidityMiningIssuanceVault;
-	type StakingIssuanceVault = StakingIssuanceVault;
-	type TotalCrowdloanAllocation = TotalCrowdloanAllocation;
-	type IssuanceCap = IssuanceCap;
-	type LinearIssuanceBlocks = LinearIssuanceBlocks;
-	type LiquidityMiningSplit = LiquidityMiningSplit;
-	type StakingSplit = StakingSplit;
-	type ImmediateTGEReleasePercent = ImmediateTGEReleasePercent;
-	type TGEReleasePeriod = TGEReleasePeriod;
-	type TGEReleaseBegin = TGEReleaseBegin;
-	type VestingProvider =
-		TestVestingModule<AccountId, orml_tokens::MultiTokenCurrencyAdapter<Test>, BlockNumber>;
-	type WeightInfo = ();
-	type ActivedPoolQueryApiType = ActivedPoolQueryApiMock;
+impl GetIssuance for MockIssuance {
+	fn get_all_issuance(_n: u32) -> Option<(Balance, Balance)> {
+		unimplemented!()
+	}
+	fn get_liquidity_mining_issuance(_n: u32) -> Option<Balance> {
+		unimplemented!()
+	}
+	fn get_staking_issuance(_n: u32) -> Option<Balance> {
+		let to_be_issued: Balance = IssuanceCap::get() - TARGET_TGE::get() - TotalCrowdloanAllocation::get();
+		let linear_issuance_sessions: u32 = LinearIssuanceBlocks::get() / BlocksPerRound::get();
+		let linear_issuance_per_session = to_be_issued / linear_issuance_sessions as Balance;
+		let staking_issuance = StakingSplit::get() * linear_issuance_per_session;
+		Some(staking_issuance)
+	}
 }
 
 pub struct TestVestingModule<A, C: MultiTokenCurrency<A>, B>(
@@ -305,7 +310,7 @@ impl Config for Test {
 	type MinDelegation = MinDelegation;
 	type NativeTokenId = MgaTokenId;
 	type StakingLiquidityTokenValuator = TestTokenValuator;
-	type Issuance = Issuance;
+	type Issuance = MockIssuance;
 	type StakingIssuanceVault = StakingIssuanceVault;
 	type FallbackProvider = ();
 	type WeightInfo = ();
@@ -471,18 +476,14 @@ impl ExtBuilder {
 			}
 
 			let current_issuance = StakeCurrency::total_issuance(MGA_TOKEN_ID);
-			let target_tge = 2_000_000_000u128;
-			assert!(current_issuance <= target_tge);
+			assert!(current_issuance <= TARGET_TGE::get());
 
 			assert_ok!(StakeCurrency::mint(
 				MGA_TOKEN_ID,
 				&99999,
-				target_tge - current_issuance
+				TARGET_TGE::get() - current_issuance
 			));
 
-			assert_ok!(Issuance::finalize_tge(RuntimeOrigin::root()));
-			assert_ok!(Issuance::init_issuance_config(RuntimeOrigin::root()));
-			assert_ok!(Issuance::calculate_and_store_round_issuance(0u32));
 		});
 		ext
 	}
