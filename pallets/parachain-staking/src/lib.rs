@@ -412,8 +412,11 @@ pub mod pallet {
 			);
 			// ensure bond above min after decrease
 			ensure!(self.bond > less, Error::<T>::CandidateBondBelowMin);
+
+
+			let bond_valution_after = Pallet::<T>::valuate_bond(self.liquidity_token, self.bond.checked_sub(less).unwrap_or_default());
 			ensure!(
-				self.bond >= T::MinCandidateStk::get().saturating_add(less),
+				bond_valution_after >= T::MinCandidateStk::get(),
 				Error::<T>::CandidateBondBelowMin
 			);
 			let when_executable = <Round<T>>::get()
@@ -1985,20 +1988,8 @@ pub mod pallet {
 				Error::<T>::StakingLiquidityTokenNotListed
 			);
 
-			let valuation = if liquidity_token == T::NativeTokenId::get() {
-				<Balance as Into<u128>>::into(bond)
-					.checked_div(2)
-					.unwrap_or_default()
-					.into()
-			} else {
-				T::StakingLiquidityTokenValuator::valuate_liquidity_token(
-					liquidity_token.into(),
-					bond.into(),
-				)
-			};
-
 			ensure!(
-				valuation >= T::MinCandidateStk::get().into(),
+				Self::valuate_bond(liquidity_token, bond) >= T::MinCandidateStk::get().into(),
 				Error::<T>::CandidateBondBelowMin
 			);
 			let mut candidates = <CandidatePool<T>>::get();
@@ -3443,12 +3434,30 @@ pub mod pallet {
 			// insert canonical collator set
 			<SelectedCandidates<T>>::put(
 				selected_authors
-					.iter()
-					.cloned()
-					.map(|x| x.0)
-					.collect::<Vec<T::AccountId>>(),
-			);
+				.iter()
+				.cloned()
+				.map(|x| x.0)
+				.collect::<Vec<T::AccountId>>(),
+				);
 			(collator_count, delegation_count, total_relevant_exposure)
+		}
+
+		fn valuate_bond(
+			liquidity_token: TokenId,
+			bond: Balance,
+			) -> Balance
+		{
+			if liquidity_token == T::NativeTokenId::get() {
+				<Balance as Into<u128>>::into(bond)
+					.checked_div(2)
+					.unwrap_or_default()
+					.into()
+			} else {
+				T::StakingLiquidityTokenValuator::valuate_liquidity_token(
+					liquidity_token.into(),
+					bond.into(),
+				).into()
+			}
 		}
 	}
 

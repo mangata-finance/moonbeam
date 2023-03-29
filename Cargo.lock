@@ -4941,6 +4941,26 @@ version = "0.10.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
 
 [[patch.unused]]
+name = "orml-unknown-tokens"
+version = "0.4.1-dev"
+source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
+
+[[patch.unused]]
+name = "orml-xcm"
+version = "0.4.1-dev"
+source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
+
+[[patch.unused]]
+name = "orml-xcm-support"
+version = "0.4.1-dev"
+source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
+
+[[patch.unused]]
+name = "orml-xtokens"
+version = "0.4.1-dev"
+source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
+
+[[patch.unused]]
 name = "beefy-gadget"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
@@ -5499,23 +5519,3 @@ source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#c
 name = "try-runtime-cli"
 version = "0.10.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "orml-unknown-tokens"
-version = "0.4.1-dev"
-source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
-
-[[patch.unused]]
-name = "orml-xcm"
-version = "0.4.1-dev"
-source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
-
-[[patch.unused]]
-name = "orml-xcm-support"
-version = "0.4.1-dev"
-source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
-
-[[patch.unused]]
-name = "orml-xtokens"
-version = "0.4.1-dev"
-source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
