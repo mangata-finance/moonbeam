@@ -60,7 +60,7 @@
 //! Aggregation feature allows accumulating stake in different liquidity tokens under single aggregator account
 //! by assosiating several candidates stake with that (aggregator) account. Each candidate needs to bond different
 //! liquidity token
-//! ```
+//! ```ignore
 //!                            ####################
 //!               -------------#  Aggregator A    #-------------
 //!              |             #                  #             |
@@ -76,12 +76,12 @@
 //!      # token: MGX:TUR   #  # token: MGX:IMBU  #  # token: MGX:MOVR  #
 //!      ####################  ####################  ####################
 //! ```
-//! 
+//!
 //! If candidate decides to aggregate under Aggregator it cannot be chosen to be collator(the
 //! candidate), instead aggregator account can be selected (even though its not present on
 //! candidates list).
 //!
-//!```
+//!```ignore
 //!                        candidate B MGX valuation
 //! Candidate B rewards = ------------------------------------ * Aggregator A total staking rewards
 //!                        candidate ( B + C + D) valuation
@@ -110,7 +110,7 @@
 //! is stored. Then collators & delegators can claim their rewards manually (after T::RewardPaymentDelay).
 //!
 //! There are two dedicated extrinsics for that:
-//! - [`Pallet::payout_collator_rewards`] - supposed to be called by collator after every round. 
+//! - [`Pallet::payout_collator_rewards`] - supposed to be called by collator after every round.
 //! - [`Pallet::payout_delegator_reward`] - backup solution for withdrawing rewards when collator
 //! is not available.
 //!
@@ -1986,8 +1986,21 @@ pub mod pallet {
 					|| liquidity_token == T::NativeTokenId::get(),
 				Error::<T>::StakingLiquidityTokenNotListed
 			);
+
+			let valuation = if liquidity_token == T::NativeTokenId::get() {
+				<Balance as Into<u128>>::into(bond)
+					.checked_div(2)
+					.unwrap_or_default()
+					.into()
+			} else {
+				T::StakingLiquidityTokenValuator::valuate_liquidity_token(
+					liquidity_token.into(),
+					bond.into(),
+				)
+			};
+
 			ensure!(
-				bond >= T::MinCandidateStk::get(),
+				valuation >= T::MinCandidateStk::get().into(),
 				Error::<T>::CandidateBondBelowMin
 			);
 			let mut candidates = <CandidatePool<T>>::get();
