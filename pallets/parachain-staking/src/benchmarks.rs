@@ -55,7 +55,6 @@ pub(crate) fn payout_collator_for_round<T: Config + orml_tokens::Config + pallet
 	let dummy_user: T::AccountId = account("dummy", 0u32, 0u32);
 	let collators: Vec<<T as frame_system::Config>::AccountId> =
 		RoundCollatorRewardInfo::<T>::iter_key_prefix(n).collect();
-
 	for collator in collators.iter() {
 		Pallet::<T>::payout_collator_rewards(
 			RawOrigin::Signed(dummy_user.clone()).into(),
@@ -68,7 +67,7 @@ pub(crate) fn payout_collator_for_round<T: Config + orml_tokens::Config + pallet
 
 /// Mint v liquidity tokens of token set x to funding account
 fn create_non_staking_liquidity_for_funding<
-	T: Config + orml_tokens::Config + pallet_xyk::Config,
+fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet_xyk::Config>(
 >(
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
@@ -77,24 +76,23 @@ fn create_non_staking_liquidity_for_funding<
 		T::AccountId,
 	>>::get_next_currency_id()
 	.into();
-	let v = v.unwrap_or(1_000_000 * DOLLAR);
+	let v = v.unwrap_or(1_000_000_000_000_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(
-		RawOrigin::Signed(funding_account.clone()).into(),
+	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(RawOrigin::Signed(funding_account.clone()).into(), x.into(), v.into(), (x + 1u32).into(), (v + 1).into()));
 		x.into(),
 		v.into(),
 		(x + 1u32).into(),
 		(v + 1).into()
-	));
+	.is_some());
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 2u32).into(), &funding_account), v.into());
 	Ok(x + 2u32)
 }
 
 /// Mint v liquidity tokens of token set x to funding account
-fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet_xyk::Config>(
+fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 	v: Option<Balance>,
 ) -> Result<TokenId, DispatchError> {
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
@@ -102,7 +100,7 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet
 		T::AccountId,
 	>>::get_next_currency_id()
 	.into();
-	let v = v.unwrap_or(1_000_000 * DOLLAR);
+	let v = v.unwrap_or(1_000_000_000_000_000_000 * DOLLAR);
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(
 		MGA_TOKEN_ID.into(),
 		&funding_account,
@@ -110,13 +108,14 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config + pallet
 	)?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert_ok!(<pallet_xyk::Pallet<T>>::create_pool(
-		RawOrigin::Signed(funding_account.clone()).into(),
+	assert!(<T::PoolCreateApi as PoolCreateApi>::pool_create(
+		funding_account.clone(),
 		MGA_TOKEN_ID.into(),
 		v.into(),
 		(x).into(),
 		(v + 1).into()
-	));
+	)
+	.is_some());
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 1u32).into(), &funding_account), v.into());
 	Ok(x + 1u32)
@@ -135,7 +134,7 @@ fn create_funded_user<T: Config + orml_tokens::Config>(
 	const SEED: u32 = 0;
 	let user = account(string, n, SEED);
 	// log::info!("user: {:?}",user);
-	let v = v.unwrap_or(100 * DOLLAR);
+	let v = v.unwrap_or(1_000_000_000 * DOLLAR);
 	assert_ok!(
 		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer(
 			(token_id).into(),
@@ -185,7 +184,7 @@ fn create_funded_collator<T: Config + orml_tokens::Config>(
 		token_id,
 		None,
 		candidate_count,
-		liquidity_token_count
+		liquidity_token_count,
 	));
 	Ok(user)
 }
@@ -282,7 +281,7 @@ benchmarks! {
 		}
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), y - 1));
 
@@ -310,7 +309,7 @@ benchmarks! {
 			}
 		}
 		let (caller, _, _) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-	}: _(RawOrigin::Signed(caller.clone()), 100*DOLLAR, created_liquidity_token, None , x, y)
+	}: _(RawOrigin::Signed(caller.clone()), 3_000_000*DOLLAR, created_liquidity_token, None , x, y)
 	verify {
 		assert!(Pallet::<T>::is_candidate(&caller));
 	}
@@ -321,7 +320,7 @@ benchmarks! {
 		let x in 3..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 1u32);
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -357,7 +356,7 @@ benchmarks! {
 		let x in 2..(<<T as Config>::MaxTotalDelegatorsPerCandidate as Get<u32>>::get());
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -430,7 +429,7 @@ benchmarks! {
 	cancel_leave_candidates {
 		let x in 3..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 1u32);
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -473,7 +472,7 @@ benchmarks! {
 
 	go_offline {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -497,7 +496,7 @@ benchmarks! {
 
 	go_online {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -523,7 +522,7 @@ benchmarks! {
 
 	schedule_candidate_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -559,7 +558,7 @@ benchmarks! {
 
 	schedule_candidate_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -593,7 +592,7 @@ benchmarks! {
 
 	execute_candidate_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -627,13 +626,13 @@ benchmarks! {
 			None
 		)?;
 	} verify {
-		let expected_bond = 110*DOLLAR;
+		let expected_bond = 1000000010* DOLLAR;
 		assert_eq!(<T as pallet::Config>::Currency::reserved_balance(created_liquidity_token.into(), &caller).into(), expected_bond);
 	}
 
 	execute_candidate_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -664,12 +663,12 @@ benchmarks! {
 			None
 		)?;
 	} verify {
-		assert_eq!(<T as pallet::Config>::Currency::reserved_balance(created_liquidity_token.into(), &caller).into(), 90*DOLLAR);
+		assert_eq!(<T as pallet::Config>::Currency::reserved_balance(created_liquidity_token.into(), &caller).into(), 999999990*DOLLAR);
 	}
 
 	cancel_candidate_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -707,7 +706,7 @@ benchmarks! {
 
 	cancel_candidate_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -745,7 +744,7 @@ benchmarks! {
 		let y in 2..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -811,7 +810,7 @@ benchmarks! {
 
 	schedule_leave_delegators {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -846,7 +845,7 @@ benchmarks! {
 	execute_leave_delegators {
 		let x in 2..(<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get().min(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32));
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -897,7 +896,7 @@ benchmarks! {
 
 	cancel_leave_delegators {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -932,7 +931,7 @@ benchmarks! {
 
 	schedule_revoke_delegation {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -974,7 +973,7 @@ benchmarks! {
 
 	schedule_delegator_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1019,7 +1018,7 @@ benchmarks! {
 	schedule_delegator_bond_less {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1064,7 +1063,7 @@ benchmarks! {
 	execute_revoke_delegation {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1112,7 +1111,7 @@ benchmarks! {
 
 	execute_delegator_bond_more {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1155,14 +1154,14 @@ benchmarks! {
 			None
 		)?;
 	} verify {
-		let expected_bond = 100*DOLLAR;
+		let expected_bond = 1000000000* DOLLAR;
 		assert_eq!(<T as pallet::Config>::Currency::reserved_balance(created_liquidity_token.into(), &caller).into(), expected_bond);
 	}
 
 	execute_delegator_bond_less {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1210,7 +1209,7 @@ benchmarks! {
 
 	cancel_revoke_delegation {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1256,7 +1255,7 @@ benchmarks! {
 	cancel_delegator_bond_more {
 
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 
@@ -1308,7 +1307,7 @@ benchmarks! {
 
 	cancel_delegator_bond_less {
 		let created_liquidity_token =
-			create_non_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
 		let mut liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 

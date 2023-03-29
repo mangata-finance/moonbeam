@@ -26,17 +26,13 @@ sp-runtime = { git = "https://github.com/mangata-finance/substrate", branch = "m
 sp-std = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 pallet-collective-mangata = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
+mangata-support = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 
-pallet-xyk = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
 mangata-types = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
-pallet-issuance = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
-mp-multipurpose-liquidity = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
-mp-traits = { default-features = false, git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.36" }
 
 [dev-dependencies]
 similar-asserts = "1.1.0"
-
 orml-traits = { default-features = false, version = "0.4.1-dev", git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
 sp-core = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
 sp-io = { git = "https://github.com/mangata-finance/substrate", default-features = false, branch = "mangata-dev" }
@@ -56,11 +52,9 @@ std = [
 	"sp-staking/std",
 	"pallet-authorship/std",
 	"pallet-session/std",
-	"pallet-xyk/std",
 	"orml-tokens/std",
-	"pallet-issuance/std",
-	"mp-multipurpose-liquidity/std",
-	"mp-traits/std",
+	"mangata-support/std",
+	"mangata-types/std",
 ]
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
