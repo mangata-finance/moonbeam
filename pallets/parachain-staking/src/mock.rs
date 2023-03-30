@@ -18,8 +18,8 @@
 use crate as stake;
 use crate::RoundCollatorRewardInfo;
 use crate::{
-	pallet, AwardedPts, Balance, BondKind, Config, DispatchError, Points,
-	StakingReservesProviderTrait, TokenId, Valuate, ComputeIssuance, GetIssuance
+	pallet, AwardedPts, Balance, BondKind, ComputeIssuance, Config, DispatchError, GetIssuance,
+	Points, StakingReservesProviderTrait, TokenId, Valuate,
 };
 use frame_support::{
 	assert_ok, construct_runtime, parameter_types,
@@ -124,9 +124,7 @@ parameter_types! {
 
 pub struct MockIssuance;
 impl ComputeIssuance for MockIssuance {
-	fn initialize() {
-
-	}
+	fn initialize() {}
 	fn compute_issuance(_n: u32) {
 		let staking_issuance = Self::get_staking_issuance(_n).unwrap();
 
@@ -146,7 +144,8 @@ impl GetIssuance for MockIssuance {
 		unimplemented!()
 	}
 	fn get_staking_issuance(_n: u32) -> Option<Balance> {
-		let to_be_issued: Balance = IssuanceCap::get() - TARGET_TGE::get() - TotalCrowdloanAllocation::get();
+		let to_be_issued: Balance =
+			IssuanceCap::get() - TARGET_TGE::get() - TotalCrowdloanAllocation::get();
 		let linear_issuance_sessions: u32 = LinearIssuanceBlocks::get() / BlocksPerRound::get();
 		let linear_issuance_per_session = to_be_issued / linear_issuance_sessions as Balance;
 		let staking_issuance = StakingSplit::get() * linear_issuance_per_session;
@@ -485,7 +484,6 @@ impl ExtBuilder {
 				&99999,
 				TARGET_TGE::get() - current_issuance
 			));
-
 		});
 		ext
 	}

@@ -1,6 +1,3 @@
-// Copyright 2019-2021 PureStake Inc.
-// This file is part of Moonbeam.
-
 // Moonbeam is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -91,6 +88,12 @@
 //! - `[Pallet::aggregator_update_metadata]` - enable/disable candidates for aggregation
 //! - `[Pallet::update_candidate_aggregator]` - assign aggregator for candidate
 //!
+//! Storage entries:
+//! - [`CandidateAggregator`]
+//! - [`AggregatorMetadata`]
+//! - [`RoundAggregatorInfo`]
+//! - [`RoundCollatorRewardInfo`]
+//!
 //! ## Candidate selection mechanism
 //! Aggregation feature modifies how collators are selected. Rules are as follows:
 //! - Everything is valuated in `MGX` part of staked liquidity token. So if collator A has X MGX:KSM
@@ -109,9 +112,13 @@
 //! of automatically transferring all the rewards at the end session only rewards amount per account
 //! is stored. Then collators & delegators can claim their rewards manually (after T::RewardPaymentDelay).
 //!
-//! There are two dedicated extrinsics for that:
+//! Extrinsics:
 //! - [`Pallet::payout_collator_rewards`] - supposed to be called by collator after every round.
 //! - [`Pallet::payout_delegator_reward`] - backup solution for withdrawing rewards when collator
+//!
+//! Storage entries:
+//! - [`RoundCollatorRewardInfo`]
+//!
 //! is not available.
 //!
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -413,8 +420,10 @@ pub mod pallet {
 			// ensure bond above min after decrease
 			ensure!(self.bond > less, Error::<T>::CandidateBondBelowMin);
 
-
-			let bond_valution_after = Pallet::<T>::valuate_bond(self.liquidity_token, self.bond.checked_sub(less).unwrap_or_default());
+			let bond_valution_after = Pallet::<T>::valuate_bond(
+				self.liquidity_token,
+				self.bond.checked_sub(less).unwrap_or_default(),
+			);
 			ensure!(
 				bond_valution_after >= T::MinCandidateStk::get(),
 				Error::<T>::CandidateBondBelowMin
@@ -1728,6 +1737,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_aggregator_metadata)]
+	/// Stores information about approved candidates for aggregation
 	pub type AggregatorMetadata<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
@@ -1738,6 +1748,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_round_aggregator_info)]
+	/// Stored once per session, maps aggregator to list of assosiated candidates
 	pub type RoundAggregatorInfo<T: Config> = StorageMap<
 		_,
 		Twox64Concat,
@@ -1748,6 +1759,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_round_collator_reward_info)]
+	/// Stores information about rewards per each session
 	pub type RoundCollatorRewardInfo<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
@@ -3434,19 +3446,15 @@ pub mod pallet {
 			// insert canonical collator set
 			<SelectedCandidates<T>>::put(
 				selected_authors
-				.iter()
-				.cloned()
-				.map(|x| x.0)
-				.collect::<Vec<T::AccountId>>(),
-				);
+					.iter()
+					.cloned()
+					.map(|x| x.0)
+					.collect::<Vec<T::AccountId>>(),
+			);
 			(collator_count, delegation_count, total_relevant_exposure)
 		}
 
-		fn valuate_bond(
-			liquidity_token: TokenId,
-			bond: Balance,
-			) -> Balance
-		{
+		fn valuate_bond(liquidity_token: TokenId, bond: Balance) -> Balance {
 			if liquidity_token == T::NativeTokenId::get() {
 				<Balance as Into<u128>>::into(bond)
 					.checked_div(2)
@@ -3456,7 +3464,8 @@ pub mod pallet {
 				T::StakingLiquidityTokenValuator::valuate_liquidity_token(
 					liquidity_token.into(),
 					bond.into(),
-				).into()
+				)
+				.into()
 			}
 		}
 	}
