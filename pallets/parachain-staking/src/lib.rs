@@ -3503,7 +3503,7 @@ pub mod pallet {
 			if !session_index.is_zero() {
 				let n = <frame_system::Pallet<T>>::block_number().saturating_add(One::one());
 				let mut round = <Round<T>>::get();
-				println!("ROUND FINISHED {}", round.current.saturated_into::<u64>());
+				// println!("ROUND FINISHED {}", round.current.saturated_into::<u64>());
 				// mutate round
 				round.update(n);
 				// pay all stakers for T::RewardPaymentDelay rounds ago

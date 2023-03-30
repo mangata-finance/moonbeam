@@ -133,7 +133,6 @@ fn create_funded_user<T: Config + orml_tokens::Config>(
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
 	const SEED: u32 = 0;
 	let user = account(string, n, SEED);
-	// log::info!("user: {:?}",user);
 	let v = v.unwrap_or(1_000_000_000 * DOLLAR);
 	assert_ok!(
 		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer(
@@ -277,11 +276,12 @@ benchmarks! {
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(y > liquidity_token_count);
 		for i in liquidity_token_count..(y - 1u32){
-			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
+			let liquidity_token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+			Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(liquidity_token_id), i)?;
 		}
 
 		let created_liquidity_token =
-			create_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(Some((x as u128) * T::MinCandidateStk::get())).unwrap();
 
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), y - 1));
 
@@ -297,7 +297,7 @@ benchmarks! {
 				"collator",
 				seed,
 				created_liquidity_token,
-				None,
+				Some(T::MinCandidateStk::get()),
 				candidate_count + i,
 				y
 			);
@@ -308,8 +308,8 @@ benchmarks! {
 				let collator = res.unwrap();
 			}
 		}
-		let (caller, _, _) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-	}: _(RawOrigin::Signed(caller.clone()), 3_000_000*DOLLAR, created_liquidity_token, None , x, y)
+		let (caller, _, _) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, Some(T::MinCandidateStk::get()));
+	}: _(RawOrigin::Signed(caller.clone()), T::MinCandidateStk::get(), created_liquidity_token, None, x, y)
 	verify {
 		assert!(Pallet::<T>::is_candidate(&caller));
 	}
@@ -1362,14 +1362,17 @@ benchmarks! {
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(x > liquidity_token_count);
 		for i in liquidity_token_count..(x){
-			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
+			let liquidity_token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(liquidity_token_id), i));
 		}
 
-	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
+		let liquidity_token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+
+	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(liquidity_token_id), x)
 	verify {
 		assert!(
 			Pallet::<T>::staking_liquidity_tokens()
-				.contains_key(&(DUMMY_COUNT + 1u32))
+				.contains_key(&liquidity_token_id)
 		);
 	}
 
@@ -1379,16 +1382,18 @@ benchmarks! {
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(x > liquidity_token_count);
 		for i in liquidity_token_count..(x - 1u32){
-			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
+			let token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(token_id), i));
 		}
 
-		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x - 1u32));
+		let token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(token_id), x - 1u32));
 
-	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
+	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(token_id), x)
 	verify {
 		assert!(
 			!Pallet::<T>::staking_liquidity_tokens()
-				.contains_key(&(DUMMY_COUNT + 1u32))
+				.contains_key(&(token_id))
 		);
 	}
 
@@ -1433,7 +1438,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
 			aggregator.clone()).into(),
 			candidates.clone(),
-			true
+			MetadataUpdateAction::ExtendApprovedCollators
 		));
 
 		for i in 0u32..(x){
@@ -1463,7 +1468,7 @@ benchmarks! {
 		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().token_collator_map.len(), x as usize);
 		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().approved_candidates.len(), x as usize);
 
-	}: _(RawOrigin::Signed(aggregator.clone()), candidates.clone(), false)
+	}: _(RawOrigin::Signed(aggregator.clone()), candidates.clone(), MetadataUpdateAction::RemoveApprovedCollators)
 	verify {
 
 		for i in 0u32..(x){
@@ -1523,7 +1528,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
 			aggregator.clone()).into(),
 			candidates.clone(),
-			true
+			MetadataUpdateAction::ExtendApprovedCollators
 		));
 
 		for i in 1u32..(x){
@@ -1555,7 +1560,7 @@ benchmarks! {
 		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
 			aggregator_old.clone()).into(),
 			vec![collator_switching.clone()],
-			true
+			MetadataUpdateAction::ExtendApprovedCollators
 		));
 
 		assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
@@ -1611,15 +1616,14 @@ benchmarks! {
 			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
 		}
 
-		RoundCollatorRewardInfo::<T>::insert(1000, collator.clone(), round_collator_reward_info);
+		RoundCollatorRewardInfo::<T>::insert(collator.clone(), 1000, round_collator_reward_info);
 
-		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
-		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), y as usize);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().collator_reward, 1*DOLLAR);
 
-	}: _(RawOrigin::Signed(collator.clone()), 1000, collator.clone(), y)
+	}: _(RawOrigin::Signed(collator.clone()), collator.clone(), Some(1))
 	verify {
 
-		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator), None);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000), None);
 
 	}
 
@@ -1640,18 +1644,18 @@ benchmarks! {
 			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
 		}
 
-		RoundCollatorRewardInfo::<T>::insert(1000, collator.clone(), round_collator_reward_info);
+		RoundCollatorRewardInfo::<T>::insert(collator.clone(), 1000, round_collator_reward_info);
 
-		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
-		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), y as usize);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().collator_reward, 1*DOLLAR);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().delegator_rewards.len(), <<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get() as usize);
 
 		let delegator_target: T::AccountId = account("delegator", USER_SEED, SEED);
 
 	}: _(RawOrigin::Signed(delegator_target.clone()), 1000, collator.clone(), delegator_target.clone())
 	verify {
 
-		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().collator_reward, 1*DOLLAR);
-		assert_eq!(RoundCollatorRewardInfo::<T>::get(1000, &collator).unwrap().delegator_rewards.len(), (y - 1) as usize);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().collator_reward, 1*DOLLAR);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().delegator_rewards.len(), (<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get() - 1) as usize);
 
 	}
 
