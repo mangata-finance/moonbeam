@@ -1432,7 +1432,7 @@ pub mod pallet {
 	type RewardPoint = u32;
 
 	#[cfg(feature = "runtime-benchmarks")]
-	pub trait StakingBenchmarkConfig: orml_tokens::Config + pallet_session::Config {
+	pub trait StakingBenchmarkConfig: orml_tokens::Config + pallet_session::Config + pallet_issuance::Config{
 		type PoolCreateApi: PoolCreateApi<AccountId = Self::AccountId>;
 	}
 
