@@ -1432,7 +1432,9 @@ pub mod pallet {
 	type RewardPoint = u32;
 
 	#[cfg(feature = "runtime-benchmarks")]
-	pub trait StakingBenchmarkConfig: orml_tokens::Config + pallet_session::Config + pallet_issuance::Config{
+	pub trait StakingBenchmarkConfig:
+		orml_tokens::Config + pallet_session::Config + pallet_issuance::Config
+	{
 		type PoolCreateApi: PoolCreateApi<AccountId = Self::AccountId>;
 	}
 
@@ -2717,18 +2719,18 @@ pub mod pallet {
 		/// that limit assumes worst case scenario of (delegators_count = MaxCollatorCandidates)
 		/// so as a result, `limit` or more session round rewards may be distributed
 		#[pallet::call_index(25)]
-		#[pallet::weight(limit.unwrap_or(T::DefaultPayoutLimit::get()) * <T as Config>::WeightInfo::payout_collator_rewards())]
+		#[pallet::weight(number_of_sesisons.unwrap_or(T::DefaultPayoutLimit::get()) * <T as Config>::WeightInfo::payout_collator_rewards())]
 		#[transactional]
 		pub fn payout_collator_rewards(
 			origin: OriginFor<T>,
 			collator: T::AccountId,
-			limit: Option<u32>,
+			number_of_sesisons: Option<u32>,
 		) -> DispatchResultWithPostInfo {
 			let _caller = ensure_signed(origin)?;
 
 			let mut rounds = Vec::<RoundIndex>::new();
 
-			let limit = limit.unwrap_or(T::DefaultPayoutLimit::get());
+			let limit = number_of_sesisons.unwrap_or(T::DefaultPayoutLimit::get());
 			let mut payouts_left = limit * (T::MaxDelegationsPerDelegator::get() + 1);
 
 			for (id, (round, info)) in

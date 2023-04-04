@@ -26,13 +26,13 @@ use frame_benchmarking::{account, benchmarks};
 use frame_support::assert_ok;
 use frame_support::traits::{ExistenceRequirement, Get};
 use frame_system::RawOrigin;
+use itertools::Itertools;
 use orml_tokens::MultiTokenCurrencyExtended;
 use orml_tokens::Pallet as Tokens;
 use pallet_authorship::EventHandler;
+use pallet_issuance::PoolPromoteApi;
 use sp_runtime::{Perbill, Percent};
 use sp_std::vec::Vec;
-use itertools::Itertools;
-use pallet_issuance::PoolPromoteApi;
 
 const DOLLAR: Balance = 1__000_000_000_000_000_000u128;
 const MGA_TOKEN_ID: TokenId = 0u32;
@@ -135,7 +135,7 @@ fn create_funded_user<T: Config + orml_tokens::Config>(
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
 	const SEED: u32 = 0;
 	let user = account(string, n, SEED);
-	log::info!("create user {}-{}-{}", string, n , SEED);
+	log::info!("create user {}-{}-{}", string, n, SEED);
 	let v = v.unwrap_or(1_000_000_000 * DOLLAR);
 	assert_ok!(
 		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer(
@@ -1734,8 +1734,8 @@ benchmarks! {
 		let created_liquidity_token = create_staking_liquidity_for_funding::<T>(Some( ((z*(y+1)) as u128 *100*DOLLAR)+ T::MinCandidateStk::get()*DOLLAR)).unwrap();
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), x));
 		<pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(created_liquidity_token, Some(1));
-        
-        
+
+
 		// Now we will create y funded collators
 		let initial_candidates: Vec<T::AccountId> = Pallet::<T>::candidate_pool().0.into_iter().map(|x| x.owner).collect::<_>();
 		let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
@@ -1775,12 +1775,12 @@ benchmarks! {
 		}
 
 		assert_eq!(candidates.len(), y as usize);
-        //
+		//
 		// // Now we will create `z*y` delegators each with `100*DOLLAR` created_liquidity_token tokens
-        //
+		//
 		let delegators_count = z*y;
 		let delegators: Vec<_> = (0u32..delegators_count)
-		.map(|i| 
+		.map(|i|
 			create_funded_user::<T>("delegator", USER_SEED-i, created_liquidity_token, Some(100*DOLLAR))
 		).map(|(account, _token_id, _amount)| account)
 		.collect();
@@ -1804,11 +1804,11 @@ benchmarks! {
 			assert_eq!(Pallet::<T>::candidate_state(candidate.clone()).unwrap().delegators.0.len() , z as usize);
 			assert_eq!(Pallet::<T>::candidate_state(candidate.clone()).unwrap().top_delegations.len() , z as usize);
 			assert_eq!(Pallet::<T>::candidate_state(candidate.clone()).unwrap().bottom_delegations.len() ,  0usize);
-		 	
+
 		}
 
 
-        //
+		//
 		// Remove the initial two collators so that they do not get selected
 		// We do this as the two collators do not have max delegators and would not be worst case
 
