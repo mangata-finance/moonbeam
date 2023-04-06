@@ -85,6 +85,8 @@ pub trait WeightInfo {
 	fn remove_staking_liquidity_token(x: u32, ) -> Weight;
 	fn passive_session_change() -> Weight;
 	fn active_session_change(x: u32, y: u32, z: u32, w: u32, ) -> Weight;
+	fn payout_collator_rewards() -> Weight;
+	fn payout_delegator_reward() -> Weight;
 }
 
 /// Weights for parachain_staking using the Mangata node and recommended hardware.
@@ -393,6 +395,17 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(T::DbWeight::get().writes((50 as u64).saturating_mul(z as u64)))
 			.saturating_add(T::DbWeight::get().writes((33 as u64).saturating_mul(w as u64)))
 	}
+	fn payout_collator_rewards() -> Weight{
+		Weight::from_ref_time(0)
+			.saturating_add(RocksDbWeight::get().reads((20 as u64)))
+			.saturating_add(RocksDbWeight::get().writes((20 as u64)))
+	}
+
+	fn payout_delegator_reward() -> Weight{
+		Weight::from_ref_time(0)
+			.saturating_add(RocksDbWeight::get().reads((20 as u64)))
+			.saturating_add(RocksDbWeight::get().writes((20 as u64)))
+	}
 }
 
 // For backwards compatibility and tests
@@ -588,5 +601,17 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().writes((9 as u64).saturating_mul(y as u64)))
 			.saturating_add(RocksDbWeight::get().writes((50 as u64).saturating_mul(z as u64)))
 			.saturating_add(RocksDbWeight::get().writes((33 as u64).saturating_mul(w as u64)))
+	}
+
+	fn payout_collator_rewards() -> Weight{
+		Weight::from_ref_time(0)
+			.saturating_add(RocksDbWeight::get().reads((20 as u64)))
+			.saturating_add(RocksDbWeight::get().writes((20 as u64)))
+	}
+
+	fn payout_delegator_reward() -> Weight{
+		Weight::from_ref_time(0)
+			.saturating_add(RocksDbWeight::get().reads((20 as u64)))
+			.saturating_add(RocksDbWeight::get().writes((20 as u64)))
 	}
 }

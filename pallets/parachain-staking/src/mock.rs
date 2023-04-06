@@ -16,9 +16,10 @@
 
 //! Test utilities
 use crate as stake;
+use crate::RoundCollatorRewardInfo;
 use crate::{
-	pallet, AwardedPts, Balance, BondKind, Config, DispatchError, Points,
-	StakingReservesProviderTrait, TokenId, Valuate, ComputeIssuance, GetIssuance
+	pallet, AwardedPts, Balance, BondKind, ComputeIssuance, Config, DispatchError, GetIssuance,
+	Points, StakingReservesProviderTrait, TokenId, Valuate,
 };
 use frame_support::{
 	assert_ok, construct_runtime, parameter_types,
@@ -123,10 +124,7 @@ parameter_types! {
 
 pub struct MockIssuance;
 impl ComputeIssuance for MockIssuance {
-	fn initialize() {
-
-	}
-
+	fn initialize() {}
 	fn compute_issuance(_n: u32) {
 		let staking_issuance = Self::get_staking_issuance(_n).unwrap();
 
@@ -146,7 +144,8 @@ impl GetIssuance for MockIssuance {
 		unimplemented!()
 	}
 	fn get_staking_issuance(_n: u32) -> Option<Balance> {
-		let to_be_issued: Balance = IssuanceCap::get() - TARGET_TGE::get() - TotalCrowdloanAllocation::get();
+		let to_be_issued: Balance =
+			IssuanceCap::get() - TARGET_TGE::get() - TotalCrowdloanAllocation::get();
 		let linear_issuance_sessions: u32 = LinearIssuanceBlocks::get() / BlocksPerRound::get();
 		let linear_issuance_per_session = to_be_issued / linear_issuance_sessions as Balance;
 		let staking_issuance = StakingSplit::get() * linear_issuance_per_session;
@@ -280,6 +279,7 @@ parameter_types! {
 	pub const MinSelectedCandidates: u32 = 5;
 	pub const MaxCollatorCandidates: u32 = 10;
 	pub const MaxDelegatorsPerCandidate: u32 = 4;
+	pub const DefaultPayoutLimit: u32 = 15;
 	pub const MaxTotalDelegatorsPerCandidate: u32 = 10;
 	pub const MaxDelegationsPerDelegator: u32 = 4;
 	pub const DefaultCollatorCommission: Perbill = Perbill::from_percent(20);
@@ -303,6 +303,7 @@ impl Config for Test {
 	type MaxCollatorCandidates = MaxCollatorCandidates;
 	type MaxTotalDelegatorsPerCandidate = MaxTotalDelegatorsPerCandidate;
 	type MaxDelegatorsPerCandidate = MaxDelegatorsPerCandidate;
+	type DefaultPayoutLimit = DefaultPayoutLimit;
 	type MaxDelegationsPerDelegator = MaxDelegationsPerDelegator;
 	type DefaultCollatorCommission = DefaultCollatorCommission;
 	type MinCollatorStk = MinCollatorStk;
@@ -334,7 +335,7 @@ impl Valuate for TestTokenValuator {
 	fn get_liquidity_token_mga_pool(
 		_liquidity_token_id: Self::CurrencyId,
 	) -> Result<(Self::CurrencyId, Self::CurrencyId), DispatchError> {
-		unimplemented!("Not required in tests!")
+		Ok((0_u32, 1_u32))
 	}
 
 	fn valuate_liquidity_token(
@@ -483,9 +484,25 @@ impl ExtBuilder {
 				&99999,
 				TARGET_TGE::get() - current_issuance
 			));
-
 		});
 		ext
+	}
+}
+
+pub(crate) fn payout_collator_for_round(n: u64) {
+	let collators: Vec<<Test as frame_system::Config>::AccountId> =
+		RoundCollatorRewardInfo::<Test>::iter_keys()
+			.filter_map(|(account, round)| {
+				if round == (n as u32) {
+					Some(account)
+				} else {
+					None
+				}
+			})
+			.collect();
+
+	for collator in collators.iter() {
+		Stake::payout_collator_rewards(RuntimeOrigin::signed(999), collator.clone(), None).unwrap();
 	}
 }
 
@@ -498,6 +515,7 @@ pub(crate) fn roll_to(n: u64) {
 		System::on_initialize(System::block_number());
 		Tokens::on_initialize(System::block_number());
 		Stake::on_initialize(System::block_number());
+		println!("BLOCK NR: {} ", System::block_number());
 		if <Stake as pallet_session::ShouldEndSession<_>>::should_end_session(System::block_number())
 		{
 			if System::block_number().is_zero() {

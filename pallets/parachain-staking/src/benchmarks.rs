@@ -26,9 +26,11 @@ use frame_benchmarking::{account, benchmarks};
 use frame_support::assert_ok;
 use frame_support::traits::{ExistenceRequirement, Get};
 use frame_system::RawOrigin;
+use itertools::Itertools;
 use orml_tokens::MultiTokenCurrencyExtended;
 use orml_tokens::Pallet as Tokens;
 use pallet_authorship::EventHandler;
+use pallet_issuance::PoolPromoteApi;
 use sp_runtime::{Perbill, Percent};
 use sp_std::vec::Vec;
 
@@ -48,6 +50,22 @@ const MGA_TOKEN_ID: TokenId = 0u32;
 /// Starting from n0=5 as the first 4 are taken by the genesis config, but the starting n0 will be determined at the start of each bench by checking tokens
 /// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7
 /// Since we are creating new tokens every time we can simply just use (v, v+1) as the pooled token amounts, to mint v liquidity tokens
+
+// pub(crate) fn payout_collator_for_round<T: Config + orml_tokens::Config + pallet_xyk::Config>(
+// 	n: u32,
+// ) {
+// 	let dummy_user: T::AccountId = account("dummy", 0u32, 0u32);
+// 	let collators: Vec<<T as frame_system::Config>::AccountId> =
+// 		RoundCollatorRewardInfo::<T>::iter_key_prefix(n).collect();
+// 	for collator in collators.iter() {
+// 		Pallet::<T>::payout_collator_rewards(
+// 			RawOrigin::Signed(dummy_user.clone()).into(),
+// 			n.try_into().unwrap(),
+// 			collator.clone(),
+// 			<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get(),
+// 		);
+// 	}
+// }
 
 /// Mint v liquidity tokens of token set x to funding account
 fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
@@ -117,7 +135,7 @@ fn create_funded_user<T: Config + orml_tokens::Config>(
 	let funding_account: T::AccountId = account("funding", 0u32, 0u32);
 	const SEED: u32 = 0;
 	let user = account(string, n, SEED);
-	// log::info!("user: {:?}",user);
+	log::info!("create user {}-{}-{}", string, n, SEED);
 	let v = v.unwrap_or(1_000_000_000 * DOLLAR);
 	assert_ok!(
 		<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::transfer(
@@ -261,11 +279,12 @@ benchmarks! {
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(y > liquidity_token_count);
 		for i in liquidity_token_count..(y - 1u32){
-			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
+			let liquidity_token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+			Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(liquidity_token_id), i)?;
 		}
 
 		let created_liquidity_token =
-			create_staking_liquidity_for_funding::<T>(None).unwrap();
+			create_staking_liquidity_for_funding::<T>(Some((x as u128) * T::MinCandidateStk::get())).unwrap();
 
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), y - 1));
 
@@ -281,7 +300,7 @@ benchmarks! {
 				"collator",
 				seed,
 				created_liquidity_token,
-				None,
+				Some(T::MinCandidateStk::get()),
 				candidate_count + i,
 				y
 			);
@@ -292,8 +311,8 @@ benchmarks! {
 				let collator = res.unwrap();
 			}
 		}
-		let (caller, _, _) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, None);
-	}: _(RawOrigin::Signed(caller.clone()), 3_000_000*DOLLAR, created_liquidity_token, None , x, y)
+		let (caller, _, _) = create_funded_user::<T>("caller", USER_SEED, created_liquidity_token, Some(T::MinCandidateStk::get()));
+	}: _(RawOrigin::Signed(caller.clone()), T::MinCandidateStk::get(), created_liquidity_token, None, x, y)
 	verify {
 		assert!(Pallet::<T>::is_candidate(&caller));
 	}
@@ -724,7 +743,7 @@ benchmarks! {
 	}
 
 	delegate {
-		let x in 3..<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get();
+		let x in 3..(<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get().min(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32));
 		let y in 2..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 
 		let created_liquidity_token =
@@ -770,7 +789,7 @@ benchmarks! {
 			USER_SEED,
 			created_liquidity_token,
 			None,
-			collators.len() as u32 + candidate_count,
+			collators.len() as u32 + candidate_count + 1,
 			liquidity_token_count,
 		)?;
 		// Worst Case Complexity is insertion into an almost full collator
@@ -827,7 +846,7 @@ benchmarks! {
 	}
 
 	execute_leave_delegators {
-		let x in 2..<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get();
+		let x in 2..(<<T as Config>::MaxDelegationsPerDelegator as Get<u32>>::get().min(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32));
 		let created_liquidity_token =
 			create_staking_liquidity_for_funding::<T>(None).unwrap();
 
@@ -1346,14 +1365,17 @@ benchmarks! {
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(x > liquidity_token_count);
 		for i in liquidity_token_count..(x){
-			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
+			let liquidity_token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(liquidity_token_id), i));
 		}
 
-	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
+		let liquidity_token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+
+	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(liquidity_token_id), x)
 	verify {
 		assert!(
 			Pallet::<T>::staking_liquidity_tokens()
-				.contains_key(&(DUMMY_COUNT + 1u32))
+				.contains_key(&liquidity_token_id)
 		);
 	}
 
@@ -1363,17 +1385,281 @@ benchmarks! {
 		let liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
 		assert!(x > liquidity_token_count);
 		for i in liquidity_token_count..(x - 1u32){
-			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT - i), i));
+			let token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(token_id), i));
 		}
 
-		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x - 1u32));
+		let token_id = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(token_id), x - 1u32));
 
-	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(DUMMY_COUNT + 1u32), x)
+	}: _(RawOrigin::Root, PairedOrLiquidityToken::Liquidity(token_id), x)
 	verify {
 		assert!(
 			!Pallet::<T>::staking_liquidity_tokens()
-				.contains_key(&(DUMMY_COUNT + 1u32))
+				.contains_key(&(token_id))
 		);
+	}
+
+	aggregator_update_metadata {
+
+		let x = <<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32; // to account for the two candidates we start with
+
+
+		let start_liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
+
+		let initial_candidates: Vec<T::AccountId> = Pallet::<T>::candidate_pool().0.into_iter().map(|x| x.owner).collect::<_>();
+		let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		assert_eq!(base_candidate_count, 2);
+
+		let mut candidates: Vec<T::AccountId> = Vec::<T::AccountId>::new();
+
+
+		const SEED: u32 = 0;
+
+		for i in 0u32..x{
+
+			let created_liquidity_token =
+				create_staking_liquidity_for_funding::<T>(None).unwrap();
+
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), 1000));
+
+			let seed = USER_SEED - i;
+			let collator = create_funded_collator::<T>(
+				"collator",
+				seed,
+				created_liquidity_token,
+				None,
+				candidates.len() as u32 + base_candidate_count,
+				1000
+			)?;
+
+			candidates.push(collator.clone());
+
+		}
+
+		let aggregator: T::AccountId = account("aggregator", 0u32, SEED);
+		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+			aggregator.clone()).into(),
+			candidates.clone(),
+			MetadataUpdateAction::ExtendApprovedCollators
+		));
+
+		for i in 0u32..(x){
+
+			let seed = USER_SEED - i;
+
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+				collator.clone()).into(),
+				Some(aggregator.clone()),
+			));
+
+		}
+
+		for i in 0u32..(x){
+
+			let seed = USER_SEED - i;
+
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				Some(aggregator.clone()),
+			);
+
+		}
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().token_collator_map.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().approved_candidates.len(), x as usize);
+
+	}: _(RawOrigin::Signed(aggregator.clone()), candidates.clone(), MetadataUpdateAction::RemoveApprovedCollators)
+	verify {
+
+		for i in 0u32..(x){
+
+			let seed = USER_SEED - i;
+
+			let collator = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				None,
+			);
+
+		}
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator), None);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator), None);
+
+	}
+
+	update_candidate_aggregator {
+
+		let x = <<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32; // to account for the two candidates we start with
+
+
+		let start_liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
+
+		let initial_candidates: Vec<T::AccountId> = Pallet::<T>::candidate_pool().0.into_iter().map(|x| x.owner).collect::<_>();
+		let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+		assert_eq!(base_candidate_count, 2);
+
+		let mut candidates: Vec<T::AccountId> = Vec::<T::AccountId>::new();
+
+		const SEED: u32 = 0;
+
+		for i in 0u32..x{
+
+			let created_liquidity_token =
+				create_staking_liquidity_for_funding::<T>(None).unwrap();
+
+			assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), 1000));
+
+			let seed = USER_SEED - i;
+			let collator = create_funded_collator::<T>(
+				"collator",
+				seed,
+				created_liquidity_token,
+				None,
+				candidates.len() as u32 + base_candidate_count,
+				1000
+			)?;
+
+			candidates.push(collator.clone());
+
+		}
+
+		let aggregator: T::AccountId = account("aggregator", 0u32, SEED);
+		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+			aggregator.clone()).into(),
+			candidates.clone(),
+			MetadataUpdateAction::ExtendApprovedCollators
+		));
+
+		for i in 1u32..(x){
+
+			let seed = USER_SEED - i;
+
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+				collator.clone()).into(),
+				Some(aggregator.clone()),
+			));
+
+		}
+
+		for i in 1u32..(x){
+
+			let seed = USER_SEED - i;
+
+			let collator: T::AccountId = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				Some(aggregator.clone()),
+			);
+
+		}
+
+		let collator_switching: T::AccountId = account("collator", USER_SEED, SEED);
+		let aggregator_old: T::AccountId = account("aggregator", 1u32, SEED);
+		assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+			aggregator_old.clone()).into(),
+			vec![collator_switching.clone()],
+			MetadataUpdateAction::ExtendApprovedCollators
+		));
+
+		assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+			collator_switching.clone()).into(),
+			Some(aggregator_old.clone()),
+		));
+
+		assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator_switching).cloned(),
+				Some(aggregator_old.clone()),
+			);
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().token_collator_map.len(), (x - 1) as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().approved_candidates.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().token_collator_map.len(), 1 as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().approved_candidates.len(), 1 as usize);
+
+	}: _(RawOrigin::Signed(collator_switching.clone()), Some(aggregator.clone()))
+	verify {
+
+		for i in 0u32..(x){
+
+			let seed = USER_SEED - i;
+
+			let collator = account("collator", seed, SEED);
+			assert_eq!(CandidateAggregator::<T>::get()
+				.get(&collator).cloned(),
+				Some(aggregator.clone()),
+			);
+
+		}
+
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().token_collator_map.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator).unwrap().approved_candidates.len(), x as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().token_collator_map.len(), 0 as usize);
+		assert_eq!(AggregatorMetadata::<T>::get(&aggregator_old).unwrap().approved_candidates.len(), 1 as usize);
+
+	}
+
+	payout_collator_rewards {
+
+		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
+		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
+
+		const SEED: u32 = 0;
+		let collator: T::AccountId = account("collator", 0u32, SEED);
+
+		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
+		round_collator_reward_info.collator_reward = 1*DOLLAR;
+
+		for i in 0u32..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get() {
+			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
+			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
+		}
+
+		RoundCollatorRewardInfo::<T>::insert(collator.clone(), 1000, round_collator_reward_info);
+
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().collator_reward, 1*DOLLAR);
+
+	}: _(RawOrigin::Signed(collator.clone()), collator.clone(), Some(1))
+	verify {
+
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000), None);
+
+	}
+
+
+	payout_delegator_reward {
+
+		let funding_account: T::AccountId = account("funding", 0u32, 0u32);
+		assert_ok!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::mint(MGA_TOKEN_ID.into(), &<<T as Config>::StakingIssuanceVault as Get<T::AccountId>>::get(), (1_000_000*DOLLAR).into()));
+
+		const SEED: u32 = 0;
+		let collator: T::AccountId = account("collator", 0u32, SEED);
+
+		let mut round_collator_reward_info = RoundCollatorRewardInfoType::<T::AccountId>::default();
+		round_collator_reward_info.collator_reward = 1*DOLLAR;
+
+		for i in 0u32..(<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get()) {
+			let delegator: T::AccountId = account("delegator", USER_SEED - i, SEED);
+			round_collator_reward_info.delegator_rewards.insert(delegator, 1*DOLLAR);
+		}
+
+		RoundCollatorRewardInfo::<T>::insert(collator.clone(), 1000, round_collator_reward_info);
+
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().collator_reward, 1*DOLLAR);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().delegator_rewards.len(), <<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get() as usize);
+
+		let delegator_target: T::AccountId = account("delegator", USER_SEED, SEED);
+
+	}: _(RawOrigin::Signed(delegator_target.clone()), 1000, collator.clone(), delegator_target.clone())
+	verify {
+
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().collator_reward, 1*DOLLAR);
+		assert_eq!(RoundCollatorRewardInfo::<T>::get(&collator, 1000).unwrap().delegator_rewards.len(), (<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get() - 1) as usize);
+
 	}
 
 	// Session Change
@@ -1400,247 +1686,253 @@ benchmarks! {
 		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 0u32);
 	}
 
-	// active_session_change {
-    //
-	// 	// liquidity tokens
-	// 	let x in 3..100;
-	// 	// candidate_count
-	// 	let y in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 2u32); // to account for the two candidates we start with
-	// 	// MaxDelegatorsPerCandidate
-	// 	let z in 3..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
-	// 	// Total selected
-	// 	let w in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32);
-    //
-	// 	// // liquidity tokens
-	// 	// let x =30;
-	// 	// // candidate_count
-	// 	// let y =35;
-	// 	// // MaxDelegatorsPerCandidate
-	// 	// let z =12;
-	// 	// // Total selected
-	// 	// let w =35;
-    //
-	// 	assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
-	// 	assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
-	// 	assert_ok!(<pallet_issuance::Pallet<T>>::calculate_and_store_round_issuance(0u32));
-    //
-	// 	assert_ok!(Pallet::<T>::set_total_selected(RawOrigin::Root.into(), w));
-    //
-	// 	// We will prepare `x-1` liquidity tokens in loop and then another after
-    //
-	// 	let start_liquidity_token_count: u32 = Pallet::<T>::staking_liquidity_tokens().len().try_into().unwrap();
-    //
-	// 	assert!(x > start_liquidity_token_count);
-    //
-	// 	for i in start_liquidity_token_count..(x - 1u32){
-	// 		
-	// 		let created_liquidity_token =
-	// 			create_staking_liquidity_for_funding::<T>(None).unwrap();
-    //
-	// 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), i));
-    //
-	// 	}
-    //
-	// 	// Now to prepare the liquidity token we will use for collator and delegators
-    //
-	// 	let created_liquidity_token =
-	// 		create_staking_liquidity_for_funding::<T>(Some( ((z*(y+1)) as u128 *100*DOLLAR)+ 100_000_000*DOLLAR)).unwrap();
-    //
-	// 	assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), x));
-    //
-    //
-	// 	// Now we will create y funded collators
-	// 	let mut candidates: Vec<T::AccountId> = Vec::<T::AccountId>::new();
-    //
-	// 	let initial_candidates: Vec<T::AccountId> = Pallet::<T>::candidate_pool().0.into_iter().map(|x| x.owner).collect::<_>();
-	// 	let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
-    //
-	// 	assert_eq!(base_candidate_count, 2);
-    //
-	// 	for i in 0u32..y{
-	// 		let seed = USER_SEED - i;
-	// 		let collator = create_funded_collator::<T>(
-	// 			"collator",
-	// 			seed,
-	// 			created_liquidity_token,
-	// 			None,
-	// 			candidates.len() as u32 + base_candidate_count,
-	// 			x
-	// 		)?;
-	// 		candidates.push(collator.clone());
-	// 	}
-    //
-	// 	assert_eq!(candidates.len(), y as usize);
-    //
-	// 	// Now we will create `z*y` delegators each with `100*DOLLAR` created_liquidity_token tokens
-    //
-	// 	let mut delegators: Vec<T::AccountId> = Vec::<T::AccountId>::new();
-	// 	
-	// 	let current_delegator_count: u32 = delegators.len() as u32;
-    //
-	// 	for i in current_delegator_count..(z*y){
-	// 		let seed = USER_SEED - i;
-	// 		let (delegator, _, _) = create_funded_user::<T>("delegator", seed, created_liquidity_token, None);
-	// 		delegators.push(delegator.clone());
-	// 	}
-    //
-	// 	assert_eq!(delegators.len(), (z*y) as usize);
-    //
-	// 	let mut targetted_collator_index: u32 = 0u32;
-	// 	let mut delegated_to_collator_count: u32 = 0u32;
-    //
-	// 	for (i, delegator) in delegators.clone().iter().enumerate(){
-    //
-	// 		assert_ok!(Pallet::<T>::delegate(RawOrigin::Signed(
-	// 			delegator.clone()).into(),
-	// 			// candidates.get(targetted_collator_index as usize).unwrap().clone(),
-	// 			candidates[targetted_collator_index as usize].clone(),
-	// 			100*DOLLAR,
-	// 			None,
-	// 			delegated_to_collator_count,
-	// 			0u32
-	// 		));
-    //
-	// 		assert_eq!(targetted_collator_index as usize, i/z as usize);
-    //
-	// 		assert_eq!(Pallet::<T>::candidate_state(candidates[targetted_collator_index as usize].clone()).unwrap().delegators.0.len() , (delegated_to_collator_count + 1u32) as usize);
-	// 		assert_eq!(Pallet::<T>::candidate_state(candidates[targetted_collator_index as usize].clone()).unwrap().top_delegations.len() , (delegated_to_collator_count + 1u32) as usize);
-	// 		assert_eq!(Pallet::<T>::candidate_state(candidates[targetted_collator_index as usize].clone()).unwrap().bottom_delegations.len() ,  0usize);
-    //
-    //
-	// 		delegated_to_collator_count = delegated_to_collator_count + 1u32;
-	// 		if delegated_to_collator_count == z {
-	// 			targetted_collator_index = targetted_collator_index + 1u32;
-	// 			delegated_to_collator_count = 0u32;
-	// 		}
-	// 	}
-    //
-	// 	assert_eq!(targetted_collator_index, y);
-    //
-	// 	// Remove the initial two collators so that they do not get selected
-	// 	// We do this as the two collators do not have max delegators and would not be worst case
-    //
-	// 	for initial_candidate in initial_candidates{
-	// 		assert_ok!(Pallet::<T>::go_offline(RawOrigin::Signed(
-	// 			initial_candidate.clone()).into()));
-	// 	}
-    //
-	// 	// We would like to move on to the end of round 4
-	// 	let session_to_reach = 4u32;
-    //
-	// 	// Moves to the end of the round
-	// 	// Infinite loop that breaks when should_end_session is true
-	// 	loop {
-	// 		<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
-	// 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		if Pallet::<T>::round().current == session_to_reach {
-	// 			for i in 0..2{
-	// 				<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 				<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 				<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 				<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
-	// 				<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 				<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 				<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 			}
-	// 			break;
-	// 		}
-	// 	}
-    //
-	// 	let selected_candidates = Pallet::<T>::selected_candidates();
-    //
-	// 	
-	// 	// We would like to move on to the end of round 1
-	// 	let session_to_reach = 5u32;
-    //
-	// 	// Moves to the end of the round 0
-	// 	// Infinite loop that breaks when should_end_session is true
-	// 	loop {
-	// 		<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
-	// 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		if Pallet::<T>::round().current == session_to_reach {
-	// 			for i in 0..2{
-	// 				<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 				<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 				<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 				<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
-	// 				<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 				<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 				<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 			}
-	// 			break;
-	// 		}
-	// 	}
-    //
-	// 	
-	// 	assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 5u32);
-	// 	assert_eq!(Pallet::<T>::round().current as u32, 5u32);
-    //
-	// 	assert_eq!(selected_candidates.len(), (w as usize).min(Pallet::<T>::candidate_pool().0.len() as usize));
-    //
-    //
-	// 	let candidate_pool_state = Pallet::<T>::candidate_pool().0;
-    //
-	// 	for (i, candidate_bond) in candidate_pool_state.into_iter().enumerate() {
-    //
-	// 		if candidate_bond.liquidity_token == created_liquidity_token {
-	// 			assert_eq!(candidate_bond.amount as u128, (z as u128 + 1u128)*100*DOLLAR);
-	// 			
-	// 		}
-    //
-	// 	}
-	// 	
-	// 	for candidate in selected_candidates.clone() {
-	// 		Pallet::<T>::note_author(candidate.clone());
-	// 	}
-    //
-	// 	// We would like to move on to the end of round 1
-	// 	let end_of_session_to_reach = 6u32;
-    //
-	// 	// Moves to the end of the round 0
-	// 	// Infinite loop that breaks when should_end_session is true
-	// 	loop {
-	// 		<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
-	// 		<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
-	// 		<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		if <Pallet::<T> as pallet_session::ShouldEndSession<_>>::should_end_session(<frame_system::Pallet<T>>::block_number())
-	// 			&& (Pallet::<T>::round().current == end_of_session_to_reach) {
-	// 			break;
-	// 		} else {
-	// 			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
-	// 		}
-	// 	}
-    //
-    //
-	// 	assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 6u32);
-	// 	assert_eq!(Pallet::<T>::round().current as u32, 6u32);
-    //
-	// 	assert!(<Pallet::<T> as pallet_session::ShouldEndSession<_>>::should_end_session(<frame_system::Pallet<T>>::block_number()));
-    //
-	// 	for candidate in selected_candidates.clone() {
-	// 		assert!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance(MGA_TOKEN_ID.into(), &candidate).is_zero());
-	// 	}
-    //
-	// }: {<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());}
-	// verify {
-	// 	assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 7u32);
-	// 	assert_eq!(Pallet::<T>::round().current as u32, 7u32);
-	// 	for candidate in selected_candidates.clone() {
-	// 		assert!(!<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance(MGA_TOKEN_ID.into(), &candidate).is_zero());
-	// 	}
-	// }
+	active_session_change {
+
+		// liquidity tokens
+		let x in 3..100;
+		// candidate_count
+		let y in (<<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32)..(<<T as Config>::MaxCollatorCandidates as Get<u32>>::get() - 2u32); // to account for the two candidates we start with
+		// MaxDelegatorsPerCandidate
+		let z in 3..<<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
+
+		// // Since now an aggregator can have multiple collators each of whose rewards will be written to the storage individually
+		// // Total selected
+		let w = <<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32;
+
+		// // liquidity tokens
+		// let x = 100;
+		// // candidate_count
+		// let y = 190;
+		// // MaxDelegatorsPerCandidate
+		// let z = 200;
+		// // Total selected
+		// let w = 190;
+
+		assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
+		assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
+		assert_ok!(<pallet_issuance::Pallet<T>>::calculate_and_store_round_issuance(0u32));
+
+		assert_ok!(Pallet::<T>::set_total_selected(RawOrigin::Root.into(), w));
+
+		// We will prepare `x-1` liquidity tokens in loop and then another after
+
+		let start_liquidity_token = Pallet::<T>::staking_liquidity_tokens();
+		let start_liquidity_token_count: u32 = start_liquidity_token.len().try_into().unwrap();
+		for (token,_) in start_liquidity_token {
+			<pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(token, Some(1));
+		}
+
+		assert!(x > start_liquidity_token_count);
+		// create X - 1 Tokens now and then remaining one
+		for i in start_liquidity_token_count..(x-1){
+			let created_liquidity_token = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
+			Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), i).unwrap();
+			<pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(created_liquidity_token, Some(1));
+		}
+
+		// Now to prepare the liquidity token we will use for collator and delegators
+		let created_liquidity_token = create_staking_liquidity_for_funding::<T>(Some( ((z*(y+1)) as u128 *100*DOLLAR)+ T::MinCandidateStk::get()*DOLLAR)).unwrap();
+		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), x));
+		<pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(created_liquidity_token, Some(1));
+
+
+		// Now we will create y funded collators
+		let initial_candidates: Vec<T::AccountId> = Pallet::<T>::candidate_pool().0.into_iter().map(|x| x.owner).collect::<_>();
+		let base_candidate_count: u32 = Pallet::<T>::candidate_pool().0.len().try_into().unwrap();
+
+		assert_eq!(base_candidate_count, 2);
+		assert_eq!(x as usize , StakingLiquidityTokens::<T>::get().len());
+
+		let pool_rewards = pallet_issuance::PromotedPoolsRewardsV2::<T>::get();
+		assert_eq!(pool_rewards.len(), x as usize);
+
+
+		let mut candidates = (0u32..y)
+			.map(|i|{
+				create_funded_collator::<T>(
+				"collator",
+				USER_SEED - i,
+				created_liquidity_token,
+				Some(T::MinCandidateStk::get()),
+				i + base_candidate_count,
+				x
+				)
+			}).collect::<Result<Vec<T::AccountId>, &'static str>>()?;
+
+		// create one aggregator per candidate
+		for (id, c) in candidates.iter().enumerate() {
+			let aggregator: T::AccountId = account("aggregator", id as u32, 0);
+			assert_ok!(Pallet::<T>::aggregator_update_metadata(RawOrigin::Signed(
+				aggregator.clone()).into(),
+				vec![c.clone()],
+				MetadataUpdateAction::ExtendApprovedCollators,
+			));
+
+			assert_ok!(Pallet::<T>::update_candidate_aggregator(RawOrigin::Signed(
+				c.clone()).into(),
+				Some(aggregator.clone()),
+			));
+		}
+
+		assert_eq!(candidates.len(), y as usize);
+		//
+		// // Now we will create `z*y` delegators each with `100*DOLLAR` created_liquidity_token tokens
+		//
+		let delegators_count = z*y;
+		let delegators: Vec<_> = (0u32..delegators_count)
+		.map(|i|
+			create_funded_user::<T>("delegator", USER_SEED-i, created_liquidity_token, Some(100*DOLLAR))
+		).map(|(account, _token_id, _amount)| account)
+		.collect();
+		assert_eq!(delegators.len(), (z*y) as usize);
+
+		for (delegators, candidate) in delegators.iter().chunks(z as usize).into_iter()
+			.zip(candidates.clone())
+		{
+
+			for (count, delegator) in delegators.into_iter().enumerate() {
+				Pallet::<T>::delegate(RawOrigin::Signed(
+					delegator.clone()).into(),
+					candidate.clone().into(),
+					100*DOLLAR,
+					None,
+					count as u32,
+					0u32,
+				).unwrap();
+			}
+
+			assert_eq!(Pallet::<T>::candidate_state(candidate.clone()).unwrap().delegators.0.len() , z as usize);
+			assert_eq!(Pallet::<T>::candidate_state(candidate.clone()).unwrap().top_delegations.len() , z as usize);
+			assert_eq!(Pallet::<T>::candidate_state(candidate.clone()).unwrap().bottom_delegations.len() ,  0usize);
+
+		}
+
+
+		//
+		// Remove the initial two collators so that they do not get selected
+		// We do this as the two collators do not have max delegators and would not be worst case
+
+		for initial_candidate in initial_candidates{
+			assert_ok!(Pallet::<T>::go_offline(RawOrigin::Signed(
+				initial_candidate.clone()).into()));
+		}
+
+
+
+		// We would like to move on to the end of round 4
+		let session_to_reach = 4u32;
+
+		// Moves to the end of the round
+		// Infinite loop that breaks when should_end_session is true
+		loop {
+			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			if Pallet::<T>::round().current == session_to_reach {
+				for i in 0..2{
+					<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+					<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+					<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+					<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+				}
+				break;
+			}
+		}
+
+		let selected_author = Pallet::<T>::selected_candidates();
+
+
+		// We would like to move on to the end of round 1
+		let session_to_reach = 5u32;
+
+		// Moves to the end of the round 0
+		// Infinite loop that breaks when should_end_session is true
+		loop {
+			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			if Pallet::<T>::round().current == session_to_reach {
+				for i in 0..2{
+					<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+					<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+					<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+					<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+					<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+				}
+				break;
+			}
+		}
+
+
+		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 5u32);
+		assert_eq!(Pallet::<T>::round().current as u32, 5u32);
+		assert_eq!(selected_author.len(), (w as usize).min(Pallet::<T>::candidate_pool().0.len() as usize));
+
+
+		let candidate_pool_state = Pallet::<T>::candidate_pool().0;
+
+		for (i, candidate_bond) in candidate_pool_state.into_iter().enumerate() {
+			if candidate_bond.liquidity_token == created_liquidity_token {
+				assert_eq!(candidate_bond.amount as u128, (1+(z as u128)*100)*DOLLAR);
+			}
+		}
+
+		for author in selected_author.clone() {
+			Pallet::<T>::note_author(author.clone());
+		}
+
+		// We would like to move on to the end of round 1
+		let end_of_session_to_reach = 6u32;
+		let pool_rewards = pallet_issuance::PromotedPoolsRewardsV2::<T>::get();
+		assert_eq!(pool_rewards.len(), x as usize);
+
+		// Moves to the end of the round 0
+		// Infinite loop that breaks when should_end_session is true
+		loop {
+			<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_finalize(<frame_system::Pallet<T>>::block_number());
+			<frame_system::Pallet<T>>::set_block_number(<frame_system::Pallet<T>>::block_number() + 1u32.into());
+			<frame_system::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			<pallet::Pallet<T> as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			if <Pallet::<T> as pallet_session::ShouldEndSession<_>>::should_end_session(<frame_system::Pallet<T>>::block_number())
+				&& (Pallet::<T>::round().current == end_of_session_to_reach) {
+				break;
+			} else {
+				<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());
+			}
+		}
+
+
+		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 6u32);
+		assert_eq!(Pallet::<T>::round().current as u32, 6u32);
+
+		assert!(<Pallet::<T> as pallet_session::ShouldEndSession<_>>::should_end_session(<frame_system::Pallet<T>>::block_number()));
+
+		for author in selected_author.clone() {
+			for candidate in AggregatorMetadata::<T>::get(&author).unwrap().token_collator_map.iter().map(|x| x.1){
+			assert!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance(MGA_TOKEN_ID.into(), &candidate).is_zero());
+			}
+		}
+
+	}: {<pallet_session::Pallet::<T>  as frame_support::traits::Hooks<_>>::on_initialize(<frame_system::Pallet<T>>::block_number());}
+	verify {
+		assert_eq!(pallet_session::Pallet::<T>::current_index() as u32, 7u32);
+		assert_eq!(Pallet::<T>::round().current as u32, 7u32);
+		assert_eq!(w as usize, candidates.iter().filter_map(|c| RoundCollatorRewardInfo::<T>::get(c.clone(), 5u32)).count());
+	}
 
 }

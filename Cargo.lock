@@ -90,6 +90,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "aquamarine"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a941c39708478e8eea39243b5983f1c42d2717b3620ee91f4a52115fd02ac43f"
+dependencies = [
+ "itertools 0.9.0",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "array-bytes"
 version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -788,6 +801,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "frame-executive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+dependencies = [
+ "aquamarine",
+ "extrinsic-shuffler",
+ "frame-support",
+ "frame-system",
+ "log",
+ "merlin",
+ "parity-scale-codec",
+ "scale-info",
+ "schnorrkel",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-tracing",
+]
+
+[[package]]
 name = "frame-metadata"
 version = "15.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -840,7 +874,7 @@ dependencies = [
  "Inflector",
  "cfg-expr",
  "frame-support-procedural-tools",
- "itertools",
+ "itertools 0.10.5",
  "proc-macro2",
  "quote",
  "syn",
@@ -1217,6 +1251,15 @@ name = "io-lifetimes"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59ce5ef949d49ee85593fc4d3f3f95ad61657076395cbbce23e2121fc5542074"
+
+[[package]]
+name = "itertools"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "284f18f85651fe11e8a991b2adb42cb078325c996ed026d994719efcfca1d54b"
+dependencies = [
+ "either",
+]
 
 [[package]]
 name = "itertools"
@@ -1722,6 +1765,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-issuance"
+version = "2.0.0"
+source = "git+https://github.com/mangata-finance/mangata-node?branch=develop#f87872c371fd31a2be7ae54c8fd52bfcc43bf89e"
+dependencies = [
+ "cfg-if",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "log",
+ "mangata-support",
+ "mangata-types",
+ "orml-tokens",
+ "pallet-vesting-mangata",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
@@ -1781,6 +1845,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "itertools 0.10.5",
  "log",
  "mangata-support",
  "mangata-types",
@@ -1788,6 +1853,7 @@ dependencies = [
  "orml-traits",
  "pallet-authorship",
  "pallet-collective-mangata",
+ "pallet-issuance",
  "pallet-session",
  "pallet-vesting-mangata",
  "parity-scale-codec",
@@ -1956,6 +2022,30 @@ checksum = "7f4c021e1093a56626774e81216a4ce732a735e5bad4868a03f3ed65ca0c3919"
 dependencies = [
  "once_cell",
  "toml_edit",
+]
+
+[[package]]
+name = "proc-macro-error"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
+dependencies = [
+ "proc-macro-error-attr",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "version_check",
+]
+
+[[package]]
+name = "proc-macro-error-attr"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "version_check",
 ]
 
 [[package]]
@@ -3851,11 +3941,6 @@ version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
 
 [[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
 name = "frame-system-rpc-runtime-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
@@ -4411,11 +4496,6 @@ version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
 
 [[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
 name = "frame-system-rpc-runtime-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
@@ -4967,11 +5047,6 @@ source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#c
 
 [[patch.unused]]
 name = "frame-election-provider-support"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-executive"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
 
