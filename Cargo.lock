@@ -3911,1671 +3911,6 @@ dependencies = [
 ]
 
 [[patch.unused]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-merkle-tree"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "fork-tree"
-version = "3.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-benchmarking-cli"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-election-provider-support"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-system-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-try-runtime"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-aura"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-authority-discovery"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-babe"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-bags-list"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-democracy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-election-provider-multi-phase"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-grandpa"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-identity"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-im-online"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-indices"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-nicks"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-proxy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-scheduler"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-society"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-staking"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-sudo"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-treasury"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-utility"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting-mangata-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting-mangata-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-allocator"
-version = "4.1.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-authority-discovery"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-basic-authorship"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-basic-authorship-ver"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-block-builder"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-block-builder-ver"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-chain-spec"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-chain-spec-derive"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-cli"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-client-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-aura"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-babe"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-babe-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-epochs"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-slots"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-finality-grandpa-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-informant"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network-common"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network-gossip"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-offchain"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-peerset"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-proposer-metrics"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc-api"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc-server"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-service"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-sync-state-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-sysinfo"
-version = "6.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-telemetry"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-tracing"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-tracing-proc-macro"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-transaction-pool"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-transaction-pool-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-utils"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-authority-discovery"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-beefy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-babe"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-slots"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-vrf"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-keyring"
-version = "7.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-maybe-compressed-blob"
-version = "4.1.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-mmr-primitives"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-npos-elections"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-offchain"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-rpc"
-version = "6.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-serializer"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-transaction-pool"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-transaction-storage-proof"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-build-script-utils"
-version = "3.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-frame-rpc-system"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-prometheus-endpoint"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-test-client"
-version = "2.0.1"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-wasm-builder"
-version = "5.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "try-runtime-cli"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-merkle-tree"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "fork-tree"
-version = "3.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-benchmarking-cli"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-election-provider-support"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-system-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-try-runtime"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-aura"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-authority-discovery"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-babe"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-bags-list"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-democracy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-election-provider-multi-phase"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-grandpa"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-identity"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-im-online"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-indices"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-nicks"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-proxy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-scheduler"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-society"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-staking"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-sudo"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-treasury"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-utility"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting-mangata-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting-mangata-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-allocator"
-version = "4.1.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-authority-discovery"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-basic-authorship"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-basic-authorship-ver"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-block-builder"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-block-builder-ver"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-chain-spec"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-chain-spec-derive"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-cli"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-client-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-aura"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-babe"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-babe-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-epochs"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-slots"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-finality-grandpa-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-informant"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network-common"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network-gossip"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-offchain"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-peerset"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-proposer-metrics"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc-api"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc-server"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-service"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-sync-state-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-sysinfo"
-version = "6.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-telemetry"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-tracing"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-tracing-proc-macro"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-transaction-pool"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-transaction-pool-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-utils"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-authority-discovery"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-beefy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-babe"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-slots"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-vrf"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-keyring"
-version = "7.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-maybe-compressed-blob"
-version = "4.1.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-mmr-primitives"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-npos-elections"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-offchain"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-rpc"
-version = "6.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-serializer"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-transaction-pool"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-transaction-storage-proof"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-build-script-utils"
-version = "3.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-frame-rpc-system"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-prometheus-endpoint"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-test-client"
-version = "2.0.1"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-wasm-builder"
-version = "5.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "try-runtime-cli"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "beefy-merkle-tree"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "fork-tree"
-version = "3.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-benchmarking-cli"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-election-provider-support"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-system-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "frame-try-runtime"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-aura"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-authority-discovery"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-babe"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-bags-list"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-balances"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-democracy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-election-provider-multi-phase"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-elections-phragmen"
-version = "5.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-grandpa"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-identity"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-im-online"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-indices"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-nicks"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-proxy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-scheduler"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-society"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-staking"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-sudo"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-transaction-payment-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-treasury"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-utility"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting-mangata-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "pallet-vesting-mangata-rpc-runtime-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-allocator"
-version = "4.1.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-authority-discovery"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-basic-authorship"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-basic-authorship-ver"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-block-builder"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-block-builder-ver"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-chain-spec"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-chain-spec-derive"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-cli"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-client-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-aura"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-babe"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-babe-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-epochs"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-slots"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-finality-grandpa-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-informant"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-keystore"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network-common"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-network-gossip"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-offchain"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-peerset"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-proposer-metrics"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc-api"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-rpc-server"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-service"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-sync-state-rpc"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-sysinfo"
-version = "6.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-telemetry"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-tracing"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-tracing-proc-macro"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-transaction-pool"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-transaction-pool-api"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sc-utils"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-authority-discovery"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-beefy"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-babe"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-slots"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-consensus-vrf"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-keyring"
-version = "7.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-maybe-compressed-blob"
-version = "4.1.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-mmr-primitives"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-npos-elections"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-offchain"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-rpc"
-version = "6.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-serializer"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-transaction-pool"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "sp-transaction-storage-proof"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-build-script-utils"
-version = "3.0.0"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-frame-rpc-system"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-prometheus-endpoint"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-test-client"
-version = "2.0.1"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "substrate-wasm-builder"
-version = "5.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
-name = "try-runtime-cli"
-version = "0.10.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
-
-[[patch.unused]]
 name = "orml-unknown-tokens"
 version = "0.4.1-dev"
 source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
@@ -5594,3 +3929,1668 @@ source = "git+https://github.com/mangata-finance//open-runtime-module-library?br
 name = "orml-xtokens"
 version = "0.4.1-dev"
 source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
+
+[[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-collective"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-society"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting-mangata-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting-mangata-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-basic-authorship-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-block-builder-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-sysinfo"
+version = "6.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "7.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-mmr-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "6.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-collective"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-society"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting-mangata-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting-mangata-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-basic-authorship-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-block-builder-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-sysinfo"
+version = "6.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "7.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-mmr-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "6.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-gadget"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-gadget-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "beefy-merkle-tree"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "fork-tree"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-benchmarking-cli"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-election-provider-support"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-system-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-aura"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-bags-list"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-balances"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-beefy-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-bounties"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-collective"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-democracy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-election-provider-multi-phase"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-identity"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-indices"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-membership"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-mmr"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-nicks"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-proxy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-scheduler"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-society"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-staking"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-staking-reward-curve"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-sudo"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-tips"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-transaction-payment-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-treasury"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting-mangata-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "pallet-vesting-mangata-rpc-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-allocator"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-basic-authorship"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-basic-authorship-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-block-builder"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-block-builder-ver"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-chain-spec"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-chain-spec-derive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-client-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-babe-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-finality-grandpa-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-informant"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-keystore"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-peerset"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-proposer-metrics"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc-api"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-rpc-server"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-service"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-state-db"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-sync-state-rpc"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-sysinfo"
+version = "6.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-tracing"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-tracing-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-beefy"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-finality-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-keyring"
+version = "7.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-maybe-compressed-blob"
+version = "4.1.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-mmr-primitives"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-offchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-rpc"
+version = "6.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-serializer"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-transaction-pool"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "sp-transaction-storage-proof"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-build-script-utils"
+version = "3.0.0"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-frame-rpc-system"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-prometheus-endpoint"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-test-client"
+version = "2.0.1"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "substrate-wasm-builder"
+version = "5.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"
+
+[[patch.unused]]
+name = "try-runtime-cli"
+version = "0.10.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev#cbe2bfab50a8f36e35877bd80ff9cbe2fa3ef694"

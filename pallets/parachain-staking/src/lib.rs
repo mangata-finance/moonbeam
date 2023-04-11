@@ -68,10 +68,10 @@
 //!              |                       |                      |         
 //!              |                       |                      |         
 //!              |                       |                      |         
-//!      ####################  ####################  ####################
-//!      #  Candidate B     #  #  Candidate C     #  #  Candidate D     #
-//!      # token: MGX:TUR   #  # token: MGX:IMBU  #  # token: MGX:MOVR  #
-//!      ####################  ####################  ####################
+//!      --------------------  --------------------  --------------------
+//!      |  Candidate B     |  |  Candidate C     |  |  Candidate D     |
+//!      | token: MGX:TUR   |  | token: MGX:IMBU  |  | token: MGX:MOVR  |
+//!      --------------------  --------------------  --------------------
 //! ```
 //!
 //! If candidate decides to aggregate under Aggregator it cannot be chosen to be collator(the
@@ -85,8 +85,8 @@
 //!```
 //!
 //! Extrinsics:
-//! - `[Pallet::aggregator_update_metadata]` - enable/disable candidates for aggregation
-//! - `[Pallet::update_candidate_aggregator]` - assign aggregator for candidate
+//! - [`Pallet::aggregator_update_metadata`] - enable/disable candidates for aggregation
+//! - [`Pallet::update_candidate_aggregator`] - assign aggregator for candidate
 //!
 //! Storage entries:
 //! - [`CandidateAggregator`]
