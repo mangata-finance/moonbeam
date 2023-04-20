@@ -130,7 +130,6 @@ mod mock;
 mod set;
 #[cfg(test)]
 mod tests;
-use sp_runtime::SaturatedConversion;
 
 use frame_support::{pallet, transactional};
 pub use mangata_support::traits::{
@@ -3482,9 +3481,9 @@ pub mod pallet {
 			<Points<T>>::mutate(now, |x| *x = x.saturating_add(20));
 		}
 
-		fn note_uncle(_: T::AccountId, _: T::BlockNumber) {
-			// ignore
-		}
+
+
+
 	}
 
 	impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
