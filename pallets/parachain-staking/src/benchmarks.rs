@@ -30,7 +30,8 @@ use itertools::Itertools;
 use orml_tokens::MultiTokenCurrencyExtended;
 use orml_tokens::Pallet as Tokens;
 use pallet_authorship::EventHandler;
-use pallet_issuance::PoolPromoteApi;
+// use pallet_issuance::PoolPromoteApi;
+use mangata_support::traits::{ProofOfStakeRewardsApi, XykFunctionsTrait};
 use sp_runtime::{Perbill, Percent};
 use sp_std::vec::Vec;
 
@@ -80,14 +81,14 @@ fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, v.into())?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert!(<T::PoolCreateApi as PoolCreateApi>::pool_create(
+	assert!(<T::Xyk as XykFunctionsTrait<_>>::create_pool(
 		funding_account.clone(),
 		x.into(),
 		v.into(),
 		(x + 1u32).into(),
 		(v + 1).into()
 	)
-	.is_some());
+	.is_ok());
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 2u32).into(), &funding_account), v.into());
 	Ok(x + 2u32)
@@ -110,14 +111,14 @@ fn create_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 	)?;
 	<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
 
-	assert!(<T::PoolCreateApi as PoolCreateApi>::pool_create(
+	assert!(<T::Xyk as XykFunctionsTrait<_>>::create_pool(
 		funding_account.clone(),
 		MGA_TOKEN_ID.into(),
 		v.into(),
 		(x).into(),
 		(v + 1).into()
 	)
-	.is_some());
+	.is_ok());
 
 	assert_eq!(<orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrency<T::AccountId>>::total_balance((x + 1u32).into(), &funding_account), v.into());
 	Ok(x + 1u32)
@@ -1719,7 +1720,8 @@ benchmarks! {
 		let start_liquidity_token = Pallet::<T>::staking_liquidity_tokens();
 		let start_liquidity_token_count: u32 = start_liquidity_token.len().try_into().unwrap();
 		for (token,_) in start_liquidity_token {
-			<pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(token, Some(1));
+			// <pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(token, Some(1));
+			<T::RewardsApi as ProofOfStakeRewardsApi<_>>::enable(token, 1);
 		}
 
 		assert!(x > start_liquidity_token_count);
@@ -1727,13 +1729,15 @@ benchmarks! {
 		for i in start_liquidity_token_count..(x-1){
 			let created_liquidity_token = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
 			Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), i).unwrap();
-			<pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(created_liquidity_token, Some(1));
+			// <pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(created_liquidity_token, Some(1));
+			<T::RewardsApi as ProofOfStakeRewardsApi<_>>::enable(created_liquidity_token, 1);
 		}
 
 		// Now to prepare the liquidity token we will use for collator and delegators
 		let created_liquidity_token = create_staking_liquidity_for_funding::<T>(Some( ((z*(y+1)) as u128 *100*DOLLAR)+ T::MinCandidateStk::get()*DOLLAR)).unwrap();
 		assert_ok!(Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), x));
-		<pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(created_liquidity_token, Some(1));
+		// <pallet_issuance::Pallet<T> as PoolPromoteApi>::update_pool_promotion(created_liquidity_token, Some(1));
+		<T::RewardsApi as ProofOfStakeRewardsApi<_>>::enable(created_liquidity_token, 1);
 
 
 		// Now we will create y funded collators
@@ -1743,8 +1747,8 @@ benchmarks! {
 		assert_eq!(base_candidate_count, 2);
 		assert_eq!(x as usize , StakingLiquidityTokens::<T>::get().len());
 
-		let pool_rewards = pallet_issuance::PromotedPoolsRewardsV2::<T>::get();
-		assert_eq!(pool_rewards.len(), x as usize);
+		// let pool_rewards = pallet_issuance::PromotedPoolsRewardsV2::<T>::get();
+		// assert_eq!(pool_rewards.len(), x as usize);
 
 
 		let mut candidates = (0u32..y)
@@ -1896,8 +1900,8 @@ benchmarks! {
 
 		// We would like to move on to the end of round 1
 		let end_of_session_to_reach = 6u32;
-		let pool_rewards = pallet_issuance::PromotedPoolsRewardsV2::<T>::get();
-		assert_eq!(pool_rewards.len(), x as usize);
+		// let pool_rewards = pallet_issuance::PromotedPoolsRewardsV2::<T>::get();
+		// assert_eq!(pool_rewards.len(), x as usize);
 
 		// Moves to the end of the round 0
 		// Infinite loop that breaks when should_end_session is true
