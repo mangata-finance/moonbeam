@@ -185,6 +185,12 @@ pub enum MetadataUpdateAction {
 	RemoveApprovedCollators,
 }
 
+#[derive(Eq, PartialEq, Debug, Clone)]
+pub enum RewardKind<AccountId> {
+	Collator,
+	Delegator(AccountId),
+}
+
 #[derive(Eq, PartialEq, Encode, Decode, TypeInfo, Debug, Clone)]
 pub enum PayoutRounds {
 	All,
@@ -1434,7 +1440,12 @@ pub mod pallet {
 	pub trait StakingBenchmarkConfig:
 		orml_tokens::Config + pallet_session::Config + pallet_issuance::Config
 	{
-		type PoolCreateApi: PoolCreateApi<AccountId = Self::AccountId>;
+		type RewardsApi: ProofOfStakeRewardsApi<
+			Self::AccountId,
+			Balance = Balance,
+			CurrencyId = TokenId,
+		>;
+		type Xyk: XykFunctionsTrait<Self::AccountId, Balance = Balance, CurrencyId = TokenId>;
 	}
 
 	#[cfg(not(feature = "runtime-benchmarks"))]
@@ -1631,8 +1642,8 @@ pub mod pallet {
 		Delegation(T::AccountId, Balance, T::AccountId, DelegatorAdded),
 		/// Delegator, Candidate, Amount Unstaked, New Total Amt Staked for Candidate
 		DelegatorLeftCandidate(T::AccountId, T::AccountId, Balance, Balance),
-		/// Delegator, Collator, Due reward (as per counted delegation for collator)
-		DelegatorDueReward(T::AccountId, T::AccountId, Balance),
+		/// Session index, Delegator, Collator, Due reward (as per counted delegation for collator)
+		DelegatorDueReward(RoundIndex, T::AccountId, T::AccountId, Balance),
 		/// Paid the account (delegator or collator) the balance as liquid rewards
 		Rewarded(RoundIndex, T::AccountId, Balance),
 		/// Notify about reward periods that has been paid (collator, payout rounds, any rewards left)
@@ -2739,13 +2750,22 @@ pub mod pallet {
 					break;
 				}
 
-				Self::payout_reward(round, collator.clone(), info.collator_reward)?;
+				Self::payout_reward(
+					round,
+					collator.clone(),
+					info.collator_reward,
+					RewardKind::Collator,
+				)?;
 				payouts_left -= 1u32;
 
-				let _ = info
-					.delegator_rewards
-					.iter()
-					.try_for_each(|(d, r)| Self::payout_reward(round, d.clone(), r.clone()))?;
+				let _ = info.delegator_rewards.iter().try_for_each(|(d, r)| {
+					Self::payout_reward(
+						round,
+						d.clone(),
+						r.clone(),
+						RewardKind::Delegator(collator.clone()),
+					)
+				})?;
 				RoundCollatorRewardInfo::<T>::remove(collator.clone(), round);
 				rounds.push(round);
 
@@ -2810,7 +2830,7 @@ pub mod pallet {
 			let _caller = ensure_signed(origin)?;
 
 			RoundCollatorRewardInfo::<T>::try_mutate(
-				collator,
+				collator.clone(),
 				round,
 				|maybe_collator_payout_info| -> DispatchResult {
 					let collator_payout_info = maybe_collator_payout_info
@@ -2820,7 +2840,12 @@ pub mod pallet {
 						.delegator_rewards
 						.remove(&delegator)
 						.ok_or(Error::<T>::DelegatorRewardsDNE)?;
-					Self::payout_reward(round, delegator, delegator_reward)?;
+					Self::payout_reward(
+						round,
+						delegator,
+						delegator_reward,
+						RewardKind::Delegator(collator),
+					)?;
 					Ok(())
 				},
 			)?;
@@ -2893,7 +2918,12 @@ pub mod pallet {
 			Ok(())
 		}
 
-		pub fn payout_reward(round: RoundIndex, to: T::AccountId, amt: Balance) -> DispatchResult {
+		pub fn payout_reward(
+			round: RoundIndex,
+			to: T::AccountId,
+			amt: Balance,
+			kind: RewardKind<T::AccountId>,
+		) -> DispatchResult {
 			let _ = <T as pallet::Config>::Currency::transfer(
 				T::NativeTokenId::get().into(),
 				&<T as pallet::Config>::StakingIssuanceVault::get(),
@@ -2901,7 +2931,17 @@ pub mod pallet {
 				amt.into(),
 				ExistenceRequirement::AllowDeath,
 			)?;
-			Self::deposit_event(Event::Rewarded(round, to.clone(), amt));
+			match kind {
+				RewardKind::Collator => {
+					Self::deposit_event(Event::Rewarded(round, to.clone(), amt))
+				}
+				RewardKind::Delegator(collator) => Self::deposit_event(Event::DelegatorDueReward(
+					round,
+					collator.clone(),
+					to.clone(),
+					amt,
+				)),
+			};
 			Ok(())
 		}
 		pub fn is_delegator(acc: &T::AccountId) -> bool {
