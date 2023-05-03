@@ -136,6 +136,7 @@ use frame_support::{pallet, transactional};
 pub use mangata_support::traits::{
 	ComputeIssuance, GetIssuance, PoolCreateApi, StakingReservesProviderTrait, Valuate,
 };
+use mangata_support::traits::{ProofOfStakeRewardsApi, XykFunctionsTrait};
 pub use mangata_types::{multipurpose_liquidity::BondKind, Balance, TokenId};
 use orml_tokens::{MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
 
@@ -1441,7 +1442,12 @@ pub mod pallet {
 	pub trait StakingBenchmarkConfig:
 		orml_tokens::Config + pallet_session::Config + pallet_issuance::Config
 	{
-		type PoolCreateApi: PoolCreateApi<AccountId = Self::AccountId>;
+		type RewardsApi: ProofOfStakeRewardsApi<
+			Self::AccountId,
+			Balance = Balance,
+			CurrencyId = TokenId,
+		>;
+		type Xyk: XykFunctionsTrait<Self::AccountId, Balance = Balance, CurrencyId = TokenId>;
 	}
 
 	#[cfg(not(feature = "runtime-benchmarks"))]
