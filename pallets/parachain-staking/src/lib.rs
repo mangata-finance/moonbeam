@@ -2349,7 +2349,7 @@ pub mod pallet {
 				ensure!(state.is_active(), Error::<T>::CannotDelegateIfLeaving);
 				// delegation after first
 				ensure!(
-					amount >= T::MinDelegation::get(),
+					Self::valuate_bond(collator_state.liquidity_token, amount) >= T::MinDelegation::get(),
 					Error::<T>::DelegationBelowMin
 				);
 				ensure!(
