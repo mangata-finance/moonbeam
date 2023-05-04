@@ -1664,12 +1664,12 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_idle(now: T::BlockNumber, remaining_weight: Weight) -> Weight {
+		fn on_idle(_now: T::BlockNumber, remaining_weight: Weight) -> Weight {
 			// some extra offset on top
-			let claim_cost = T::WeightInfo::payout_collator_rewards();
+			let claim_cost = <T as Config>::WeightInfo::payout_collator_rewards();
 			if remaining_weight.ref_time() > claim_cost.ref_time(){
 				if let Some((collator, _round)) = RoundCollatorRewardInfo::<T>::iter_keys().next(){
-					Self::do_payout_collator_rewards(collator, Some(1));
+					let _ = Self::do_payout_collator_rewards(collator, Some(1));
 				}
 			}
 
