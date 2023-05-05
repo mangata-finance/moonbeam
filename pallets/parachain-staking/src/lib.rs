@@ -2725,10 +2725,6 @@ pub mod pallet {
 
 			Self::do_update_candidate_aggregator(&candidate, maybe_aggregator.clone())?;
 
-			Self::deposit_event(Event::CandidateAggregatorUpdated(
-				candidate,
-				maybe_aggregator,
-			));
 			Ok(().into())
 		}
 
