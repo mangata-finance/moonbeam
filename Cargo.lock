@@ -1842,6 +1842,7 @@ dependencies = [
 name = "parachain-staking"
 version = "3.0.0"
 dependencies = [
+ "aquamarine",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
