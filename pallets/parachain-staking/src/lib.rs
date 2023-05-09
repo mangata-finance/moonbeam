@@ -73,10 +73,12 @@
 //!      | token: MGX:TUR   |  | token: MGX:IMBU  |  | token: MGX:MOVR  |
 //!      --------------------  --------------------  --------------------
 //! ```
-//!
 //! If candidate decides to aggregate under Aggregator it cannot be chosen to be collator(the
 //! candidate), instead aggregator account can be selected (even though its not present on
 //! candidates list).
+//! 
+//!
+//! Block authors selection algorithm details [`Pallet::select_top_candidates`]
 //!
 //!```ignore
 //!                        candidate B MGX valuation
@@ -99,7 +101,7 @@
 //! - Everything is valuated in `MGX` part of staked liquidity token. So if collator A has X MGX:KSM
 //! liquidity tokens. And X MGX:KSM liquidity token is convertible to Y `MGX` and Z `KSM`. Then X
 //! MGX:KSM tokens has valuation of Y.
-//! - If candidate allows for staking native tokens number of native tokens == candidate valuation.
+//! - If candidate allows for staking native tokens number of native tokens/2 == candidate valuation.
 //! - for aggregator(A) each aggregation account (such that aggregates under A) is valuated in MGX and
 //! sumed.
 //! - Candidates that aggregates under some other account cannot be selected as collators (but the
@@ -122,6 +124,10 @@
 //! is not available.
 //!
 #![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(doc)]
+use aquamarine::aquamarine;
+
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarks;
@@ -1707,6 +1713,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn selected_candidates)]
 	/// The collator candidates selected for the current round
+	/// Block authors selection algorithm details [`Pallet::select_top_candidates`]
 	type SelectedCandidates<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
 	#[pallet::storage]
@@ -2349,7 +2356,7 @@ pub mod pallet {
 				ensure!(state.is_active(), Error::<T>::CannotDelegateIfLeaving);
 				// delegation after first
 				ensure!(
-					amount >= T::MinDelegation::get(),
+					Self::valuate_bond(collator_state.liquidity_token, amount) >= T::MinDelegation::get(),
 					Error::<T>::DelegationBelowMin
 				);
 				ensure!(
@@ -2655,6 +2662,7 @@ pub mod pallet {
 		#[pallet::weight(T::DbWeight::get().reads_writes(20, 20))]
 		#[transactional]
 		/// Modifies aggregator metadata by extending or reducing list of approved candidates
+		/// Account may only become aggregator only if its not collator or delegator at the moment
 		pub fn aggregator_update_metadata(
 			origin: OriginFor<T>,
 			collator_candidates: Vec<T::AccountId>,
@@ -2725,10 +2733,6 @@ pub mod pallet {
 
 			Self::do_update_candidate_aggregator(&candidate, maybe_aggregator.clone())?;
 
-			Self::deposit_event(Event::CandidateAggregatorUpdated(
-				candidate,
-				maybe_aggregator,
-			));
 			Ok(().into())
 		}
 
@@ -3399,9 +3403,25 @@ pub mod pallet {
 			<StakingLiquidityTokens<T>>::put(staking_liquidity_tokens);
 		}
 
+		#[aquamarine::aquamarine]
 		/// Best as in most cumulatively supported in terms of stake
 		/// Returns [collator_count, delegation_count, total staked]
-		fn select_top_candidates(now: RoundIndex) -> (u32, u32, Balance) {
+		/// ```mermaid
+		/// flowchart
+		///    A[Start] --> B{for all candidates}
+		///    B -- Is aggregating under Aggregator? --> C[increase Aggreagator valuation]
+		///    B -- Is solo collator? --> D[increase collator valuation]
+		///    C --> E[collect final valuations of solo collators and aggregators]
+		///    D --> E
+		///    E -- list of solo collators and aggregators only--> F[pick top N valuated accounts]
+		///    F --> G{for every block author}
+		///    G -- author --> Z[persist into SelectedCandidates runtime storage]
+		///    G -- author --> Y{Is solo collator or Aggregator}
+		///    Y -- is solo collator --> I[emit CollatorChosen event]
+		///    Y -- is aggregator --> H{for every associated collator}
+		///    H --> I
+		/// ```
+		pub fn select_top_candidates(now: RoundIndex) -> (u32, u32, Balance) {
 			let (mut collator_count, mut delegation_count, mut total_relevant_exposure) =
 				(0u32, 0u32, Balance::zero());
 			Self::staking_liquidity_tokens_snapshot();
