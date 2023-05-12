@@ -139,11 +139,11 @@ mod tests;
 
 use frame_support::{pallet, transactional};
 pub use mangata_support::traits::{
-	ComputeIssuance, GetIssuance, PoolCreateApi, StakingReservesProviderTrait, Valuate,
+	ComputeIssuance, GetIssuance, PoolCreateApi, StakingReservesProviderTrait, Valuate, ProofOfStakeRewardsApi,
+	XykFunctionsTrait
 };
 pub use mangata_types::{multipurpose_liquidity::BondKind, Balance, TokenId};
 use orml_tokens::{MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
-
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
 use frame_support::traits::{
@@ -1442,17 +1442,17 @@ pub mod pallet {
 	pub(crate) type RoundIndex = u32;
 	type RewardPoint = u32;
 
-	#[cfg(feature = "runtime-benchmarks")]
-	pub trait StakingBenchmarkConfig:
-		orml_tokens::Config + pallet_session::Config + pallet_issuance::Config
-	{
-		type RewardsApi: ProofOfStakeRewardsApi<
-			Self::AccountId,
-			Balance = Balance,
-			CurrencyId = TokenId,
-		>;
-		type Xyk: XykFunctionsTrait<Self::AccountId, Balance = Balance, CurrencyId = TokenId>;
-	}
+	// #[cfg(feature = "runtime-benchmarks")]
+	// pub trait StakingBenchmarkConfig:
+	// 	orml_tokens::Config + pallet_session::Config + pallet_issuance::Config
+	// {
+	// 	type RewardsApi: ProofOfStakeRewardsApi<
+	// 		Self::AccountId,
+	// 		Balance = Balance,
+	// 		CurrencyId = TokenId,
+	// 	>;
+	// 	type Xyk: XykFunctionsTrait<Self::AccountId, Balance = Balance, CurrencyId = TokenId>;
+	// }
 
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	pub trait StakingBenchmarkConfig {}

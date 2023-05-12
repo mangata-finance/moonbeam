@@ -1812,7 +1812,7 @@ dependencies = [
 [[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
-source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
+source = "git+https://github.com/mangata-finance/open-runtime-module-library?branch=mangata-dev-v0.9.40#1e3d3c3f219b34d8dc9c048ddc77d983c62df872"
 dependencies = [
  "frame-support",
  "impl-trait-for-tuples",
@@ -1821,6 +1821,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -1830,7 +1831,7 @@ dependencies = [
 [[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
-source = "git+https://github.com/mangata-finance//open-runtime-module-library?branch=mangata-dev#1d6fbd1374eabcd016ada4253d81c316b1084228"
+source = "git+https://github.com/mangata-finance/open-runtime-module-library?branch=mangata-dev-v0.9.40#1e3d3c3f219b34d8dc9c048ddc77d983c62df872"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -4027,22 +4028,24 @@ dependencies = [
 
 [[package]]
 name = "xcm"
-version = "0.9.36"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.36#dc25abc712e42b9b51d87ad1168e453a42b5f0bc"
+version = "0.9.40"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.40#95fe4c8862810bffd68343231a517e62689c05c0"
 dependencies = [
+ "bounded-collections",
  "derivative",
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
+ "serde",
+ "sp-weights",
  "xcm-procedural",
 ]
 
 [[package]]
 name = "xcm-procedural"
-version = "0.9.36"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.36#dc25abc712e42b9b51d87ad1168e453a42b5f0bc"
+version = "0.9.40"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.40#95fe4c8862810bffd68343231a517e62689c05c0"
 dependencies = [
  "Inflector",
  "proc-macro2",
