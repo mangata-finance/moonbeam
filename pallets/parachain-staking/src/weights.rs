@@ -84,9 +84,11 @@ pub trait WeightInfo {
 	fn add_staking_liquidity_token(x: u32, ) -> Weight;
 	fn remove_staking_liquidity_token(x: u32, ) -> Weight;
 	fn passive_session_change() -> Weight;
-	fn active_session_change(x: u32, y: u32, z: u32, w: u32, ) -> Weight;
+	fn active_session_change(x: u32, y: u32, z: u32) -> Weight;
 	fn payout_collator_rewards() -> Weight;
 	fn payout_delegator_reward() -> Weight;
+	fn update_candidate_aggregator() -> Weight;
+	fn aggregator_update_metadata() -> Weight;
 }
 
 /// Weights for parachain_staking using the Mangata node and recommended hardware.
@@ -376,25 +378,19 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Aura Authorities (r:1 w:0)
 	// Storage: ParachainStaking SelectedCandidates (r:0 w:1)
 	// Storage: Session Validators (r:0 w:1)
-	fn active_session_change(x: u32, y: u32, z: u32, w: u32, ) -> Weight {
-		Weight::from_ref_time(470_042_000)
-			// Standard Error: 1_684_000
-			.saturating_add((Weight::from_ref_time(23_366_000)).saturating_mul(x as u64))
-			// Standard Error: 4_024_000
-			.saturating_add((Weight::from_ref_time(139_318_000)).saturating_mul(y as u64))
-			// Standard Error: 23_684_000
-			.saturating_add((Weight::from_ref_time(761_880_000)).saturating_mul(z as u64))
-			// Standard Error: 12_287_000
-			.saturating_add((Weight::from_ref_time(470_042_000)).saturating_mul(w as u64))
-			.saturating_add(T::DbWeight::get().reads((4 as u64).saturating_mul(x as u64)))
-			.saturating_add(T::DbWeight::get().reads((10 as u64).saturating_mul(y as u64)))
-			.saturating_add(T::DbWeight::get().reads((51 as u64).saturating_mul(z as u64)))
-			.saturating_add(T::DbWeight::get().reads((34 as u64).saturating_mul(w as u64)))
-			.saturating_add(T::DbWeight::get().writes((1 as u64).saturating_mul(x as u64)))
-			.saturating_add(T::DbWeight::get().writes((9 as u64).saturating_mul(y as u64)))
-			.saturating_add(T::DbWeight::get().writes((50 as u64).saturating_mul(z as u64)))
-			.saturating_add(T::DbWeight::get().writes((33 as u64).saturating_mul(w as u64)))
+	fn active_session_change(x: u32, y: u32, z: u32, ) -> Weight {
+		(Weight::from_ref_time(819_648_670))
+			// Standard Error: 16_309
+			.saturating_add((Weight::from_ref_time(15_337_752)).saturating_mul(x as u64))
+			// Standard Error: 70_621
+			.saturating_add((Weight::from_ref_time(6_320_523)).saturating_mul(y as u64))
+			// Standard Error: 166_526
+			.saturating_add((Weight::from_ref_time(32_822_119)).saturating_mul(z as u64))
+			.saturating_add(RocksDbWeight::get().reads(124 as u64))
+			.saturating_add(RocksDbWeight::get().reads((4 as u64).saturating_mul(x as u64)))
+			.saturating_add(RocksDbWeight::get().writes(119 as u64))
 	}
+
 	fn payout_collator_rewards() -> Weight{
 		Weight::from_ref_time(0)
 			.saturating_add(RocksDbWeight::get().reads((20 as u64)))
@@ -406,6 +402,24 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(RocksDbWeight::get().reads((20 as u64)))
 			.saturating_add(RocksDbWeight::get().writes((20 as u64)))
 	}
+	// Storage: ParachainStaking CandidateState (r:49 w:0)
+	// Storage: ParachainStaking DelegatorState (r:1 w:0)
+	// Storage: ParachainStaking AggregatorMetadata (r:1 w:1)
+	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
+	fn aggregator_update_metadata() -> Weight {
+		(Weight::from_ref_time(599_580_000))
+			.saturating_add(RocksDbWeight::get().reads(52 as u64))
+			.saturating_add(RocksDbWeight::get().writes(2 as u64))
+	}
+	// Storage: ParachainStaking CandidateState (r:1 w:0)
+	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
+	// Storage: ParachainStaking AggregatorMetadata (r:2 w:2)
+	fn update_candidate_aggregator() -> Weight {
+		(Weight::from_ref_time(98_020_000))
+			.saturating_add(RocksDbWeight::get().reads(4 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+	}
+	// Storage: ParachainStaking RoundCollatorRewardInfo (r:2 w:1)
 }
 
 // For backwards compatibility and tests
@@ -583,24 +597,17 @@ impl WeightInfo for () {
 		Weight::from_ref_time(5_166_000)
 			.saturating_add(RocksDbWeight::get().reads(1 as u64))
 	}
-	fn active_session_change(x: u32, y: u32, z: u32, w: u32, ) -> Weight {
-		Weight::from_ref_time(470_042_000)
-			// Standard Error: 1_684_000
-			.saturating_add((Weight::from_ref_time(23_366_000)).saturating_mul(x as u64))
-			// Standard Error: 4_024_000
-			.saturating_add((Weight::from_ref_time(139_318_000)).saturating_mul(y as u64))
-			// Standard Error: 23_684_000
-			.saturating_add((Weight::from_ref_time(761_880_000)).saturating_mul(z as u64))
-			// Standard Error: 12_287_000
-			.saturating_add((Weight::from_ref_time(470_042_000)).saturating_mul(w as u64))
+	fn active_session_change(x: u32, y: u32, z: u32, ) -> Weight {
+		(Weight::from_ref_time(819_648_670))
+			// Standard Error: 16_309
+			.saturating_add((Weight::from_ref_time(15_337_752)).saturating_mul(x as u64))
+			// Standard Error: 70_621
+			.saturating_add((Weight::from_ref_time(6_320_523)).saturating_mul(y as u64))
+			// Standard Error: 166_526
+			.saturating_add((Weight::from_ref_time(32_822_119)).saturating_mul(z as u64))
+			.saturating_add(RocksDbWeight::get().reads(124 as u64))
 			.saturating_add(RocksDbWeight::get().reads((4 as u64).saturating_mul(x as u64)))
-			.saturating_add(RocksDbWeight::get().reads((10 as u64).saturating_mul(y as u64)))
-			.saturating_add(RocksDbWeight::get().reads((51 as u64).saturating_mul(z as u64)))
-			.saturating_add(RocksDbWeight::get().reads((34 as u64).saturating_mul(w as u64)))
-			.saturating_add(RocksDbWeight::get().writes((1 as u64).saturating_mul(x as u64)))
-			.saturating_add(RocksDbWeight::get().writes((9 as u64).saturating_mul(y as u64)))
-			.saturating_add(RocksDbWeight::get().writes((50 as u64).saturating_mul(z as u64)))
-			.saturating_add(RocksDbWeight::get().writes((33 as u64).saturating_mul(w as u64)))
+			.saturating_add(RocksDbWeight::get().writes(119 as u64))
 	}
 
 	fn payout_collator_rewards() -> Weight{
@@ -614,4 +621,22 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads((20 as u64)))
 			.saturating_add(RocksDbWeight::get().writes((20 as u64)))
 	}
+	// Storage: ParachainStaking CandidateState (r:49 w:0)
+	// Storage: ParachainStaking DelegatorState (r:1 w:0)
+	// Storage: ParachainStaking AggregatorMetadata (r:1 w:1)
+	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
+	fn aggregator_update_metadata() -> Weight {
+		(Weight::from_ref_time(599_580_000))
+			.saturating_add(RocksDbWeight::get().reads(52 as u64))
+			.saturating_add(RocksDbWeight::get().writes(2 as u64))
+	}
+	// Storage: ParachainStaking CandidateState (r:1 w:0)
+	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
+	// Storage: ParachainStaking AggregatorMetadata (r:2 w:2)
+	fn update_candidate_aggregator() -> Weight {
+		(Weight::from_ref_time(98_020_000))
+			.saturating_add(RocksDbWeight::get().reads(4 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+	}
+	// Storage: ParachainStaking RoundCollatorRewardInfo (r:2 w:1)
 }
