@@ -1709,9 +1709,9 @@ benchmarks! {
 		// // Total selected
 		// let w = 190;
 
-		// assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
-		// assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
-		// assert_ok!(<pallet_issuance::Pallet<T>>::calculate_and_store_round_issuance(0u32));
+		assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
+		assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
+		assert_ok!(<pallet_issuance::Pallet<T>>::calculate_and_store_round_issuance(0u32));
 
 		assert_ok!(Pallet::<T>::set_total_selected(RawOrigin::Root.into(), w));
 

@@ -883,6 +883,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "frame-executive"
+version = "4.0.0-dev"
+source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
+dependencies = [
+ "aquamarine",
+ "extrinsic-shuffler",
+ "frame-support",
+ "frame-system",
+ "log",
+ "merlin",
+ "parity-scale-codec",
+ "scale-info",
+ "schnorrkel",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-tracing",
+]
+
+[[package]]
 name = "frame-metadata"
 version = "15.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1874,6 +1895,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-issuance"
+version = "2.0.0"
+source = "git+https://github.com/mangata-finance/mangata-node?branch=develop-v0.9.40#2a05d48d65d9cd0970dd9405a9b470a400ffee0e"
+dependencies = [
+ "cfg-if",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "log",
+ "mangata-support",
+ "mangata-types",
+ "orml-tokens",
+ "pallet-vesting-mangata",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
@@ -1942,6 +1984,7 @@ dependencies = [
  "orml-traits",
  "pallet-authorship",
  "pallet-collective-mangata",
+ "pallet-issuance",
  "pallet-session",
  "pallet-vesting-mangata",
  "parity-scale-codec",
@@ -4089,11 +4132,6 @@ version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
 
 [[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
-
-[[patch.unused]]
 name = "frame-system-rpc-runtime-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
@@ -4614,11 +4652,6 @@ version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
 
 [[patch.unused]]
-name = "frame-executive"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
-
-[[patch.unused]]
 name = "frame-system-rpc-runtime-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
@@ -5135,11 +5168,6 @@ source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v
 
 [[patch.unused]]
 name = "frame-election-provider-support"
-version = "4.0.0-dev"
-source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
-
-[[patch.unused]]
-name = "frame-executive"
 version = "4.0.0-dev"
 source = "git+https://github.com/mangata-finance//substrate?branch=mangata-dev-v0.9.40#df06b646b84576d0498ad5540ce65fd4e7613d45"
 
