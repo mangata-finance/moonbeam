@@ -379,13 +379,13 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: ParachainStaking SelectedCandidates (r:0 w:1)
 	// Storage: Session Validators (r:0 w:1)
 	fn active_session_change(x: u32, y: u32, z: u32, ) -> Weight {
-		(Weight::from_ref_time(819_648_670))
+		(Weight::from_parts(819_648_670, 0))
 			// Standard Error: 16_309
-			.saturating_add((Weight::from_ref_time(15_337_752)).saturating_mul(x as u64))
+			.saturating_add((Weight::from_parts(15_337_752, 0)).saturating_mul(x as u64))
 			// Standard Error: 70_621
-			.saturating_add((Weight::from_ref_time(6_320_523)).saturating_mul(y as u64))
+			.saturating_add((Weight::from_parts(6_320_523, 0)).saturating_mul(y as u64))
 			// Standard Error: 166_526
-			.saturating_add((Weight::from_ref_time(32_822_119)).saturating_mul(z as u64))
+			.saturating_add((Weight::from_parts(32_822_119, 0)).saturating_mul(z as u64))
 			.saturating_add(RocksDbWeight::get().reads(124 as u64))
 			.saturating_add(RocksDbWeight::get().reads((4 as u64).saturating_mul(x as u64)))
 			.saturating_add(RocksDbWeight::get().writes(119 as u64))
@@ -407,7 +407,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: ParachainStaking AggregatorMetadata (r:1 w:1)
 	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
 	fn aggregator_update_metadata() -> Weight {
-		(Weight::from_ref_time(599_580_000))
+		(Weight::from_parts(599_580_000, 0))
 			.saturating_add(RocksDbWeight::get().reads(52 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
@@ -415,7 +415,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
 	// Storage: ParachainStaking AggregatorMetadata (r:2 w:2)
 	fn update_candidate_aggregator() -> Weight {
-		(Weight::from_ref_time(98_020_000))
+		(Weight::from_parts(98_020_000, 0))
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
@@ -598,13 +598,13 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(1 as u64))
 	}
 	fn active_session_change(x: u32, y: u32, z: u32, ) -> Weight {
-		(Weight::from_ref_time(819_648_670))
+		(Weight::from_parts(819_648_670, 0))
 			// Standard Error: 16_309
-			.saturating_add((Weight::from_ref_time(15_337_752)).saturating_mul(x as u64))
+			.saturating_add((Weight::from_parts(15_337_752, 0)).saturating_mul(x as u64))
 			// Standard Error: 70_621
-			.saturating_add((Weight::from_ref_time(6_320_523)).saturating_mul(y as u64))
+			.saturating_add((Weight::from_parts(6_320_523, 0)).saturating_mul(y as u64))
 			// Standard Error: 166_526
-			.saturating_add((Weight::from_ref_time(32_822_119)).saturating_mul(z as u64))
+			.saturating_add((Weight::from_parts(32_822_119, 0)).saturating_mul(z as u64))
 			.saturating_add(RocksDbWeight::get().reads(124 as u64))
 			.saturating_add(RocksDbWeight::get().reads((4 as u64).saturating_mul(x as u64)))
 			.saturating_add(RocksDbWeight::get().writes(119 as u64))
@@ -626,7 +626,7 @@ impl WeightInfo for () {
 	// Storage: ParachainStaking AggregatorMetadata (r:1 w:1)
 	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
 	fn aggregator_update_metadata() -> Weight {
-		(Weight::from_ref_time(599_580_000))
+		(Weight::from_parts(599_580_000, 0))
 			.saturating_add(RocksDbWeight::get().reads(52 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
@@ -634,7 +634,7 @@ impl WeightInfo for () {
 	// Storage: ParachainStaking CandidateAggregator (r:1 w:1)
 	// Storage: ParachainStaking AggregatorMetadata (r:2 w:2)
 	fn update_candidate_aggregator() -> Weight {
-		(Weight::from_ref_time(98_020_000))
+		(Weight::from_parts(98_020_000, 0))
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
