@@ -5385,8 +5385,6 @@ fn token_valuations_works_with_aggregators() {
 			let mut expected = vec![
 				Event::AggregatorMetadataUpdated(4),
 				Event::CandidateAggregatorUpdated(1, Some(4)),
-				Event::CandidateAggregatorUpdated(1, Some(4)),
-				Event::CandidateAggregatorUpdated(2, Some(4)),
 				Event::CandidateAggregatorUpdated(2, Some(4)),
 				Event::CollatorChosen(2, 1, 30),
 				Event::CollatorChosen(2, 2, 80),
