@@ -29,9 +29,9 @@ sp-staking = { git = "https://github.com/mangata-finance/substrate", branch = "m
 pallet-collective-mangata = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 mangata-support = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 
+pallet-issuance = { git = "https://github.com/mangata-finance/mangata-node", branch = "develop-v0.9.40", default-features = false, optional = true}
 mangata-types = { git = "https://github.com/mangata-finance/substrate", branch = "mangata-dev", default-features = false }
 orml-tokens = { default-features = false, version = '0.4.1-dev', git = "https://github.com/mangata-finance/open-runtime-module-library", branch = "mangata-dev" }
-pallet-issuance = { git = "https://github.com/mangata-finance/mangata-node", branch = "develop", default-features = false , optional = true}
 itertools = {version ="0.10.3", default-features=false, features=["use_alloc"]}
 
 [dev-dependencies]
@@ -64,5 +64,6 @@ runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 	"frame-benchmarking/runtime-benchmarks",
+	"pallet-collective-mangata/runtime-benchmarks"
 ]
 try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]

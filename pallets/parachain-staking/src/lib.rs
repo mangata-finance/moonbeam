@@ -76,7 +76,7 @@
 //! If candidate decides to aggregate under Aggregator it cannot be chosen to be collator(the
 //! candidate), instead aggregator account can be selected (even though its not present on
 //! candidates list).
-//! 
+//!
 //!
 //! Block authors selection algorithm details [`Pallet::select_top_candidates`]
 //!
@@ -128,7 +128,6 @@
 #[cfg(doc)]
 use aquamarine::aquamarine;
 
-
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarks;
 #[cfg(test)]
@@ -136,23 +135,21 @@ mod mock;
 mod set;
 #[cfg(test)]
 mod tests;
-use sp_runtime::SaturatedConversion;
-
-use frame_support::{pallet, transactional};
-pub use mangata_support::traits::{
-	ComputeIssuance, GetIssuance, PoolCreateApi, StakingReservesProviderTrait, Valuate,
-};
-use mangata_support::traits::{ProofOfStakeRewardsApi, XykFunctionsTrait};
-pub use mangata_types::{multipurpose_liquidity::BondKind, Balance, TokenId};
-use orml_tokens::{MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
 
 use crate::set::OrderedSet;
 use frame_support::pallet_prelude::*;
 use frame_support::traits::{
 	tokens::currency::MultiTokenCurrency, EstimateNextSessionRotation, ExistenceRequirement, Get,
 };
+use frame_support::{pallet, transactional};
 use frame_system::pallet_prelude::*;
 use frame_system::RawOrigin;
+pub use mangata_support::traits::{
+	ComputeIssuance, GetIssuance, PoolCreateApi, ProofOfStakeRewardsApi,
+	StakingReservesProviderTrait, Valuate, XykFunctionsTrait,
+};
+pub use mangata_types::{multipurpose_liquidity::BondKind, Balance, TokenId};
+use orml_tokens::{MultiTokenCurrencyExtended, MultiTokenReservableCurrency};
 use pallet_collective_mangata::GetMembers;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
@@ -1673,8 +1670,8 @@ pub mod pallet {
 		fn on_idle(_now: T::BlockNumber, remaining_weight: Weight) -> Weight {
 			// some extra offset on top
 			let claim_cost = <T as Config>::WeightInfo::payout_collator_rewards();
-			if remaining_weight.ref_time() > claim_cost.ref_time(){
-				if let Some((collator, _round)) = RoundCollatorRewardInfo::<T>::iter_keys().next(){
+			if remaining_weight.ref_time() > claim_cost.ref_time() {
+				if let Some((collator, _round)) = RoundCollatorRewardInfo::<T>::iter_keys().next() {
 					let _ = Self::do_payout_collator_rewards(collator, Some(1));
 				}
 			}
@@ -2356,7 +2353,8 @@ pub mod pallet {
 				ensure!(state.is_active(), Error::<T>::CannotDelegateIfLeaving);
 				// delegation after first
 				ensure!(
-					Self::valuate_bond(collator_state.liquidity_token, amount) >= T::MinDelegation::get(),
+					Self::valuate_bond(collator_state.liquidity_token, amount)
+						>= T::MinDelegation::get(),
 					Error::<T>::DelegationBelowMin
 				);
 				ensure!(
@@ -3470,7 +3468,10 @@ pub mod pallet {
 			}
 		}
 
-		fn do_payout_collator_rewards(collator: T::AccountId, number_of_sesisons: Option<u32>) -> DispatchResultWithPostInfo {
+		fn do_payout_collator_rewards(
+			collator: T::AccountId,
+			number_of_sesisons: Option<u32>,
+		) -> DispatchResultWithPostInfo {
 			let mut rounds = Vec::<RoundIndex>::new();
 
 			let limit = number_of_sesisons.unwrap_or(T::DefaultPayoutLimit::get());
@@ -3546,7 +3547,6 @@ pub mod pallet {
 			// count was lower than assumed upper bound
 			Ok(().into())
 		}
-
 	}
 
 	/// Add reward points to block authors:
@@ -3557,10 +3557,6 @@ pub mod pallet {
 			let score_plus_20 = <AwardedPts<T>>::get(now, &author).saturating_add(20);
 			<AwardedPts<T>>::insert(now, author, score_plus_20);
 			<Points<T>>::mutate(now, |x| *x = x.saturating_add(20));
-		}
-
-		fn note_uncle(_: T::AccountId, _: T::BlockNumber) {
-			// ignore
 		}
 	}
 
@@ -3647,7 +3643,5 @@ pub mod pallet {
 				T::DbWeight::get().reads(1),
 			)
 		}
-
 	}
-
 }
