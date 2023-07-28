@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["RequesterInput",""],["Response",""]],"struct":[["Debug",""],["DebugHandler",""],["TraceParams",""]],"trait":[["DebugServer",""],["DebugT",""]],"type":[["DebugRequester",""],["Responder",""]]});
+window.SIDEBAR_ITEMS = {"enum":["RequesterInput","Response"],"struct":["Debug","DebugHandler","TraceParams"],"trait":["DebugServer"],"type":["DebugRequester","Responder"]};

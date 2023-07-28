@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["FilterRequest",""]],"trait":[["Trace",""],["TraceServer",""]]});
+window.SIDEBAR_ITEMS = {"struct":["FilterRequest"],"trait":["TraceServer"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CrowdloanRewardsPrecompileCall"],"struct":["CrowdloanRewardsPrecompile"],"type":["BalanceOf"]};

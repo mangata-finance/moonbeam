@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Event",""]],"fn":[["opcodes_string","Converts an Opcode into its name, stored in a `Vec<u8>`."],["using",""]],"mod":[["evm",""],["gasometer",""],["runtime",""]],"struct":[["Context",""]],"trait":[["Listener","Main trait to proxy emitted messages. Used 2 times :"]]});
+window.SIDEBAR_ITEMS = {"enum":["Event"],"fn":["step_event_filter","using"],"mod":["evm","gasometer","runtime"],"struct":["Context","StepEventFilter"],"trait":["Listener"]};

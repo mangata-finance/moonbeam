@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ApprovalDeposit","AssetDeposit","AssetRegistrar","AssetRegistrarMetadata","AssetsStringLimit","LocalAssetIdCreator","MetadataDepositBase","MetadataDepositPerByte"],"type":["AssetsForceOrigin","ForeignAssetInstance","ForeignAssetModifierOrigin","LocalAssetInstance","LocalAssetModifierOrigin"]};

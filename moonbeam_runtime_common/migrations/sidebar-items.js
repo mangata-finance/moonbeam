@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["CommonMigrations","PalletReferendaMigrateV0ToV1","PreimageMigrationHashToBoundedCall","ReferendaMigrations"]};

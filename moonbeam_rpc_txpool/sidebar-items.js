@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Summary",""],["Transaction",""],["TxPool",""],["TxPoolResult",""]],"trait":[["GetT",""],["TxPoolServer",""],["TxPoolT",""]],"type":[["TransactionMap",""]]});
+window.SIDEBAR_ITEMS = {"struct":["Summary","Transaction","TxPool","TxPoolResult"],"trait":["GetT","TxPoolServer"],"type":["TransactionMap"]};

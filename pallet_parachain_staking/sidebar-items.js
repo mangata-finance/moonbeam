@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DelegationAction"],"mod":["inflation","migrations","pallet","traits","types","weights"],"struct":["AutoCompoundConfig","AutoCompoundDelegations","CancelledScheduledRequest","ScheduledRequest"]};

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["TraceParams",""]],"trait":[["Debug",""],["DebugServer",""]]});
+window.SIDEBAR_ITEMS = {"struct":["TraceParams"],"trait":["DebugServer"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CALL_DATA_LIMIT","PERMIT_TYPEHASH"],"enum":["CallPermitPrecompileCall"],"struct":["CallPermitPrecompile","Nonces"],"type":["NoncesStorage"]};
