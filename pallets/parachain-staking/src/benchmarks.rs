@@ -52,7 +52,6 @@ const MGA_TOKEN_ID: TokenId = 0u32;
 /// Any set of tokens x, x0=0, will have token_id, (3x+5, 3x+6) <=> 3x+7
 /// Since we are creating new tokens every time we can simply just use (v, v+1) as the pooled token amounts, to mint v liquidity tokens
 
-
 /// Mint v liquidity tokens of token set x to funding account
 fn create_non_staking_liquidity_for_funding<T: Config + orml_tokens::Config>(
 	v: Option<Balance>,
@@ -121,7 +120,9 @@ fn create_3rdparty_reward_token_for_funding<T: Config + orml_tokens::Config>(
 		v.into(),
 	)?;
 
-	let token = <orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<T::AccountId>>::create(&funding_account, (v + 1u128).into())?;
+	let token = <orml_tokens::MultiTokenCurrencyAdapter<T> as MultiTokenCurrencyExtended<
+		T::AccountId,
+	>>::create(&funding_account, (v + 1u128).into())?;
 
 	assert!(<T::Xyk as XykFunctionsTrait<_>>::create_pool(
 		funding_account.clone(),
@@ -1701,9 +1702,6 @@ benchmarks! {
 
 	active_session_change {
 
-
-		// number of 3rdparty rewards schedules running
-		// let c in 3..150;
 		// number of native rewrds (promoted pools)
 		// let x in 3..100;
 		// candidate_count
@@ -1722,9 +1720,6 @@ benchmarks! {
 		let z = <<T as Config>::MaxDelegatorsPerCandidate as Get<u32>>::get();
 		// // Total selected candidates
 		let w = <<T as Config>::MinSelectedCandidates as Get<u32>>::get() + 1u32;
-		//
-		// number of 3rdparty schedules
-		let c = 200;
 
 		assert_ok!(<pallet_issuance::Pallet<T>>::finalize_tge(RawOrigin::Root.into()));
 		assert_ok!(<pallet_issuance::Pallet<T>>::init_issuance_config(RawOrigin::Root.into()));
@@ -1748,25 +1743,6 @@ benchmarks! {
 			let created_liquidity_token = create_staking_liquidity_for_funding::<T>(Some(T::MinCandidateStk::get())).unwrap();
 			Pallet::<T>::add_staking_liquidity_token(RawOrigin::Root.into(), PairedOrLiquidityToken::Liquidity(created_liquidity_token), i).unwrap();
 			<T::RewardsApi as ProofOfStakeRewardsApi<_>>::enable(created_liquidity_token, 1);
-		}
-
-		for id in 0..c {
-			let liquidity_amount = 100_000;
-			let liquidity_token = create_non_staking_liquidity_for_funding::<T>(Some(liquidity_amount)).unwrap();
-
-			let pool = (liquidity_token - 2, liquidity_token - 1);
-		
-			log::info!("3rdparty_liq_token: {:?} : {:?}", liquidity_token, pool);
-	 
-			let reward_amount = 100_000_000*DOLLAR;
-			let reward_token = create_3rdparty_reward_token_for_funding::<T>(Some(reward_amount)).unwrap();
-			log::info!("rewards_token: {:?}", reward_token);
-
-			let (user, _, _) = create_funded_user::<T>("3rdparty_reward", id as u32, liquidity_token, Some(liquidity_amount));
-			let (user, _, _) = create_funded_user::<T>("3rdparty_reward", id as u32, reward_token, Some(reward_amount));
-
-			T::RewardsApi::enable_3rdparty_rewards(user.clone(), pool, reward_token, 10, reward_amount);
-			T::RewardsApi::activate_liquidity_for_3rdparty_rewards(user, liquidity_token, liquidity_amount, reward_token);
 		}
 
 		// Now to prepare the liquidity token we will use for collator and delegators
